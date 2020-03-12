@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>日志下载平台</title>
+</head>
+<link rel="stylesheet" type="text/css" href="css/element.css">
+<style>
+    .el-header {
+        background-color: #B3C0D1;
+        color: #333;
+        line-height: 60px;
+    }
+
+    .el-aside {
+        color: #333;
+    }
+</style>
+<body>
+<div id="app" style="display: flex">
+    <el-container style="height: 100%; border: 1px solid #eee">
+        
+        <!-- 侧边栏 -->
+        <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+            <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+        </el-aside>
+        
+        <!-- 头部 -->
+        <el-container>
+            <el-header style="text-align: center; justify-content: center; line-height: 24px">
+                <h1>日志下载平台</h1>
+            </el-header>
+            
+            <!-- 主体 -->
+            <el-main style="height: 100%">
+                <el-table
+                        ref="multipleTable"
+                        :data="logInfo.filter(data => !search || data.logPath.toLowerCase().includes(search.toLowerCase()))"
+                        border 
+                        style="width: 100%"
+                        @selection-change="handleSelectionChange">
+                    <!-- 日志路径 -->
+                    <el-table-column
+                            type="selection"
+                            width="55">
+                    </el-table-column>
+                    <el-table-column prop="logPath"  label="日志路径及文件名">
+                            <template slot-scope="scope">
+                                <!-- 单行点击事件 -->
+                                <div @click="toggleSelection([scope.row])">{{ scope.row.logPath }}</div>
+                            </template>
+                    </el-table-column>   
+                    
+                    <!-- 是否抓取 -->
+                    <el-table-column prop="logPath"  label="是否抓取" width="100">
+                            <template slot-scope="scope">
+                                {{ scope.row.isCatch == "Y" ? "是":"否" }}
+                            </template>
+                    </el-table-column>
+                    
+                    <!-- 操作栏 -->
+                    <el-table-column
+                            fixed="right" width="200">
+                            <!-- 搜索框 -->
+                            <template slot="header" slot-scope="scope">
+                                <el-input
+                                        v-model="search"
+                                        size="mini"
+                                        placeholder="输入关键字搜索"/>
+                            </template>
+                            <!-- 抓取日志 -->
+                            <template slot-scope="scope">
+                                <el-button  @click="handleClick(scope.row)" type="text" size="small">抓取日志</el-button>
+                            </template>
+                    </el-table-column>
+                </el-table>
+                
+                <!-- 底部按钮 -->
+                <div style="margin-top: 20px">
+                    <el-button @click="toggleSelection()">取消选择</el-button>
+                    <el-button @click="download">下载日志</el-button>
+                </div>
+            </el-main>
+        </el-container>
+    </el-container>
+</div>
+</body>
+<script src="js/vue.js"></script>
+<script src="js/element.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                // 日志信息
+                logInfo: [{
+                    id: 1,
+                    logPath: "/default/logs/00008003-c008-00008003-0000-test-5bb4ff6f59-p2d4j-aoplog.log",
+                    isCatch: "Y"
+                },{
+                    id: 2,
+                    logPath: "/default/logs/00008003-c008-00008003-0000-test-5bb4ff6f59-p2d4j-aoplog.log",
+                    isCatch: "N"
+                },{
+                    id: 3,
+                    logPath: "/default/logs/00008003-c008-00008003-0000-test-5bb4ff6f59-p2d4j-aoplog.log",
+                    isCatch: "Y"
+                }],
+                // 多选数据
+                multipleSelection: [],
+                // 菜单数据
+                data: [{
+                    label: '一级 1',
+                    children: [{
+                        label: '二级 1-1',
+                        children: [{
+                            label: '三级 1-1-1',
+                            children: [{
+                                label: '四级 1-1',
+                                children: [{
+                                    label: '五级',
+                                }]
+                            }]
+                        }]
+                    }]
+                }, {
+                    label: '一级 2',
+                    children: [{
+                        label: '二级 2-1',
+                        children: [{
+                            label: '三级 2-1-1'
+                        }]
+                    }, {
+                        label: '二级 2-2',
+                        children: [{
+                            label: '三级 2-2-1'
+                        }]
+                    }]
+                }, {
+                    label: '一级 3',
+                    children: [{
+                        label: '二级 3-1',
+                        children: [{
+                            label: '三级 3-1-1'
+                        }]
+                    }, {
+                        label: '二级 3-2',
+                        children: [{
+                            label: '三级 3-2-1'
+                        }]
+                    }]
+                }],
+                // 菜单的显示字段
+                defaultProps: {
+                    children: 'children',
+                    label: 'label'
+                },
+                // 搜索的关键字
+                search: ''
+            }
+        },
+        methods: {
+            // 菜单点击事件
+            handleNodeClick(data) {
+                console.log(data);
+            },
+            // 清空选中状态
+            toggleSelection(rows) {
+                if (rows) {
+                    rows.forEach(row => {
+                        this.$refs.multipleTable.toggleRowSelection(row);
+                    });
+                } else {
+                    this.$refs.multipleTable.clearSelection();
+                }
+            },
+            // 记录选中状态 
+            handleSelectionChange(val) {
+                console.log(val)
+                this.multipleSelection = val;
+            },
+            // 抓取日志
+            handleClick(val) {
+                console.log(val)
+                this.$message.success('日志抓取成功');
+                this.logInfo.forEach(data => {
+                    if (data.id === val.id) {
+                        data.isCatch = "Y"
+                    }
+                })
+                setTimeout(() => {
+                    this.$message.error('日志抓取失败');
+                }, 1000)
+            },       
+            // 下载
+            download() {
+                console.log(this.multipleSelection)
+            }
+        }
+    })
+</script>
+</html>
