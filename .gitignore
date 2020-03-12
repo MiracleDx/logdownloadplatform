@@ -1,0 +1,126 @@
+  
+### Java template
+# IntelliJ IDEA Project files
+.idea
+*.iml
+*.ipr
+*.iws
+out
+HELP.md
+*/.gitignore
+
+# Eclipse Project files
+.classpath
+.project
+.settings/
+.metadata
+
+bin/
+gen/
+local.properties
+
+# Temp files
+.DS_Store
+Thumbs.db
+
+*.bak
+*.tem
+*.temp
+#.swp
+*.*~
+~*.*
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+ 
+# Package Files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Compiled class file
+*.class
+/build/
+
+# Log file
+*.log.*gz
+*.log.*
+ 
+# virtual machine crash logs
+hs_err_pid*
+
+# User-specific stuff:
+.idea/tasks.xml
+.idea/dictionaries
+.idea/jsLibraryMappings.xml
+ 
+# Sensitive or high-churn files
+.idea/dataSources.ids
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+ 
+# Gradle:
+.idea/gradle.xml
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# Windows image file caches
+ehthumbs.db
+ 
+# Folder config file
+Desktop.ini
+ 
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+ 
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+ 
+# Windows shortcuts
+*.lnk
+
+# Maven template
+/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+**/.mvn/
+**/mvnw
+**/mvnw.cmd
+
+# svn
+.svn
+
+# STS
+.apt_generated
+.factorypath
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+/logs/
+/jarrelease/
+
+### VS Code ###
+.vscode/
