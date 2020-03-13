@@ -5,10 +5,6 @@
     <title>日志下载平台</title>
 </head>
 <link rel="stylesheet" type="text/css" href="css/element.css">
-<!-- 引入样式 -->
-<!--<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">-->
-<!-- 引入组件库 -->
-<!--<script src="https://unpkg.com/element-ui/lib/index.js"></script>-->
 <style>
     [v-cloak] {
         display: none;
@@ -29,7 +25,7 @@
     <el-container style="height: 100%; border: 1px solid #eee; display: flex">
         
         <!-- 侧边栏 -->
-        <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+        <el-aside width="250px" style="background-color: rgb(238, 241, 246)">
             <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
         </el-aside>
         
@@ -43,7 +39,7 @@
             <el-main style="height: 100%">
                 <el-table
                         ref="multipleTable"
-                        :data="logInfo.filter(data => !search || data.logPath.toLowerCase().includes(search.toLowerCase()))"
+                        :data="logInfo.filter(data => !search || data.logPath.toLowerCase().includes(search.toLowerCase()) || data.isCatch == (search == '是' ? 'Y' : search == '否' ? 'N' : search))"
                         border 
                         style="width: 100%"
                         @selection-change="handleSelectionChange">
@@ -118,44 +114,43 @@
                 multipleSelection: [],
                 // 菜单数据
                 data: [{
-                    label: '一级 1',
+                    label: 'c001-0000',
                     children: [{
-                        label: '二级 1-1',
+                        label: '00001001',
                         children: [{
-                            label: '三级 1-1-1',
-                            children: [{
-                                label: '四级 1-1',
-                                children: [{
-                                    label: '五级',
-                                }]
+                            label: 'c001-00001001-0000-1',
+                            children: []
+                        },{
+                            label: 'c001-00001001-0000-2',
+                            children: []
+                        }]
+                    }]
+                }, {
+                    label: 'c002-0000-gz',
+                    children: [{
+                        label: '00002004',
+                        children: [{
+                                label: 'c002-00002004-0000-1'
+                        },{
+                            label: 'c002-00002004-0000-2'
+                        }]
+                    }, {
+                        label: '00002005',
+                        children: [{
+                            label: 'c002-00002005-0000-1'
+                        },{
+                            label: 'c002-00002005-0000-2'
+                        }]
+                    }]
+                }, {
+                    label: 'c006-3300-gz',
+                    children: [{
+                        label: '00006017',
+                        children: [{
+                            label: 'c006-00006017-3300-1'
+                        },{
+                                label: 'c006-00006017-3300-2'
                             }]
-                        }]
-                    }]
-                }, {
-                    label: '一级 2',
-                    children: [{
-                        label: '二级 2-1',
-                        children: [{
-                            label: '三级 2-1-1'
-                        }]
-                    }, {
-                        label: '二级 2-2',
-                        children: [{
-                            label: '三级 2-2-1'
-                        }]
-                    }]
-                }, {
-                    label: '一级 3',
-                    children: [{
-                        label: '二级 3-1',
-                        children: [{
-                            label: '三级 3-1-1'
-                        }]
-                    }, {
-                        label: '二级 3-2',
-                        children: [{
-                            label: '三级 3-2-1'
-                        }]
                     }]
                 }],
                 // 菜单的显示字段
