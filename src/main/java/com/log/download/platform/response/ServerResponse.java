@@ -44,6 +44,10 @@ public class ServerResponse<T> {
         this.data = data;
     }
 
+    public static <T> ServerResponse<T> success() {
+        return new ServerResponse(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage());
+    }
+
     public static <T> ServerResponse<T> success(Integer code) {
         return new ServerResponse<>(code);
     }
