@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>数据维护</title>
+</head>
+<link rel="stylesheet" type="text/css" href="css/element.css">
+<body>
+<div id="app" style="width: 300px">
+    <el-upload
+        class="upload-demo"
+        ref="upload"
+        action="http://127.0.0.1:8080/upload"
+        :http-request="submit"
+        :on-preview="handlePreview"
+        :on-change="onChange"
+        :on-remove="handleRemove"
+        :before-remove="beforeRemove"
+        :before-upload="beforeUpload"
+        :file-list="fileList"
+        :auto-upload="false"
+        :limit="1"
+        :on-exceed="handleExceed">
+    <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+    <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+    <div slot="tip" class="el-upload__tip">只能上传xlsx文件，请上传部署组清单</div>
+</el-upload>
+</div>
+</body>
+<script src="js/vue.js"></script>
+<script src="js/element.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                fileList: []
+            };
+        },
+        methods: {
+            submit(content) {
+                let that = this;
+                let fd = new FormData();
+                fd.append('file', content.file);
+                fetch(content.action, {
+                    method: 'post',
+                    body: fd
+                }).
+                then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                        if (data.code === 1) {
+                            content.onSuccess('文件上传成功')
+                            that.$message.success('文件上传成功')
+                        } else {
+                            content.onError(data.message)
+                            that.$message.error(data.message)
+                        }
+                    })
+                    .catch(err => {
+                        console.log("Oh, error", err)
+                        if (err.response) {
+                           content.onError('文件上传失败(' + err.response.status + ')，' + err.response.data);
+                       } else if (err.request) {
+                           content.onError('文件上传失败，服务器端无响应');
+                       } else {
+                           content.onError('文件上传失败，请求封装失败');
+                       }
+                        that.$message.error('文件上传失败')
+                    })
+            },
+            submitUpload() {
+                this.$refs.upload.submit()
+            },
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+            },
+            handlePreview(file) {
+                console.log(file);
+            },
+            handleExceed(files, fileList) {
+                this.$message.warning(`当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
+            },
+            beforeRemove(file, fileList) {
+                if (file && file.status === 'success'){
+                    return this.$confirm(`确定移除 ${ file.name }？`);
+                }
+            },
+            onChange(file, fileList) {
+                const isExcel = file.name.split(".")[1] === 'xlsx'
+                if (!isExcel) {
+                    this.$message.error('上传文件只能是 xlsx 格式!');
+                    fileList = []
+                    // 清空上传列表
+                    this.$refs.upload.clearFiles();
+                }
+            },
+            beforeUpload(file) {
+                return file.name.split(".")[1] === 'xlsx'
+            }
+        }
+    })
+</script>
+</html>
