@@ -26,7 +26,11 @@
         
         <!-- 侧边栏 -->
         <el-aside width="250px" style="background-color: rgb(238, 241, 246)">
-            <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+            <el-input
+                    placeholder="输入关键字进行过滤"
+                    v-model="filterText">
+            </el-input>
+            <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick" :filter-node-method="filterNode" ref="tree" v-if="showTree"></el-tree>
         </el-aside>
         
         <!-- 头部 -->
@@ -39,7 +43,7 @@
             <el-main style="height: 100%">
                 <el-table
                         ref="multipleTable"
-                        :data="logInfo.filter(data => !search || data.logPath.toLowerCase().includes(search.toLowerCase()) || data.isCatch == (search == '是' ? 'Y' : search == '否' ? 'N' : search))"
+                        :data="logDetails.filter(data => !search || data.path.toLowerCase().includes(search.toLowerCase()))"
                         border 
                         style="width: 100%"
                         @selection-change="handleSelectionChange">
@@ -48,34 +52,27 @@
                             type="selection"
                             width="55">
                     </el-table-column>
-                    <el-table-column prop="logPath"  label="日志路径及文件名">
+                    <el-table-column prop="path"  label="日志路径及文件名">
                             <template slot-scope="scope">
                                 <!-- 单行点击事件 -->
-                                <div @click="toggleSelection([scope.row])">{{ scope.row.logPath }}</div>
+                                <div @click="toggleSelection([scope.row])">{{ scope.row.path }}</div>
                             </template>
                     </el-table-column>   
-                    
-                    <!-- 是否抓取 -->
-                    <el-table-column prop="logPath"  label="是否抓取" width="100">
-                            <template slot-scope="scope">
-                                {{ scope.row.isCatch == "Y" ? "是":"否" }}
-                            </template>
-                    </el-table-column>
                     
                     <!-- 操作栏 -->
                     <el-table-column
                             fixed="right" width="200">
-                            <!-- 搜索框 -->
-                            <template slot="header" slot-scope="scope">
-                                <el-input
-                                        v-model="search"
-                                        size="mini"
-                                        placeholder="输入关键字搜索"/>
-                            </template>
-                            <!-- 抓取日志 -->
-                            <template slot-scope="scope">
-                                <el-button  @click="handleClick(scope.row)" type="text" size="small">抓取日志</el-button>
-                            </template>
+                        <!-- 搜索框 -->
+                        <template slot="header" slot-scope="scope" style="width: 30px">
+                            <el-input
+                                    v-model="search"
+                                    size="mini"
+                                    placeholder="输入关键字搜索"/>
+                        </template>
+                        <!-- 下载日志 -->
+                        <template slot-scope="scope">
+                            <el-button  @click="handleClick(scope.row)" type="text" size="small">下载日志</el-button>
+                        </template>
                     </el-table-column>
                 </el-table>
                 
@@ -96,78 +93,70 @@
         el: '#app',
         data() {
             return {
-                // 日志信息
-                logInfo: [{
-                    id: 1,
-                    logPath: "/default/logs/00008003-c008-00008003-0000-test-5bb4ff6f59-p2d4j-aoplog.log",
-                    isCatch: "Y"
-                },{
-                    id: 2,
-                    logPath: "/default/logs/00008003-c008-00008003-0000-test-5bb4ff6f59-p2d4j-aoplog.log",
-                    isCatch: "N"
-                },{
-                    id: 3,
-                    logPath: "/default/logs/00008003-c008-00008003-0000-test-5bb4ff6f59-p2d4j-aoplog.log",
-                    isCatch: "Y"
-                }],
-                // 多选数据
+                // 表格搜索的关键字
+                search: '',
+                // 表格日志信息
+                logDetails: [],
+                // 表格多选数据
                 multipleSelection: [],
+                // 是否显示菜单
+                showTree: true,
+                // 菜单过滤字段
+                filterText: '',
                 // 菜单数据
-                data: [{
-                    label: 'c001-0000',
-                    children: [{
-                        label: '00001001',
-                        children: [{
-                            label: 'c001-00001001-0000-1',
-                            children: []
-                        },{
-                            label: 'c001-00001001-0000-2',
-                            children: []
-                        }]
-                    }]
-                }, {
-                    label: 'c002-0000-gz',
-                    children: [{
-                        label: '00002004',
-                        children: [{
-                                label: 'c002-00002004-0000-1'
-                        },{
-                            label: 'c002-00002004-0000-2'
-                        }]
-                    }, {
-                        label: '00002005',
-                        children: [{
-                            label: 'c002-00002005-0000-1'
-                        },{
-                            label: 'c002-00002005-0000-2'
-                        }]
-                    }]
-                }, {
-                    label: 'c006-3300-gz',
-                    children: [{
-                        label: '00006017',
-                        children: [{
-                            label: 'c006-00006017-3300-1'
-                        },{
-                                label: 'c006-00006017-3300-2'
-                            }]
-                    }]
-                }],
+                data: [],
                 // 菜单的显示字段
                 defaultProps: {
                     children: 'children',
                     label: 'label'
                 },
-                // 搜索的关键字
-                search: ''
+               
             }
         },
         methods: {
             // 菜单点击事件
             handleNodeClick(data) {
-                console.log(data);
+                let that = this;
+                // 查找所有的父级
+                fetch("http://localhost:8080/queryLogDetails")
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                        if (data.code === 1) {
+                            this.logDetails = data.data;
+                        } else {
+                            that.$message.error(data.message)
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err)
+                        that.$message.error(err)
+                    })
             },
-            // 清空选中状态
+            // 菜单过滤
+            filterNode(value, data) {
+                if (!value) return true;
+                return data.label.indexOf(value) !== -1;
+            },
+            // 获取菜单列表
+            menu() {
+                let that = this;
+                fetch("http://localhost:8080/getMenu")
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                        if (data.code === 1) {
+                            that.data = data.data;
+                        } else {
+                            that.$message.error(data.message)
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err)
+                        that.$message.error(err)
+                    })
+            },
+            // 表格清空选中状态
             toggleSelection(rows) {
                 if (rows) {
                     rows.forEach(row => {
@@ -177,7 +166,7 @@
                     this.$refs.multipleTable.clearSelection();
                 }
             },
-            // 记录选中状态 
+            // 表格记录选中状态 
             handleSelectionChange(val) {
                 console.log(val)
                 this.multipleSelection = val;
@@ -186,7 +175,7 @@
             handleClick(val) {
                 console.log(val)
                 this.$message.success('日志抓取成功');
-                this.logInfo.forEach(data => {
+                this.deploymentGroup.forEach(data => {
                     if (data.id === val.id) {
                         data.isCatch = "Y"
                     }
@@ -209,7 +198,27 @@
                     a.click();
                     window.URL.revokeObjectURL(downUrl);
                 });
+            },
+        },
+        watch: {
+            filterText(val) {
+                this.$refs.tree.filter(val);
+                let that = this;
+                // 没有关键词后重新渲染tree组件
+                if (val === '') {
+                    // 销毁
+                    setTimeout(() => {
+                        this.showTree = false;
+                    }, 50)
+                    // 渲染
+                    setTimeout(() => {
+                        this.showTree = true;
+                    }, 100)
+                }
             }
+        },
+        mounted() {
+            this.menu();
         }
     })
 </script>
