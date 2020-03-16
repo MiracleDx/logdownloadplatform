@@ -2,7 +2,7 @@ package com.log.download.platform.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.log.download.platform.bo.LogInfoBO;
-import com.log.download.platform.entity.LogInfo;
+import com.log.download.platform.entity.DeploymentGroup;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.util.UploadListener;
 import com.log.download.platform.vo.MenuVO;
@@ -10,9 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +34,13 @@ import java.util.stream.Collectors;
 @Controller
 @CrossOrigin
 public class FileController {
+
+	@Resource
+	private MenuController menuController;
 	
 	@PostMapping("upload")
 	@ResponseBody
-	public ServerResponse<LogInfo> upload(MultipartFile file) throws IOException {
+	public ServerResponse<DeploymentGroup> upload(MultipartFile file) throws IOException {
 		if (file.isEmpty()) {
 			log.error("文件上传失败, 上传文件为空");
 			return ServerResponse.failure("上传失败");
@@ -47,14 +53,16 @@ public class FileController {
 		}
 		
 		UploadListener uploadListener = new UploadListener();
-		EasyExcel.read(file.getInputStream(), LogInfo.class, uploadListener).sheet().doRead();
+		EasyExcel.read(file.getInputStream(), DeploymentGroup.class, uploadListener).sheet().doRead();
 		// 转换BO
 		List<LogInfoBO> bos = uploadListener.getList().stream().map(e -> {
 			LogInfoBO bo = new LogInfoBO();
 			BeanUtils.copyProperties(e, bo);
 			return bo;
 		}).collect(Collectors.toList());
-		List<MenuVO> menu = convert2Tree(bos);
+		//Stream.iterate(0, i -> i + 1).limit(bos.size()).forEach(i -> bos.get(i).setId(i));
+		//List<MenuVO> menu = convert2Tree(bos);
+		menuController.menu = convert2Tree(bos);
 		return ServerResponse.success();
 	}
 

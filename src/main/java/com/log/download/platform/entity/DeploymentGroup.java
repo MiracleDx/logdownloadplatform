@@ -4,7 +4,7 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
 /**
- * LogInfo
+ * DeploymentGroup
  * 部署组信息实体
  * @author Dongx
  * Description:
@@ -12,7 +12,7 @@ import lombok.Data;
  * Modified by:
  */
 @Data
-public class LogInfo {
+public class DeploymentGroup {
 	
 	@ExcelProperty(value = "命名空间", index = 0)
 	private String nameSpace;
