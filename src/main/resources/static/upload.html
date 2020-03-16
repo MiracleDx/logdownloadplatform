@@ -10,7 +10,6 @@
     <el-upload
         class="upload-demo"
         ref="upload"
-        action="http://127.0.0.1:8080/upload"
         :http-request="submit"
         :on-preview="handlePreview"
         :on-change="onChange"
@@ -29,6 +28,7 @@
 </body>
 <script src="js/vue.js"></script>
 <script src="js/element.js"></script>
+<script src="js/router.js"></script>
 <script>
     new Vue({
         el: '#app',
@@ -39,10 +39,11 @@
         },
         methods: {
             submit(content) {
+                console.log(content)
                 let that = this;
                 let fd = new FormData();
                 fd.append('file', content.file);
-                fetch(content.action, {
+                fetch(router.upload, {
                     method: 'post',
                     body: fd
                 }).
