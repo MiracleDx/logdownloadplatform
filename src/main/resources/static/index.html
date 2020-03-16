@@ -196,11 +196,19 @@
                 }, 1000)
             },       
             // 下载
-            download() {
-                var that = this;
-                fetch("http://localhost:8080/download", {
-                    method:'post'
-                })
+            async download() {
+                // 使用fetch发送请求并拿到返回值
+                const response = await fetch("http://localhost:8080/download");
+                // 将文件流转为blob对象，并获取本地文件链接
+                response.blob().then((blob) => {
+                    const a = window.document.createElement('a');
+                    const downUrl = window.URL.createObjectURL(blob);// 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
+                    const filename = response.headers.get('Content-Disposition').split('filename=')[1].split('.');
+                    a.href = downUrl;
+                    a.download = `${decodeURI(filename[0])}.${filename[1]}`;
+                    a.click();
+                    window.URL.revokeObjectURL(downUrl);
+                });
             }
         }
     })

@@ -1,7 +1,6 @@
 package com.log.download.platform.controller;
 
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,7 +13,7 @@ public class DownloadLogController {
 
 
     @RequestMapping("download")
-    public HttpServletResponse download(String path, HttpServletResponse response) {
+    public void download(String path, HttpServletResponse response) {
         try {
             path = "d:/test.log";
             // path是指欲下载的文件的路径。
@@ -42,7 +41,6 @@ public class DownloadLogController {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        return response;
     }
 
     //@RequestMapping("download")
