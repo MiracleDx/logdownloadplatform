@@ -1,4 +1,4 @@
-package com.log.download.platform.contorller;
+package com.log.download.platform.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.log.download.platform.bo.LogInfoBO;
