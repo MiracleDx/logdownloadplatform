@@ -197,7 +197,10 @@
             },       
             // 下载
             download() {
-                console.log(this.multipleSelection)
+                var that = this;
+                fetch("http://localhost:8080/download", {
+                    method:'post'
+                })
             }
         }
     })
