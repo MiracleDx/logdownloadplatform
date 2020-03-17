@@ -25,7 +25,7 @@
     <el-container style="height: 100%; border: 1px solid #eee; display: flex">
         
         <!-- 侧边栏 -->
-        <el-aside width="250px" style="background-color: rgb(238, 241, 246)">
+        <el-aside width="350px" style="background-color: rgb(238, 241, 246)">
             <el-input
                     placeholder="输入关键字进行过滤"
                     v-model="filterText">
@@ -117,22 +117,35 @@
         methods: {
             // 菜单点击事件
             handleNodeClick(data) {
-                let that = this;
+                console.log(data)
                 // 查找所有的父级
-                fetch(router.queryLogDetails)
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data)
-                        if (data.code === 1) {
-                            this.logDetails = data.data;
-                        } else {
-                            that.$message.error(data.message)
-                        }
-                    })
-                    .catch(err => {
-                        console.log(err)
-                        that.$message.error(err)
-                    })
+                if (data.ips !== undefined && data.ips.length > 0) {
+                    const loading = this.$loading({
+                        lock: true,
+                        text: 'Loading',
+                        spinner: 'el-icon-loading',
+                        background: 'rgba(0, 0, 0, 0.7)'
+                    });
+                    fetch(router.queryLogDetails)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data)
+                            loading.close();
+                            if (data.code === 1) {
+                                this.logDetails = data.data;
+                            } else {
+                                this.$message.error(data.message)
+                            }
+                        })
+                        .catch(err => {
+                            loading.close();
+                            console.log(err)
+                            this.$message.error(err)
+                        })
+                } else if (data.ips !== undefined && data.ips.length === 0) {
+                    this.logDetails = []
+                    this.$message.error("没有对应部署组IP")
+                }
             },
             // 菜单过滤
             filterNode(value, data) {
@@ -141,20 +154,19 @@
             },
             // 获取菜单列表
             menu() {
-                let that = this;
                 fetch(router.getMenu)
                     .then(response => response.json())
                     .then(data => {
                         console.log(data)
                         if (data.code === 1) {
-                            that.data = data.data;
+                            this.data = data.data;
                         } else {
-                            that.$message.error(data.message)
+                            this.$message.error(data.message)
                         }
                     })
                     .catch(err => {
                         console.log(err)
-                        that.$message.error(err)
+                        this.$message.error(err)
                     })
             },
             // 表格清空选中状态
@@ -175,12 +187,7 @@
             // 抓取日志
             handleClick(val) {
                 console.log(val)
-                this.$message.success('日志抓取成功');
-                this.deploymentGroup.forEach(data => {
-                    if (data.id === val.id) {
-                        data.isCatch = "Y"
-                    }
-                })
+                this.$message.success('日志下载成功');
                 setTimeout(() => {
                     this.$message.error('日志抓取失败');
                 }, 1000)
@@ -204,7 +211,6 @@
         watch: {
             filterText(val) {
                 this.$refs.tree.filter(val);
-                let that = this;
                 // 没有关键词后重新渲染tree组件
                 if (val === '') {
                     // 销毁
