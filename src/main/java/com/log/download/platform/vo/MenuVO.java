@@ -1,5 +1,6 @@
 package com.log.download.platform.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.util.List;
@@ -16,6 +17,9 @@ import java.util.List;
 public class MenuVO {
 	
 	private String label;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private List<String> ips;
 	
 	private List<MenuVO> children;
 }

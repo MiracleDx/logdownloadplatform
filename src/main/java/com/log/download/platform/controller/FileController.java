@@ -1,7 +1,7 @@
 package com.log.download.platform.controller;
 
 import com.alibaba.excel.EasyExcel;
-import com.log.download.platform.bo.LogInfoBO;
+import com.log.download.platform.bo.DeploymentGroupBO;
 import com.log.download.platform.entity.DeploymentGroup;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.util.UploadListener;
@@ -46,7 +46,7 @@ public class FileController {
 			return ServerResponse.failure("上传失败");
 		}
 		
-		String fileName = "日志目录.xlsx";
+		String fileName = "项目基本信息情况的副本.xlsx";
 		if (!StringUtils.equals(file.getOriginalFilename(), fileName)) {
 			log.error("文件上传失败, 上传文件不正确, {}", file.getOriginalFilename());
 			return ServerResponse.failure("上传失败, 请上传正确的文件");
@@ -55,8 +55,8 @@ public class FileController {
 		UploadListener uploadListener = new UploadListener();
 		EasyExcel.read(file.getInputStream(), DeploymentGroup.class, uploadListener).sheet().doRead();
 		// 转换BO
-		List<LogInfoBO> bos = uploadListener.getList().stream().map(e -> {
-			LogInfoBO bo = new LogInfoBO();
+		List<DeploymentGroupBO> bos = uploadListener.getList().stream().map(e -> {
+			DeploymentGroupBO bo = new DeploymentGroupBO();
 			BeanUtils.copyProperties(e, bo);
 			return bo;
 		}).collect(Collectors.toList());
@@ -71,10 +71,10 @@ public class FileController {
 	 * @param bos
 	 * @return
 	 */
-	private List<MenuVO> convert2Tree(List<LogInfoBO> bos) {
+	private List<MenuVO> convert2Tree(List<DeploymentGroupBO> bos) {
 		// 一级菜单树
 		List<MenuVO> vos = new ArrayList<>();
-		for (LogInfoBO bo : bos) {
+		for (DeploymentGroupBO bo : bos) {
 			MenuVO vo = new MenuVO();
 			vo.setLabel(bo.getNameSpace());
 			vo.setChildren(new ArrayList<>());
@@ -83,29 +83,49 @@ public class FileController {
 			}
 		}
 		// 获取一级菜单
-		Map<String, List<LogInfoBO>> firstMenu = bos.stream().collect(Collectors.groupingBy(LogInfoBO::getNameSpace));
+		Map<String, List<DeploymentGroupBO>> firstMenu = bos.stream().collect(Collectors.groupingBy(DeploymentGroupBO::getNameSpace));
 		// 获取二级菜单
-		Map<String, List<LogInfoBO>> secondMenu = bos.stream().collect(Collectors.groupingBy(LogInfoBO::getServerCode));
+		Map<String, List<DeploymentGroupBO>> secondMenu = bos.stream().collect(Collectors.groupingBy(DeploymentGroupBO::getApplicationName));
+		// 获取各部署组对应的IP清单
+		Map<String, List<DeploymentGroupBO>> groupMap = bos.stream().collect(Collectors.groupingBy(DeploymentGroupBO::getGroup));
 		
 		// 二级菜单树
 		for (MenuVO first : vos) {
 			// 从一级菜单中获取对应的二级菜单
-			List<LogInfoBO> seconds = firstMenu.get(first.getLabel());
+			List<DeploymentGroupBO> seconds = firstMenu.get(first.getLabel());
+			// 增加一级菜单的中文名称
+			first.setLabel(first.getLabel() + "-" + seconds.get(0).getProjectName());
 			// 构造二级菜单
-			for (LogInfoBO secondBO : seconds) {
+			for (DeploymentGroupBO secondBO : seconds) {
 				MenuVO second = new MenuVO();
 				// 获取服务编码
-				String serverCode = secondBO.getServerCode();
-				second.setLabel(serverCode);
+				String serverCode = secondBO.getApplicationName();
+				second.setLabel(serverCode + "-" + secondBO.getServerName());
 				// 从二级菜单中获取三级菜单
-				List<LogInfoBO> thirdMenu = secondMenu.get(serverCode);
+				List<DeploymentGroupBO> thirdMenu = secondMenu.get(serverCode);
 				List<MenuVO> thirds = new ArrayList<>();
 				// 构造三级菜单
-				for (LogInfoBO thirdBO : thirdMenu) {
+				for (DeploymentGroupBO thirdBO : thirdMenu) {
 					MenuVO third = new MenuVO();
-					third.setLabel(thirdBO.getGroup());
+					String group = thirdBO.getGroup();
+					third.setLabel(group);
 					third.setChildren(new ArrayList<>());
-					thirds.add(third);
+					third.setIps(groupMap.get(group).stream().map(DeploymentGroupBO::getIp).filter(StringUtils::isNoneBlank).collect(Collectors.toList()));
+
+					// 判断总/分公司
+					String[] split = group.split("-");
+					boolean flag;
+					// 普通中心
+					if (split.length == 4) {
+						flag = first.getLabel().contains(split[2]);
+					// ua 前台页面 前台应用
+					} else {
+						flag = true;
+					}
+					
+					if (!thirds.contains(third) && flag) {
+						thirds.add(third);
+					}
 				}
 				second.setChildren(thirds); 
 				
