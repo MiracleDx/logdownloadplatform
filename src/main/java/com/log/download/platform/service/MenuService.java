@@ -7,7 +7,9 @@ import com.log.download.platform.util.UploadListener;
 import com.log.download.platform.vo.MenuVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -50,11 +52,13 @@ public class MenuService {
 			return bo;
 		}).collect(Collectors.toList());
 		//Stream.iterate(0, i -> i + 1).limit(bos.size()).forEach(i -> bos.get(i).setId(i));
-		//List<MenuVO> menu = convert2Tree(bos);
-		this.menu = convert2Tree(bos);
+		
+		// 获取aop代理对象
+		MenuService o = (MenuService) AopContext.currentProxy();
+		o.menu = convert2Tree(bos);
 		log.info("菜单树转换成功");
 		in.close();
-		return this.menu;
+		return menu;
 	}
 
 	/**
@@ -99,6 +103,14 @@ public class MenuService {
 				for (DeploymentGroupBO thirdBO : thirdMenu) {
 					MenuVO third = new MenuVO();
 					String group = thirdBO.getGroup();
+					// 取中心名称
+					String cluster = thirdBO.getCluster();
+					String[] strs = cluster.split("-");
+					if (strs != null && strs.length > 0) {
+						third.setCluster(strs[0]);
+					} else {
+						third.setCluster(cluster.substring(0, 2));
+					}
 					third.setLabel(group);
 					third.setChildren(new ArrayList<>());
 					third.setIps(groupMap.get(group).stream().map(DeploymentGroupBO::getIp).filter(StringUtils::isNoneBlank).collect(Collectors.toList()));

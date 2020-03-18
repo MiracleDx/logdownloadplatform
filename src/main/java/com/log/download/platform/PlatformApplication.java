@@ -7,12 +7,14 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.*;
 
 @Slf4j
+@EnableAspectJAutoProxy(exposeProxy = true)
 @SpringBootApplication
 public class PlatformApplication implements ApplicationRunner {
 
