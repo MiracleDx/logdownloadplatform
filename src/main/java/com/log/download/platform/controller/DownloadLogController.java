@@ -2,8 +2,9 @@ package com.log.download.platform.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.google.gson.JsonObject;
+import com.log.download.platform.common.BkEnum;
+import com.log.download.platform.dto.DownLoadDTO;
+import com.log.download.platform.dto.HostDTO;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -13,14 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import static org.springframework.util.StreamUtils.BUFFER_SIZE;
+import java.util.*;
 
 
 @RestController
@@ -33,10 +27,29 @@ public class DownloadLogController {
     private static String APPCODE = "bksaas";
     private static String APPSECRET = "470c6438-1037-4a9e-9016-e520eaa7ae99";
     private static String TOKEN = "V5AFnjAkKvRuOvineSYiaVni3HmFTmCOvDrbjE4cIv0";
-    private static String zipPath = "";
+
+    private static String bk_app_code = "logdownder";
+    private static String bk_app_secret = "855d69c9-2ed4-4d08-9a88-7a56a2564e12";
+    private static String bk_token = "zWcmCWfovsudD1N9EQ_gzl6Z5ZNIlG09vFH8c8JGT_s";
+    private static String bk_username = "";
+    private static int script_id_1 = 8302;
+    private static int script_id_2 = 0;
+    //base64编码
+    final Base64.Encoder encoder = Base64.getEncoder();
+
+    private BkEnum bkEnum;
+
+
+    public void downloadLog(DownLoadDTO downLoadDTO){
+        String label = downLoadDTO.getLabel();
+        String[] ips = downLoadDTO.getIps();
+        HashMap<String, Object> params = new HashMap<>();
+    }
 
     @RequestMapping("download")
     public void download(String path, HttpServletResponse response) {
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
         try {
             path = "d:/test.log";
             // path是指欲下载的文件的路径。
@@ -47,22 +60,28 @@ public class DownloadLogController {
             String ext = filename.substring(filename.lastIndexOf(".") + 1).toUpperCase();
 
             // 以流的形式下载文件。
-            InputStream fis = new BufferedInputStream(new FileInputStream(path));
-            byte[] buffer = new byte[fis.available()];
-            fis.read(buffer);
-            fis.close();
+            inputStream = new BufferedInputStream(new FileInputStream(path));
+            byte[] buffer = new byte[inputStream.available()];
+            inputStream.read(buffer);
+
             // 清空response
             response.reset();
             // 设置response的Header
             response.addHeader("Content-Disposition", "attachment;filename=" + new String(filename.getBytes()));
             response.addHeader("Content-Length", "" + file.length());
-            OutputStream toClient = new BufferedOutputStream(response.getOutputStream());
+            outputStream = new BufferedOutputStream(response.getOutputStream());
             response.setContentType("application/octet-stream");
-            toClient.write(buffer);
-            toClient.flush();
-            toClient.close();
+            outputStream.write(buffer);
         } catch (IOException ex) {
             ex.printStackTrace();
+        } finally {
+            try {
+                inputStream.close();
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -73,29 +92,20 @@ public class DownloadLogController {
      */
     @PostMapping("/executeScript")
     @ResponseBody
-    public static String executeScript() {
+    public Boolean executeScript(String label, String[] ips, int script_id) {
         RestTemplate restTemplate = new RestTemplate();
         //远端接口设置
         String url = "https://bkpaas.piccit.com.cn/api/c/compapi/v2/job/fast_execute_script/";
-        //请求头
-        HttpHeaders headers = new HttpHeaders();
         //配置参数
-        Map<String, Object> params = new HashMap<>();
-        params.put("bk_app_code", "");
-        params.put("bk_app_secret", "");
-        params.put("bk_token", "");
-        params.put("ip_list", new ArrayList<>());
-        HttpEntity httpEntity = new HttpEntity(params,headers);
-        //发送请求调用接口
-        ResponseEntity<String> request = restTemplate.postForEntity(url,httpEntity, String.class);
-        JSONObject resultData = JSONObject.parseObject(request.getBody());
-        Boolean result = Boolean.valueOf(resultData.getJSONObject("").toString());
-        return "";
+        String params = getFastExecuteScriptParams(label, ips, script_id);
+        JSONObject resultData = callLanJingInterface(url,params);
+        Boolean result = Boolean.valueOf(resultData.getJSONObject("result").toString());
+        return result;
     }
 
 
     //调用蓝鲸接口
-    public String callLanJingInterface(String url,HashMap<String, Object> params){
+    public JSONObject callLanJingInterface(String url,String params){
         RestTemplate restTemplate = new RestTemplate();
         //请求头
         HttpHeaders headers = new HttpHeaders();
@@ -103,103 +113,66 @@ public class DownloadLogController {
         //发送请求调用接口
         ResponseEntity<String> request = restTemplate.postForEntity(url,httpEntity, String.class);
         JSONObject resultData = JSONObject.parseObject(request.getBody());
-        Boolean result = Boolean.valueOf(resultData.getJSONObject("").toString());
-        if (result) {
-            return "success";
-        } else {
-            return "false";
+        return resultData;
+    }
+
+    //蓝鲸查出日志接口
+    public JSONObject getInstanceLog(String url,String params) {
+        JSONObject json = callLanJingInterface(url,params);
+        Boolean result = Boolean.valueOf(json.getJSONObject("result").toString());
+        String log_content = json.getJSONArray("data").getJSONObject(0).getJSONArray("step_results").getJSONObject(0).getJSONArray("ip_logs").getJSONObject(0).getJSONObject("log_content").toString();
+        return json;
+    }
+
+    /**
+     * 获取快速执行脚本入参
+     * @param label
+     * @param ips
+     * @return
+     */
+    public String getFastExecuteScriptParams(String label, String[] ips, int script_id){
+        BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
+        int bk_biz_id = bkEnum.getCode();
+        String script_param = "YzAxNC0zMzAwIGMwMTQtMDEwMTQwMjAtMzMwMC0x";
+
+        String params = "{\n" +
+                "\t\"bk_app_code\": \""+bk_app_code+"\",\n" +
+                "\t\"bk_app_secret\": \""+bk_app_secret+"\",\n" +
+                "\t\"bk_token\": \""+bk_token+"\",\n" +
+                "\t\"bk_biz_id\": "+ bk_biz_id +",\n" +
+                "\t\"script_id\": "+ script_id +",\n" +
+                "\t\"script_param\": \""+script_param+"\",\n" +
+                "\t\"script_timeout\": 1000,\n" +
+                "\t\"account\": \"root\",\n" +
+                "\t\"is_param_sensitive\": 0,\n" +
+                "}";
+        List<Map<String,Object>> list = new ArrayList<>();
+        HostDTO hostDTO = new HostDTO();
+        for (String ip : ips){
+            Map<String, Object> hostMap = new HashMap<>();
+            hostMap.put("bk_cloud_id", 0);
+            hostMap.put("ip", ip);
+            list.add(hostMap);
+            hostDTO.setIp_list(list);
         }
+        String ipListJson = JSONObject.toJSON(hostDTO).toString();
+        // 合并两段JSON
+        JSONObject json = JSONObject.parseObject(params);
+        JSONObject ipJson = JSONObject.parseObject(ipListJson);
+        JSONObject resultParam = new JSONObject();
+        resultParam.putAll(json);
+        resultParam.putAll(ipJson);
+        String paramResult = resultParam.toJSONString();
+
+        return paramResult;
     }
 
-    public File downloadExcel (HttpServletRequest request, HttpServletResponse response) throws IOException {
-        //提供下载文件前进行压缩，即服务端生成压缩文件
-        String path = "";
-        File file = new File(zipPath);
-        FileOutputStream fos = new FileOutputStream(file);
-        toZip(path, fos, true);
-        //1.获取要下载的文件的绝对路径
-        String realPath = zipPath;
-        //2.获取要下载的文件名
-        String fileName = realPath.substring(realPath.lastIndexOf(File.separator)+1);
-        response.reset();
-        response.setCharacterEncoding("UTF-8");
-        response.setContentType("application/octet-stream");
-        //3.设置content-disposition响应头控制浏览器以下载的形式打开文件
-        response.addHeader("Content-Disposition","attachment;filename=" + new String(fileName.getBytes(),"utf-8"));
-        //获取文件输入流
-        InputStream in = new FileInputStream(realPath);
-        int len = 0;
-        byte[] buffer = new byte[1024];
-        OutputStream out = response.getOutputStream();
-        while ((len = in.read(buffer)) > 0) {
-            //将缓冲区的数据输出到客户端浏览器
-            out.write(buffer,0,len);
-        } in.close(); return file;
 
-    }
 
-    //压缩方法
-    public static void toZip(String srcDir, OutputStream out, boolean KeepDirStructure) throws RuntimeException{
-        long start = System.currentTimeMillis();
-        ZipOutputStream zos = null ;
-        try {
-            zos = new ZipOutputStream(out);
-            File sourceFile = new File(srcDir);
-            compress(sourceFile,zos,sourceFile.getName(),KeepDirStructure);
-            long end = System.currentTimeMillis();
-            System.out.println("压缩完成，耗时：" + (end - start) +" ms");
-        } catch (Exception e) {
-            throw new RuntimeException("zip error from ZipUtils",e);
-        }finally{
-            if(zos != null){
-                try {
-                zos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
-    private static void compress(File sourceFile, ZipOutputStream zos, String name, boolean KeepDirStructure) throws Exception{
-        byte[] buf = new byte[BUFFER_SIZE];
-        if(sourceFile.isFile()){
-            // 向zip输出流中添加一个zip实体，构造器中name为zip实体的文件的名字
-            zos.putNextEntry(new ZipEntry(name));
-            // copy文件到zip输出流中
-            int len;
-            FileInputStream in = new FileInputStream(sourceFile);
-            while ((len = in.read(buf)) != -1){
-                zos.write(buf, 0, len);
-            }
-            // Complete the entry
-            zos.closeEntry();
-            in.close();
-        } else {
-            File[] listFiles = sourceFile.listFiles();
-            if (listFiles == null || listFiles.length == 0) {
-                // 需要保留原来的文件结构时,需要对空文件夹进行处理
-                if (KeepDirStructure) {
-                    // 空文件夹的处理
-                    zos.putNextEntry(new ZipEntry(name + "/"));
-                    // 没有文件，不需要文件的copy
-                    zos.closeEntry();
-                }
-            } else {
-                for (File file : listFiles) {
-                    // 判断是否需要保留原来的文件结构
-                    if (KeepDirStructure) {
-                        // 注意：file.getName()前面需要带上父文件夹的名字加一斜杠, // 不然最后压缩包中就不能保留原来的文件结构,即：所有文件都跑到压缩包根目录下了
-                        compress(file, zos, name + "/" + file.getName(), KeepDirStructure);
-                    } else {
-                        compress(file, zos, file.getName(), KeepDirStructure);
-                    }
 
-                }
-            }
-        }
 
-    }
+
 
 
 
