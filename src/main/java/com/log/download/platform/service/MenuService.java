@@ -1,59 +1,48 @@
-package com.log.download.platform.controller;
+package com.log.download.platform.service;
 
 import com.alibaba.excel.EasyExcel;
 import com.log.download.platform.bo.DeploymentGroupBO;
 import com.log.download.platform.entity.DeploymentGroup;
-import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.util.UploadListener;
 import com.log.download.platform.vo.MenuVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * FileController
- * 上传下载控制器
+ * MenuService
+ *
  * @author Dongx
  * Description:
- * Created in: 2020-03-13 10:37
+ * Created in: 2020-03-18 9:55
  * Modified by:
  */
 @Slf4j
-@Controller
-@CrossOrigin
-public class FileController {
+@Service
+public class MenuService {
 
-	@Resource
-	private MenuController menuController;
+	/**
+	 * 菜单树
+	 */
+	public List<MenuVO> menu = new ArrayList<>();
 	
-	@PostMapping("upload")
-	@ResponseBody
-	public ServerResponse<DeploymentGroup> upload(MultipartFile file) throws IOException {
-		if (file.isEmpty()) {
-			log.error("文件上传失败, 上传文件为空");
-			return ServerResponse.failure("上传失败");
-		}
-		
-		String fileName = "项目基本信息情况的副本.xlsx";
-		if (!StringUtils.equals(file.getOriginalFilename(), fileName)) {
-			log.error("文件上传失败, 上传文件不正确, {}", file.getOriginalFilename());
-			return ServerResponse.failure("上传失败, 请上传正确的文件");
-		}
-		
+	/**
+	 * 获取菜单树
+	 * @param in
+	 * @return
+	 * @throws IOException
+	 */
+	public List<MenuVO> getMenu(InputStream in) throws IOException {
 		UploadListener uploadListener = new UploadListener();
-		EasyExcel.read(file.getInputStream(), DeploymentGroup.class, uploadListener).sheet().doRead();
+		EasyExcel.read(in, DeploymentGroup.class, uploadListener).sheet().doRead();
 		// 转换BO
 		List<DeploymentGroupBO> bos = uploadListener.getList().stream().map(e -> {
 			DeploymentGroupBO bo = new DeploymentGroupBO();
@@ -62,8 +51,10 @@ public class FileController {
 		}).collect(Collectors.toList());
 		//Stream.iterate(0, i -> i + 1).limit(bos.size()).forEach(i -> bos.get(i).setId(i));
 		//List<MenuVO> menu = convert2Tree(bos);
-		menuController.menu = convert2Tree(bos);
-		return ServerResponse.success();
+		this.menu = convert2Tree(bos);
+		log.info("菜单树转换成功");
+		in.close();
+		return this.menu;
 	}
 
 	/**
@@ -88,7 +79,7 @@ public class FileController {
 		Map<String, List<DeploymentGroupBO>> secondMenu = bos.stream().collect(Collectors.groupingBy(DeploymentGroupBO::getApplicationName));
 		// 获取各部署组对应的IP清单
 		Map<String, List<DeploymentGroupBO>> groupMap = bos.stream().collect(Collectors.groupingBy(DeploymentGroupBO::getGroup));
-		
+
 		// 二级菜单树
 		for (MenuVO first : vos) {
 			// 从一级菜单中获取对应的二级菜单
@@ -118,17 +109,17 @@ public class FileController {
 					// 普通中心
 					if (split.length == 4) {
 						flag = first.getLabel().contains(split[2]);
-					// ua 前台页面 前台应用
+						// ua 前台页面 前台应用
 					} else {
 						flag = true;
 					}
-					
+
 					if (!thirds.contains(third) && flag) {
 						thirds.add(third);
 					}
 				}
-				second.setChildren(thirds); 
-				
+				second.setChildren(thirds);
+
 				// 一级菜单中不包含二级时添加
 				if (!first.getChildren().contains(second)) {
 					first.getChildren().add(second);
@@ -137,6 +128,4 @@ public class FileController {
 		}
 		return vos;
 	}
-	
-	
 }
