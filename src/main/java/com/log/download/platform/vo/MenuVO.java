@@ -21,5 +21,8 @@ public class MenuVO {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private List<String> ips;
 	
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String cluster;
+	
 	private List<MenuVO> children;
 }
