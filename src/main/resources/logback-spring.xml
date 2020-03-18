@@ -28,7 +28,7 @@
     <!--滚动策略-->
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
       <!--历史文件名-->
-      <fileNamePattern>${LOG_FILE}/${springAppName}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <fileNamePattern>${LOG_FILE}/${springAppName}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
       <!--保留 30 天的日志-->
       <maxHistory>30</maxHistory>
       <!--单个日志文件大小-->
@@ -55,7 +55,7 @@
     <!--滚动策略-->
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
       <!--历史文件名-->
-      <fileNamePattern>${LOG_FILE}/${springAppName}-INFO-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <fileNamePattern>${LOG_FILE}/${springAppName}-INFO.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
       <!--保留 30 天的日志-->
       <maxHistory>30</maxHistory>
       <!--单个日志文件大小-->
