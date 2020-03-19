@@ -100,7 +100,7 @@ public class CallBKInterfaceService {
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
                 "\t\"bk_token\": \"" + bk_token + "\",\n" +
                 "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
-                "\t\"job_instance_id\": " + job_instance_id + ",\n" +
+                "\t\"job_instance_id\": " + job_instance_id + "\n" +
                 "}";
         return params;
 
