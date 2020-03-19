@@ -5,6 +5,7 @@ import com.log.download.platform.common.BkEnum;
 import com.log.download.platform.dto.HostDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,18 @@ import java.util.*;
 public class CallBKInterfaceService {
 
 
-    private static String bk_app_code = "logdownder";
-    private static String bk_app_secret = "855d69c9-2ed4-4d08-9a88-7a56a2564e12";
-    private static String bk_token = "zWcmCWfovsudD1N9EQ_gzl6Z5ZNIlG09vFH8c8JGT_s";
-    private static int script_id = 8403;
+    @Value("${bk_app_code}")
+    private static String bk_app_code;
+
+    @Value("${bk_app_secret}")
+    private static String bk_app_secret;
+
+    @Value("${bk_token}")
+    private static String bk_token;
+
+    @Value("${getlogpath_script_id}")
+    private static int script_id;
+
     //base64编码
     final Base64.Encoder encoder = Base64.getEncoder();
 
@@ -58,8 +67,6 @@ public class CallBKInterfaceService {
         int bk_biz_id = bkEnum.getCode();
         byte[] content = param.getBytes();
         String script_param = encoder.encodeToString(content);
-
-
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
@@ -105,16 +112,4 @@ public class CallBKInterfaceService {
         return params;
 
     }
-
-    public static void main(String[] args) {
-        QueryLogDetailDTO queryLogDetailDTO = new QueryLogDetailDTO();
-        queryLogDetailDTO.setLabel("c014");
-        queryLogDetailDTO.setBkParam("c014-3300 c014-01014020-3300-1");
-        String[] ip = {"10.2.3.1","10.11.2.3"};
-        queryLogDetailDTO.setIps(ip);
-        CallBKInterfaceService bk = new CallBKInterfaceService();
-        String test = bk.getFastExecuteScriptParams(queryLogDetailDTO);
-        System.out.println(test);
-    }
-
 }
