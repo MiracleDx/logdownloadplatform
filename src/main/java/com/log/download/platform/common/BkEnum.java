@@ -38,5 +38,4 @@ public enum BkEnum {
 	private String business;
 	
 	private Integer code;
-
 }
