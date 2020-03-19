@@ -134,7 +134,8 @@
                         },
                         body: JSON.stringify({
                             "label": data.cluster,
-                            "ips": data.ips
+                            "ips": data.ips,
+                            "bkParam": data.bkParam
                         })
                     })
                         .then(response => response.json())

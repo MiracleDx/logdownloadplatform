@@ -22,4 +22,9 @@ public class QueryLogDetailDTO {
 	 * ip集合
 	 */
 	private String[] ips;
+
+	/**
+	 * 蓝鲸需要的参数
+	 */
+	private String bkParam;
 }

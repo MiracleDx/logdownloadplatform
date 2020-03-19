@@ -23,6 +23,9 @@ public class MenuVO {
 	
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String cluster;
-	
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String bkParam;
+
 	private List<MenuVO> children;
 }
