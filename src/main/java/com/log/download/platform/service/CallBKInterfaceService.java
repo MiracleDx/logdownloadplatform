@@ -21,7 +21,7 @@ public class CallBKInterfaceService {
     private static String bk_app_code = "logdownder";
     private static String bk_app_secret = "855d69c9-2ed4-4d08-9a88-7a56a2564e12";
     private static String bk_token = "zWcmCWfovsudD1N9EQ_gzl6Z5ZNIlG09vFH8c8JGT_s";
-    private static int script_id = 8302;
+    private static int script_id = 8403;
     //base64编码
     final Base64.Encoder encoder = Base64.getEncoder();
 
@@ -104,6 +104,17 @@ public class CallBKInterfaceService {
                 "}";
         return params;
 
+    }
+
+    public static void main(String[] args) {
+        QueryLogDetailDTO queryLogDetailDTO = new QueryLogDetailDTO();
+        queryLogDetailDTO.setLabel("c014");
+        queryLogDetailDTO.setBkParam("c014-3300 c014-01014020-3300-1");
+        String[] ip = {"10.2.3.1","10.11.2.3"};
+        queryLogDetailDTO.setIps(ip);
+        CallBKInterfaceService bk = new CallBKInterfaceService();
+        String test = bk.getFastExecuteScriptParams(queryLogDetailDTO);
+        System.out.println(test);
     }
 
 }

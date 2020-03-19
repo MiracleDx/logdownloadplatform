@@ -1,6 +1,5 @@
 package com.log.download.platform.controller;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.log.download.platform.dto.QueryLogDetailDTO;
 import com.log.download.platform.response.ServerResponse;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -81,22 +79,24 @@ public class LogController {
         //执行脚本，并获取结果
         JSONObject result = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_execute_script/", params);
         //如果执行成功，查询执行日志
-        if (Boolean.valueOf(result.getJSONObject("result").toString())) {
-
-            JSONArray data = result.getJSONArray("data");
-            List<LogDetailVO> list = new ArrayList<>();
-            LogDetailVO logDetail = new LogDetailVO();
-            if (data != null) {
-                for (int i = 0; i < data.size(); i++) {
-                    logDetail.setId(i + 1);
-                    logDetail.setPath(data.getString(i));
+        if (result.getBoolean("result")) {
+            int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
+            String params_log = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), job_instance_id);
+            JSONObject result_log = callBKInterfaceService.callLanJingInterface("http:// paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", params_log);
+            if (result_log.getBoolean("result")) {
+                String log_content = result_log.getJSONArray("data").getJSONObject(0).getJSONArray("step_results").getJSONObject(0).getJSONArray("ip_logs").getJSONObject(0).getJSONObject("log_content").toString();
+                //处理log为路径
+                String[] paths = log_content.split("\\n");
+                LogDetailVO logDetail = new LogDetailVO();
+                List<LogDetailVO> list = null;
+                for (int i = 1; i <= paths.length; i++) {
+                    logDetail.setId(i);
+                    logDetail.setPath(paths[i - 1]);
                     list.add(logDetail);
                 }
+                return ServerResponse.success(list);
             }
-            return ServerResponse.success(list);
         }
         return ServerResponse.failure("执行脚本失败");
     }
-
-
 }
