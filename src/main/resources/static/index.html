@@ -43,7 +43,7 @@
             <el-main style="height: 100%">
                 <el-table
                         ref="multipleTable"
-                        :data="logDetails.filter(data => !search || data.path.toLowerCase().includes(search.toLowerCase()))"
+                        :data="logDetails.slice((curPage - 1) * pageSize, curPage * pageSize).filter(data => !search || data.path.toLowerCase().includes(search.toLowerCase()))"
                         border 
                         style="width: 100%"
                         @selection-change="handleSelectionChange">
@@ -52,7 +52,7 @@
                             type="selection"
                             width="55">
                     </el-table-column>
-                    <el-table-column prop="ip"  label="CVMIP">
+                    <el-table-column prop="ip"  label="CVM_IP">
                         <template slot-scope="scope">
                             <!-- 单行点击事件 -->
                             <div @click="toggleSelection([scope.row])">{{ scope.row.ip }}</div>
@@ -66,7 +66,7 @@
                             </template>
                     </el-table-column>
                     
-                    <el-table-column prop="createTime"  label="文件生成时间">
+                    <el-table-column prop="createTime"  label="生成时间">
                         <template slot-scope="scope">
                             <!-- 单行点击事件 -->
                             <div @click="toggleSelection([scope.row])">{{ scope.row.createTime }}</div>
@@ -89,6 +89,17 @@
                         </template>
                     </el-table-column>
                 </el-table>
+
+                <!-- 分页 -->
+                <el-pagination 
+                        background
+                        layout="prev, pager, next, sizes, total, jumper"
+                        :page-sizes="[5, 10, 15, 20]" 
+                        :page-size="pageSize"
+                        :total="logDetails.length"
+                        @current-change="handleCurrentChange"  
+                        @size-change="handleSizeChange">
+                </el-pagination>
                 
                 <!-- 底部按钮 -->
                 <div style="margin-top: 20px">
@@ -108,6 +119,8 @@
         el: '#app',
         data() {
             return {
+                pageSize: 10,
+                curPage: 1,
                 // 表格搜索的关键字
                 search: '',
                 // 表格日志信息
@@ -125,7 +138,6 @@
                     children: 'children',
                     label: 'label'
                 },
-               
             }
         },
         methods: {
@@ -158,6 +170,7 @@
                             if (data.code === 1) {
                                 this.logDetails = data.data;
                             } else {
+                                this.logDetails = [];
                                 this.$message.error(data.message)
                             }
                         })
@@ -249,6 +262,12 @@
                 //     a.click();
                 //     window.URL.revokeObjectURL(downUrl);
                 // });
+            },
+            handleCurrentChange(val) {
+                this.curPage = val;
+            },
+            handleSizeChange(val) {
+                this.pageSize = val;
             },
         },
         watch: {
