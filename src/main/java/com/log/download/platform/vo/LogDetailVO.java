@@ -12,8 +12,12 @@ import lombok.Data;
  */
 @Data
 public class LogDetailVO {
+	
+	private String ip;
 
 	private Integer id;
 
 	private String path;
+	
+	private String createTime;
 }
