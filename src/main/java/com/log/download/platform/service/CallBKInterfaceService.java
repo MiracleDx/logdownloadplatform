@@ -5,6 +5,7 @@ import com.log.download.platform.common.BkEnum;
 import com.log.download.platform.dto.DownLoadDTO;
 import com.log.download.platform.dto.HostDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
+import com.log.download.platform.response.ServerResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -120,7 +121,7 @@ public class CallBKInterfaceService {
         String label = downLoadDTO.getLabel();
         BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
         int bk_biz_id = bkEnum.getCode();
-        String ips = downLoadDTO.getIps();
+        String ip = downLoadDTO.getIp();
         String path = downLoadDTO.getPath();
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
@@ -129,14 +130,14 @@ public class CallBKInterfaceService {
                 "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
                 "\t\"file_target_path\": \"/tmp/\",\n" +
                 "\t\"account\": \"root\",\n" +
-                "\t\"ip_list\": \"[{\"bk_cloud_id\": 0,\"ip\": \"10.157.4.193\"}]\",\n" +
+                "\t\"ip_list\": \"[{\"bk_cloud_id\": 0,\"ip\": \"" + ip + "\"}]\",\n" +
                 "\t\"file_source\": [{\n" +
                 "\t\t\"files\":[\"" + path + "\"],\n" +
                 "\t\t\"account\": \"ubuntu\",\n" +
                 "\t\t\"ip_list\": [\n";
         String iplist = "\t\t{\n" +
                         "\t\t\t\"bk_cloud_id\": 0,\n" +
-                        "\t\t\t\"ip\": \"10.157.4.240\"\n" +
+                        "\t\t\t\"ip\": \"10.155.27.48\"\n" +
                         "\t\t}\n";
 
         params += iplist;
@@ -149,16 +150,16 @@ public class CallBKInterfaceService {
      * @param path
      * @param response
      */
-    public void download(String path, HttpServletResponse response) {
+    public void download(String ip, String path, HttpServletResponse response) {
         InputStream inputStream = null;
         OutputStream outputStream = null;
         try {
-            path = "d:/test.log";
+            path = "/tmp" + File.separator + "0_" + ip + File.separator + path;
             // path是指欲下载的文件的路径。
             File file = new File(path);
             if (!file.exists()) {
                 log.error("文件不存在");
-                return;
+                response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("文件" + path + "不存在")));
             }
             // 取得文件名。
             String filename = file.getName();
@@ -185,7 +186,6 @@ public class CallBKInterfaceService {
                 inputStream.close();
                 outputStream.flush();
                 outputStream.close();
-
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -21,7 +21,7 @@ public class DownLoadDTO {
     /**
      * ip集合
      */
-    private String ips;
+    private String ip;
 
     /**
      * 文件路径
