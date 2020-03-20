@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * BkEnum
+ * IpStatusEnum
  * 主机任务状态码
  * @author YaoDF
  * Description:

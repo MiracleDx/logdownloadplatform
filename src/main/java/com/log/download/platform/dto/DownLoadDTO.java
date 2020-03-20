@@ -2,8 +2,14 @@ package com.log.download.platform.dto;
 
 import lombok.Data;
 
-import java.util.ArrayList;
-
+/**
+ * DownLoadDTO
+ * 主机任务状态码
+ * @author YaoDF
+ * Description:
+ * Created in: 2020-03-19 09:20
+ * Modified by:
+ */
 @Data
 public class DownLoadDTO {
 
@@ -15,5 +21,10 @@ public class DownLoadDTO {
     /**
      * ip集合
      */
-    private String[] ips;
+    private String ips;
+
+    /**
+     * 文件路径
+     */
+    private String path;
 }

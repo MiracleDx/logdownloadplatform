@@ -6,7 +6,7 @@ import lombok.Getter;
 
 
 /**
- * BkEnum
+ * StatusEnum
  * 作业执行状态
  * @author YaoDF
  * Description:

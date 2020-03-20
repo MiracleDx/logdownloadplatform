@@ -2,6 +2,7 @@ package com.log.download.platform.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.log.download.platform.common.BkEnum;
+import com.log.download.platform.dto.DownLoadDTO;
 import com.log.download.platform.dto.HostDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.util.*;
 
 @Slf4j
@@ -20,16 +23,16 @@ public class CallBKInterfaceService {
 
 
     @Value("${bk_app_code}")
-    private static String bk_app_code;
+    private String bk_app_code;
 
     @Value("${bk_app_secret}")
-    private static String bk_app_secret;
+    private String bk_app_secret;
 
-    @Value("${bk_token}")
-    private static String bk_token;
+    @Value("${bk_username}")
+    private String bk_username;
 
     @Value("${getlogpath_script_id}")
-    private static int script_id;
+    private int script_id;
 
     //base64编码
     final Base64.Encoder encoder = Base64.getEncoder();
@@ -70,12 +73,12 @@ public class CallBKInterfaceService {
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
-                "\t\"bk_token\": \"" + bk_token + "\",\n" +
+                "\t\"bk_username\": \"" + bk_username + "\",\n" +
                 "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
                 "\t\"script_id\": " + script_id + ",\n" +
                 "\t\"script_param\": \"" + script_param + "\",\n" +
                 "\t\"script_timeout\": 1000,\n" +
-                "\t\"account\": \"root\",\n" +
+                "\t\"account\": \"ubuntu\",\n" +
                 "\t\"is_param_sensitive\": 0,\n" +
                 "}";
         List<Map<String, Object>> list = new ArrayList<>();
@@ -105,11 +108,87 @@ public class CallBKInterfaceService {
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
-                "\t\"bk_token\": \"" + bk_token + "\",\n" +
+                "\t\"bk_username\": \"" + bk_username + "\",\n" +
                 "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
                 "\t\"job_instance_id\": " + job_instance_id + "\n" +
                 "}";
         return params;
 
+    }
+
+    public String getFastPushFile(DownLoadDTO downLoadDTO) {
+        String label = downLoadDTO.getLabel();
+        BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
+        int bk_biz_id = bkEnum.getCode();
+        String ips = downLoadDTO.getIps();
+        String path = downLoadDTO.getPath();
+        String params = "{\n" +
+                "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
+                "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
+                "\t\"bk_username\": \"" + bk_username + "\",\n" +
+                "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
+                "\t\"file_target_path\": \"/tmp/\",\n" +
+                "\t\"account\": \"root\",\n" +
+                "\t\"ip_list\": \"[{\"bk_cloud_id\": 0,\"ip\": \"10.157.4.193\"}]\",\n" +
+                "\t\"file_source\": [{\n" +
+                "\t\t\"files\":[\"" + path + "\"],\n" +
+                "\t\t\"account\": \"ubuntu\",\n" +
+                "\t\t\"ip_list\": [\n";
+        String iplist = "\t\t{\n" +
+                        "\t\t\t\"bk_cloud_id\": 0,\n" +
+                        "\t\t\t\"ip\": \"10.157.4.240\"\n" +
+                        "\t\t}\n";
+
+        params += iplist;
+        params += "\t\t]\n\t}\n]";
+        return params;
+    }
+
+    /**
+     *
+     * @param path
+     * @param response
+     */
+    public void download(String path, HttpServletResponse response) {
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        try {
+            path = "d:/test.log";
+            // path是指欲下载的文件的路径。
+            File file = new File(path);
+            if (!file.exists()) {
+                log.error("文件不存在");
+                return;
+            }
+            // 取得文件名。
+            String filename = file.getName();
+            // 取得文件的后缀名。
+            String ext = filename.substring(filename.lastIndexOf(".") + 1).toUpperCase();
+
+            // 以流的形式下载文件。
+            inputStream = new BufferedInputStream(new FileInputStream(path));
+            byte[] buffer = new byte[inputStream.available()];
+            inputStream.read(buffer);
+
+            // 清空response
+            response.reset();
+            // 设置response的Header
+            response.addHeader("Content-Disposition", "attachment;filename=" + new String(filename.getBytes()));
+            response.addHeader("Content-Length", "" + file.length());
+            outputStream = new BufferedOutputStream(response.getOutputStream());
+            response.setContentType("application/octet-stream");
+            outputStream.write(buffer);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            try {
+                inputStream.close();
+                outputStream.flush();
+                outputStream.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

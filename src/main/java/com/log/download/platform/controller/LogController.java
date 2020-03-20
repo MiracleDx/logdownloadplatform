@@ -60,8 +60,9 @@ public class LogController {
                 JSONObject step_results1 = step_results.getJSONObject(0);
                 JSONArray ip_logs = step_results1.getJSONArray("ip_logs");
                 String path = "";
+                String ip = "";
                 for (int i = 0; i < ip_logs.size(); i++) {
-                    JSONObject ip_logs1 = ip_logs.getJSONObject(0);
+                    JSONObject ip_logs1 = ip_logs.getJSONObject(i);
                     String log_content = ip_logs1.getString("log_content");
                     path += log_content;
                 }
@@ -72,6 +73,7 @@ public class LogController {
                     for (int i = 1; i <= paths.length; i++) {
                         LogDetailVO logDetail = new LogDetailVO();
                         logDetail.setId(i);
+                        String[] arr = paths[i-1].split(" ");
                         logDetail.setPath(paths[i - 1]);
                         list.add(logDetail);
                     }

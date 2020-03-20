@@ -1,60 +1,55 @@
 package com.log.download.platform.controller;
 
 
-import com.log.download.platform.dto.QueryLogDetailDTO;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.log.download.platform.dto.DownLoadDTO;
+import com.log.download.platform.response.ServerResponse;
+import com.log.download.platform.service.CallBKInterfaceService;
+import com.log.download.platform.vo.LogDetailVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import javax.annotation.Resource;
+import java.util.List;
 
-
+@Slf4j
 @RestController
 public class DownloadLogController {
 
-
-    public void downloadLog(@RequestBody QueryLogDetailDTO queryLogDetailDTO) {
-        String label = queryLogDetailDTO.getLabel();
-        String[] ips = queryLogDetailDTO.getIps();
-    }
+    @Resource
+    private CallBKInterfaceService callBKInterfaceService;
 
     @RequestMapping("download")
-    public void download(String path, HttpServletResponse response) {
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
-        try {
-            path = "d:/test.log";
-            // path是指欲下载的文件的路径。
-            File file = new File(path);
-            // 取得文件名。
-            String filename = file.getName();
-            // 取得文件的后缀名。
-            String ext = filename.substring(filename.lastIndexOf(".") + 1).toUpperCase();
-
-            // 以流的形式下载文件。
-            inputStream = new BufferedInputStream(new FileInputStream(path));
-            byte[] buffer = new byte[inputStream.available()];
-            inputStream.read(buffer);
-
-            // 清空response
-            response.reset();
-            // 设置response的Header
-            response.addHeader("Content-Disposition", "attachment;filename=" + new String(filename.getBytes()));
-            response.addHeader("Content-Length", "" + file.length());
-            outputStream = new BufferedOutputStream(response.getOutputStream());
-            response.setContentType("application/octet-stream");
-            outputStream.write(buffer);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
+    public void downloadLog(@RequestBody DownLoadDTO downLoadDTO) {
+        String params = callBKInterfaceService.getFastPushFile(downLoadDTO);
+        JSONObject result = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_push_file/", params);
+        if (result.getBoolean("result")) {
+            int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
+            String params_log = callBKInterfaceService.getJobInstanceLogParams(downLoadDTO.getLabel(), job_instance_id);
+            JSONObject result_log = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", params_log);
             try {
-                inputStream.close();
-                outputStream.flush();
-                outputStream.close();
-            } catch (IOException e) {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+            if (result_log.getBoolean("result")) {
+                JSONArray data = result_log.getJSONArray("data");
+                JSONObject data1 = data.getJSONObject(0);
+                JSONArray step_results = data1.getJSONArray("step_results");
+                JSONObject step_results1 = step_results.getJSONObject(0);
+                JSONArray ip_logs = step_results1.getJSONArray("ip_logs");
+                for (int i = 0; i < ip_logs.size(); i++) {
+                    JSONObject ip_logs1 = ip_logs.getJSONObject(0);
+                    String log_content = ip_logs1.getString("log_content");
+                    if (log_content.contains("success")) {
+                    }
+                }
             }
         }
     }
+
+
 }
