@@ -20,4 +20,6 @@ public class LogDetailVO {
 	private String path;
 	
 	private String createTime;
+
+	private String label;
 }

@@ -45,14 +45,14 @@ public class LogController {
         JSONObject result = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_execute_script/", params);
         //如果执行成功，查询执行日志
         if (result.getBoolean("result")) {
-            int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
-            String params_log = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), job_instance_id);
-            JSONObject result_log = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", params_log);
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
+            String params_log = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), job_instance_id);
+            JSONObject result_log = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", params_log);
             if (result_log.getBoolean("result")) {
                 JSONArray data = result_log.getJSONArray("data");
                 JSONObject data1 = data.getJSONObject(0);
@@ -70,8 +70,11 @@ public class LogController {
                     for (int j = 1; j <= paths.length; j++) {
                         LogDetailVO logDetail = new LogDetailVO();
                         logDetail.setId(j);
-                        logDetail.setPath(paths[j - 1]);
+                        String[] arr = paths[j - 1].split("\t");
+                        logDetail.setPath(arr[0]);
                         logDetail.setIp(ip);
+                        logDetail.setCreateTime(arr[arr.length-1]);
+                        logDetail.setLabel(queryLogDetailDTO.getLabel());
                         list.add(logDetail);
                     }
                 }
