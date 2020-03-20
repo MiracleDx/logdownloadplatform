@@ -73,14 +73,15 @@ public class LogController {
                 String path = "";
                 List<LogDetailVO> list = new ArrayList<>();
 
-                // 已存在的logName
-                Map<String, List<LogDetailVO>> map = new HashMap<>();
+               
                 for (int i = 0; i < ip_logs.size(); i++) {
                     JSONObject ip_logs1 = ip_logs.getJSONObject(i);
                     String log_content = ip_logs1.getString("log_content");
                     String ip = ip_logs1.getString("ip");
                     path = log_content;
                     String[] paths = path.split("\\n");
+                    // 已存在的logName
+                    Map<String, List<LogDetailVO>> map = new HashMap<>();
                     for (int j = 1; j <= paths.length; j++) {
                         LogDetailVO logDetail = new LogDetailVO();
                         logDetail.setId(j);
@@ -102,11 +103,12 @@ public class LogController {
                         });
                         vos.add(logDetail);
                     }
+                    map.forEach((k, v) -> {
+                        list.addAll(v.stream().filter(e -> v.size() > 1 && !e.getPath().contains("tsf_default")).collect(Collectors.toList()));
+                    });
                 }
 
-                map.forEach((k, v) -> {
-                    list.addAll(v.stream().filter(e -> v.size() > 1 && !e.getPath().contains("tsf_default")).collect(Collectors.toList()));
-                });
+               
 
                 if (list.size() == 0) {
                     log.error("无日志文件");
