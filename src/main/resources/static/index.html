@@ -227,7 +227,11 @@
                 // 使用fetch发送请求并拿到返回值
                 const response = await fetch(router.download, {
                     method: 'post',
-                    data: JSON.stringify({
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        'label': val.label,
                         'ip': val.ip,
                         'path': val.path
                     })
