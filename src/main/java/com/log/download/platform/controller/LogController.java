@@ -63,6 +63,7 @@ public class LogController {
                     break;
                 }
             }
+            
             //获取执行日志
             if (result_log.getBoolean("result")) {
                 JSONArray dataArr = result_log.getJSONArray("data");
@@ -73,7 +74,6 @@ public class LogController {
                 String path = "";
                 List<LogDetailVO> list = new ArrayList<>();
 
-               
                 for (int i = 0; i < ip_logs.size(); i++) {
                     JSONObject ip_logs1 = ip_logs.getJSONObject(i);
                     String log_content = ip_logs1.getString("log_content");
@@ -107,8 +107,6 @@ public class LogController {
                         list.addAll(v.stream().filter(e -> v.size() > 1 && !e.getPath().contains("tsf_default")).collect(Collectors.toList()));
                     });
                 }
-
-               
 
                 if (list.size() == 0) {
                     log.error("无日志文件");
