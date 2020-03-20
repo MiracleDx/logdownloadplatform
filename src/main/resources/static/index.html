@@ -43,7 +43,7 @@
             <el-main style="height: 100%">
                 <el-table
                         ref="multipleTable"
-                        :data="logDetails.slice((curPage - 1) * pageSize, curPage * pageSize).filter(data => !search || data.path.toLowerCase().includes(search.toLowerCase()))"
+                        :data="logDetails.slice((curPage - 1) * pageSize, curPage * pageSize).filter(data => !search || data.path.toLowerCase().includes(search.toLowerCase()) || data.ip.includes(search))"
                         border 
                         style="width: 100%"
                         @selection-change="handleSelectionChange">
