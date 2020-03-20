@@ -4,6 +4,7 @@ package com.log.download.platform.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.log.download.platform.dto.DownLoadDTO;
+import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.service.CallBKInterfaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.Objects;
 
 @Slf4j
@@ -23,7 +25,7 @@ public class DownloadLogController {
     private CallBKInterfaceService callBKInterfaceService;
 
     @RequestMapping("/download")
-    public void downloadLog(@RequestBody DownLoadDTO downLoadDTO) {
+    public void downloadLog(@RequestBody DownLoadDTO downLoadDTO) throws IOException {
         String params = callBKInterfaceService.getFastPushFile(downLoadDTO);
         JSONObject result = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_push_file/", params);
         if (result.getBoolean("result")) {
@@ -50,6 +52,8 @@ public class DownloadLogController {
                         callBKInterfaceService.download(ip, log_content, ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse());
                     }
                 }
+            } else {
+                ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse().getWriter().write(JSONObject.toJSONString(ServerResponse.failure(result_log.getString("message"))));
             }
         }
     }
