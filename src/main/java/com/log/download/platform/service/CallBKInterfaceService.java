@@ -131,14 +131,14 @@ public class CallBKInterfaceService {
                 "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
                 "\t\"file_target_path\": \"/tmp/0_"+ip+"/"+path.substring(0,end)+"\",\n" +
                 "\t\"account\": \"root\",\n" +
-                "\t\"ip_list\": \"[{\"bk_cloud_id\": 0,\"ip\": \"" + ip + "\"}]\",\n" +
+                "\t\"ip_list\": \"[{\"bk_cloud_id\": 0,\"ip\": \"10.155.27.48\"}]\",\n" +
                 "\t\"file_source\": [{\n" +
                 "\t\t\"files\":[\"" + path + "\"],\n" +
                 "\t\t\"account\": \"ubuntu\",\n" +
                 "\t\t\"ip_list\": [\n";
         String iplist = "\t\t{\n" +
                         "\t\t\t\"bk_cloud_id\": 0,\n" +
-                        "\t\t\t\"ip\": \"10.155.27.48\"\n" +
+                        "\t\t\t\"ip\": \"" + ip + "\"\n" +
                         "\t\t}\n";
 
         params += iplist;
@@ -151,24 +151,23 @@ public class CallBKInterfaceService {
      * @param path
      * @param response
      */
-    public void download(String ip, String path, HttpServletResponse response) {
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
-        try {
-            path = "/tmp" + File.separator + "0_" + ip + File.separator + path;
-            // path是指欲下载的文件的路径。
-            File file = new File(path);
-            if (!file.exists()) {
-                log.error("文件不存在");
-                response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("文件" + path + "不存在")));
-            }
-            // 取得文件名。
-            String filename = file.getName();
-            // 取得文件的后缀名。
-            String ext = filename.substring(filename.lastIndexOf(".") + 1).toUpperCase();
+    public void download(String ip, String path, HttpServletResponse response) throws IOException {
 
+        path = "/tmp" + File.separator + "0_" + ip + File.separator + path;
+        // path是指欲下载的文件的路径。
+        File file = new File(path);
+        if (!file.exists()) {
+            log.error("文件不存在");
+            response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("文件" + path + "不存在")));
+        }
+        // 取得文件名。
+        String filename = file.getName();
+        // 取得文件的后缀名。
+        String ext = filename.substring(filename.lastIndexOf(".") + 1).toUpperCase();
+
+        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(path));
+             OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());) {
             // 以流的形式下载文件。
-            inputStream = new BufferedInputStream(new FileInputStream(path));
             byte[] buffer = new byte[inputStream.available()];
             inputStream.read(buffer);
 
@@ -177,19 +176,11 @@ public class CallBKInterfaceService {
             // 设置response的Header
             response.addHeader("Content-Disposition", "attachment;filename=" + new String(filename.getBytes()));
             response.addHeader("Content-Length", "" + file.length());
-            outputStream = new BufferedOutputStream(response.getOutputStream());
+            
             response.setContentType("application/octet-stream");
             outputStream.write(buffer);
         } catch (IOException ex) {
             ex.printStackTrace();
-        } finally {
-            try {
-                inputStream.close();
-                outputStream.flush();
-                outputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }
