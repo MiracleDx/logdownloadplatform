@@ -46,7 +46,7 @@ public class DownloadLogController {
                     JSONObject ip_logs1 = ip_logs.getJSONObject(0);
                     String ip = ip_logs1.getString("ip");
                     String log_content = ip_logs1.getString("log_content");
-                    if (log_content.contains("success")) {
+                    if (log_content.contains("100%")) {
                         callBKInterfaceService.download(ip, log_content, ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse());
                     }
                 }

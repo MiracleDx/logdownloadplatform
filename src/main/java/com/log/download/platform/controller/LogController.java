@@ -46,7 +46,7 @@ public class LogController {
         //如果执行成功，查询执行日志
         if (result.getBoolean("result")) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(7000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -80,15 +80,15 @@ public class LogController {
                 }
                 if (list.size() == 0) {
                     log.error("无日志文件");
-                    return ServerResponse.success("无日志文件");
+                    return ServerResponse.failure("无日志文件");
                 } else {
                     return ServerResponse.success(list);
                 }
             }
-            log.error(result_log.getJSONArray("data").getString(0));
-            return ServerResponse.failure(result_log.getJSONArray("data").getString(0));
+            log.error(result.getString("message"));
+            return ServerResponse.failure(result.getString("message"));
         }
-        log.error(result.getJSONArray("data").getString(0));
-        return ServerResponse.failure(result.getJSONArray("data").getString(0));
+        log.error(result.getString("message"));
+        return ServerResponse.failure(result.getString("message"));
     }
 }

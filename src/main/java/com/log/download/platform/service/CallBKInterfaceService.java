@@ -123,12 +123,13 @@ public class CallBKInterfaceService {
         int bk_biz_id = bkEnum.getCode();
         String ip = downLoadDTO.getIp();
         String path = downLoadDTO.getPath();
+        int end = path.lastIndexOf("/");
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
                 "\t\"bk_username\": \"" + bk_username + "\",\n" +
                 "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
-                "\t\"file_target_path\": \"/tmp/\",\n" +
+                "\t\"file_target_path\": \"/tmp/0_"+ip+"/"+path.substring(0,end)+"\",\n" +
                 "\t\"account\": \"root\",\n" +
                 "\t\"ip_list\": \"[{\"bk_cloud_id\": 0,\"ip\": \"" + ip + "\"}]\",\n" +
                 "\t\"file_source\": [{\n" +
@@ -141,7 +142,7 @@ public class CallBKInterfaceService {
                         "\t\t}\n";
 
         params += iplist;
-        params += "\t\t]\n\t}\n]";
+        params += "\t\t]\n\t}\n]}";
         return params;
     }
 
