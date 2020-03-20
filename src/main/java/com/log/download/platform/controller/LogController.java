@@ -60,27 +60,27 @@ public class LogController {
                 JSONObject step_results1 = step_results.getJSONObject(0);
                 JSONArray ip_logs = step_results1.getJSONArray("ip_logs");
                 String path = "";
+                List<LogDetailVO> list = new ArrayList<>();
                 for (int i = 0; i < ip_logs.size(); i++) {
                     JSONObject ip_logs1 = ip_logs.getJSONObject(i);
                     String log_content = ip_logs1.getString("log_content");
                     String ip = ip_logs1.getString("ip");
                     path = log_content;
-                }
-                //处理log为路径
-                if (path.length() != 0) {
                     String[] paths = path.split("\\n");
-                    List<LogDetailVO> list = new ArrayList<>();
-                    for (int i = 1; i <= paths.length; i++) {
+                    for (int j = 1; j <= paths.length; j++) {
                         LogDetailVO logDetail = new LogDetailVO();
-                        logDetail.setId(i);
-                        String[] arr = paths[i-1].split(" ");
-                        logDetail.setPath(paths[i - 1]);
+                        logDetail.setId(j);
+                        logDetail.setPath(paths[j - 1]);
+                        logDetail.setIp(ip);
                         list.add(logDetail);
                     }
+                }
+                if (list.size() == 0) {
+                    log.error("无日志文件");
+                    return ServerResponse.success("无日志文件");
+                } else {
                     return ServerResponse.success(list);
                 }
-                log.error("无日志文件");
-                return ServerResponse.success("无日志文件");
             }
             log.error(result_log.getJSONArray("data").getString(0));
             return ServerResponse.failure(result_log.getJSONArray("data").getString(0));
