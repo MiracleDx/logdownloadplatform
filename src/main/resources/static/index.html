@@ -43,7 +43,7 @@
             <el-main style="height: 100%">
                 <el-table
                         ref="multipleTable"
-                        :data="logDetails.filter(data => !search || data.path.toLowerCase().includes(search.toLowerCase()))"
+                        :data="logDetails.slice((curPage - 1) * pageSize, curPage * pageSize).filter(data => !search || data.path.toLowerCase().includes(search.toLowerCase()))"
                         border 
                         style="width: 100%"
                         @selection-change="handleSelectionChange">
@@ -52,12 +52,26 @@
                             type="selection"
                             width="55">
                     </el-table-column>
+                    <el-table-column prop="ip"  label="CVM_IP">
+                        <template slot-scope="scope">
+                            <!-- 单行点击事件 -->
+                            <div @click="toggleSelection([scope.row])">{{ scope.row.ip }}</div>
+                        </template>
+                    </el-table-column>
+                    
                     <el-table-column prop="path"  label="日志路径及文件名">
                             <template slot-scope="scope">
                                 <!-- 单行点击事件 -->
                                 <div @click="toggleSelection([scope.row])">{{ scope.row.path }}</div>
                             </template>
-                    </el-table-column>   
+                    </el-table-column>
+                    
+                    <el-table-column prop="createTime"  label="生成时间">
+                        <template slot-scope="scope">
+                            <!-- 单行点击事件 -->
+                            <div @click="toggleSelection([scope.row])">{{ scope.row.createTime }}</div>
+                        </template>
+                    </el-table-column>
                     
                     <!-- 操作栏 -->
                     <el-table-column
@@ -75,6 +89,17 @@
                         </template>
                     </el-table-column>
                 </el-table>
+
+                <!-- 分页 -->
+                <el-pagination 
+                        background
+                        layout="prev, pager, next, sizes, total, jumper"
+                        :page-sizes="[5, 10, 15, 20]" 
+                        :page-size="pageSize"
+                        :total="logDetails.length"
+                        @current-change="handleCurrentChange"  
+                        @size-change="handleSizeChange">
+                </el-pagination>
                 
                 <!-- 底部按钮 -->
                 <div style="margin-top: 20px">
@@ -94,6 +119,8 @@
         el: '#app',
         data() {
             return {
+                pageSize: 10,
+                curPage: 1,
                 // 表格搜索的关键字
                 search: '',
                 // 表格日志信息
@@ -111,14 +138,12 @@
                     children: 'children',
                     label: 'label'
                 },
-               
             }
         },
         methods: {
             // 菜单点击事件
             handleNodeClick(data) {
                 console.log(data)
-                console.log(data.cluster, data.ips)
                 // 查找所有的父级
                 if (data.ips !== undefined && data.ips.length > 0) {
                     const loading = this.$loading({
@@ -145,6 +170,7 @@
                             if (data.code === 1) {
                                 this.logDetails = data.data;
                             } else {
+                                this.logDetails = [];
                                 this.$message.error(data.message)
                             }
                         })
@@ -196,17 +222,16 @@
                 this.multipleSelection = val;
             },
             // 抓取日志
-            handleClick(val) {
+            async handleClick(val) {
                 console.log(val)
-                this.$message.success('日志下载成功');
-                setTimeout(() => {
-                    this.$message.error('日志抓取失败');
-                }, 1000)
-            },       
-            // 下载
-            async download() {
                 // 使用fetch发送请求并拿到返回值
-                const response = await fetch(router.download);
+                const response = await fetch(router.download, {
+                    method: 'post',
+                    data: JSON.stringify({
+                        'ip': val.ip,
+                        'path': val.path
+                    })
+                });
                 // 将文件流转为blob对象，并获取本地文件链接
                 response.blob().then((blob) => {
                     const a = window.document.createElement('a');
@@ -217,6 +242,32 @@
                     a.click();
                     window.URL.revokeObjectURL(downUrl);
                 });
+            },       
+            // 下载
+            async download() {
+                console.log(this.multipleSelection)
+                for (let val in this.multipleSelection) {
+                    this.handleClick(val)
+                }
+                
+                // 使用fetch发送请求并拿到返回值
+                // const response = await fetch(router.download);
+                // // 将文件流转为blob对象，并获取本地文件链接
+                // response.blob().then((blob) => {
+                //     const a = window.document.createElement('a');
+                //     const downUrl = window.URL.createObjectURL(blob);// 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
+                //     const filename = response.headers.get('Content-Disposition').split('filename=')[1].split('.');
+                //     a.href = downUrl;
+                //     a.download = `${decodeURI(filename[0])}.${filename[1]}`;
+                //     a.click();
+                //     window.URL.revokeObjectURL(downUrl);
+                // });
+            },
+            handleCurrentChange(val) {
+                this.curPage = val;
+            },
+            handleSizeChange(val) {
+                this.pageSize = val;
             },
         },
         watch: {
