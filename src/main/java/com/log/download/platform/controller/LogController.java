@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * LogController
@@ -61,6 +64,9 @@ public class LogController {
                 JSONArray ip_logs = step_results1.getJSONArray("ip_logs");
                 String path = "";
                 List<LogDetailVO> list = new ArrayList<>();
+
+                // 已存在的logName
+                Map<String, List<LogDetailVO>> map = new HashMap<>();
                 for (int i = 0; i < ip_logs.size(); i++) {
                     JSONObject ip_logs1 = ip_logs.getJSONObject(i);
                     String log_content = ip_logs1.getString("log_content");
@@ -71,13 +77,29 @@ public class LogController {
                         LogDetailVO logDetail = new LogDetailVO();
                         logDetail.setId(j);
                         String[] arr = paths[j - 1].split("\t");
-                        logDetail.setPath(arr[0]);
+                        // 日志路径
+                        String logPath = arr[0];
+                        // 日志名称
+                        String logName = logPath.substring(path.lastIndexOf("/")); 
+                        logDetail.setPath(logPath);
                         logDetail.setIp(ip);
                         logDetail.setCreateTime(arr[arr.length-1]);
                         logDetail.setLabel(queryLogDetailDTO.getLabel());
-                        list.add(logDetail);
+
+                        // 如果key不存在，就新增key和value，否则获取value
+                        List<LogDetailVO> vos = map.compute(logName, (k, v) -> {
+                            List<LogDetailVO> voList = new ArrayList<>();
+                            voList.add(logDetail);
+                            return voList;
+                        });
+                        vos.add(logDetail);
                     }
                 }
+
+                map.forEach((k, v) -> {
+                    list.addAll(v.stream().filter(e -> v.size() > 1 && !e.getPath().contains("tsf_default")).collect(Collectors.toList()));
+                });
+
                 if (list.size() == 0) {
                     log.error("无日志文件");
                     return ServerResponse.failure("无日志文件");
