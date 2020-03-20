@@ -60,11 +60,11 @@ public class LogController {
                 JSONObject step_results1 = step_results.getJSONObject(0);
                 JSONArray ip_logs = step_results1.getJSONArray("ip_logs");
                 String path = "";
-                String ip = "";
                 for (int i = 0; i < ip_logs.size(); i++) {
                     JSONObject ip_logs1 = ip_logs.getJSONObject(i);
                     String log_content = ip_logs1.getString("log_content");
-                    path += log_content;
+                    String ip = ip_logs1.getString("ip");
+                    path = log_content;
                 }
                 //处理log为路径
                 if (path.length() != 0) {
