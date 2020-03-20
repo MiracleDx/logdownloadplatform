@@ -49,7 +49,7 @@ public class DownloadLogController {
                     String ip = ip_logs1.getString("ip");
                     String log_content = ip_logs1.getString("log_content");
                     if (log_content.contains("100%")) {
-                        callBKInterfaceService.download(ip, log_content, ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse());
+                        callBKInterfaceService.download(ip, downLoadDTO.getPath(), ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse());
                     }
                 }
             } else {
