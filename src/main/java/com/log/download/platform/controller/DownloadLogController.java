@@ -3,6 +3,8 @@ package com.log.download.platform.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.log.download.platform.common.BkEnum;
+import com.log.download.platform.common.StatusEnum;
 import com.log.download.platform.dto.DownLoadDTO;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.service.CallBKInterfaceService;
@@ -16,6 +18,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -43,24 +46,27 @@ public class DownloadLogController {
             int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
             String params_log = callBKInterfaceService.getJobInstanceLogParams(downLoadDTO.getLabel(), job_instance_id);
             JSONObject result_log = new JSONObject();
+            
             long t1 = System.currentTimeMillis();
             //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
-            while (true){
-
+            boolean isFinished = false;
+            while (!isFinished){
                 try {
-                    Thread.sleep(2000);
+                    TimeUnit.SECONDS.sleep(3);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                
                 result_log = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", params_log);
-                if (result_log.getJSONArray("data").getJSONObject(0).getBoolean("is_finished")) {
-                    break;
-                }
+                isFinished = (result_log.getJSONArray("data").getJSONObject(0).getBoolean("is_finished"));
+                
                 long t2 = System.currentTimeMillis();
-                if (t2 - t1 > 10 * 1000) {
-                    break;
+                if (t2 - t1 > 30 * 1000) {
+                    ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse().getWriter().write(JSONObject.toJSONString(ServerResponse.failure("执行分发任务超时")));
+                    return;
                 }
             }
+            
             if (result_log.getBoolean("result")) {
                 JSONArray dataArr = result_log.getJSONArray("data");
                 JSONObject dataObject = dataArr.getJSONObject(0);
@@ -73,7 +79,7 @@ public class DownloadLogController {
                     String ip = ip_logsObject.getString("ip");
                     String log_content = ip_logsObject.getString("log_content");
                     //验证是否已经传输到文件共享服务器
-                    if (log_content.contains("100%")) {
+                    if (result_log.getIntValue("status") == StatusEnum.A3.getCode()) {
                         callBKInterfaceService.download(ip, downLoadDTO.getPath(), ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse());
                     }
                 }

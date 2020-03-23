@@ -52,25 +52,25 @@ public class LogController {
             //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
             int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
             String params_log = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), job_instance_id);
+            
             JSONObject result_log = new JSONObject();
             long t1 = System.currentTimeMillis();
-            while (true) {
+            boolean isFinished = false;
+            while (!isFinished) {
                 try {
-                    TimeUnit.SECONDS.sleep(2000);
+                    TimeUnit.SECONDS.sleep(3);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 result_log = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", params_log);
-                if (result_log.getJSONArray("data").getJSONObject(0).getBoolean("is_finished")) {
-                    break;
-                }
+                isFinished = result_log.getJSONArray("data").getJSONObject(0).getBoolean("is_finished");
 
                 if (result_log.toString().contains("Can not find Agent by ip")) {
                     return ServerResponse.failure(result_log.getString("data"));
                 }
 
                 long t2 = System.currentTimeMillis();
-                if (t2 - t1 > 10 * 1000) {
+                if (t2 - t1 > 15 * 1000) {
                     return ServerResponse.failure("Timeout");
                 }
             }
