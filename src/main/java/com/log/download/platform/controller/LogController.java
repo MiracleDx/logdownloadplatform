@@ -64,6 +64,11 @@ public class LogController {
                 if (result_log.getJSONArray("data").getJSONObject(0).getBoolean("is_finished")) {
                     break;
                 }
+
+                if (result_log.toString().contains("Can not find Agent by ip")) {
+                    return ServerResponse.failure(result_log.getString("data"));
+                }
+
                 long t2 = System.currentTimeMillis();
                 if (t2 - t1 > 10 * 1000) {
                     return ServerResponse.failure("Timeout");
