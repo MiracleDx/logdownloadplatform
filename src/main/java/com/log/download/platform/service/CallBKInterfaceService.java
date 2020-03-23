@@ -158,6 +158,7 @@ public class CallBKInterfaceService {
         File file = new File(path);
         if (!file.exists()) {
             log.error("文件不存在");
+            response.setCharacterEncoding("utf-8");
             response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("文件" + path + "不存在")));
         }
         // 取得文件名。

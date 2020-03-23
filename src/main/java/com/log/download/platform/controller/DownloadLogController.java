@@ -3,7 +3,6 @@ package com.log.download.platform.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.log.download.platform.common.BkEnum;
 import com.log.download.platform.common.StatusEnum;
 import com.log.download.platform.dto.DownLoadDTO;
 import com.log.download.platform.response.ServerResponse;
@@ -16,6 +15,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +46,7 @@ public class DownloadLogController {
             int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
             String params_log = callBKInterfaceService.getJobInstanceLogParams(downLoadDTO.getLabel(), job_instance_id);
             JSONObject result_log = new JSONObject();
-            
+
             long t1 = System.currentTimeMillis();
             //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
             boolean isFinished = false;
@@ -56,17 +56,17 @@ public class DownloadLogController {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                
+
                 result_log = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", params_log);
                 isFinished = (result_log.getJSONArray("data").getJSONObject(0).getBoolean("is_finished"));
-                
+
                 long t2 = System.currentTimeMillis();
                 if (t2 - t1 > 30 * 1000) {
                     ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse().getWriter().write(JSONObject.toJSONString(ServerResponse.failure("执行分发任务超时")));
                     return;
                 }
             }
-            
+            HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
             if (result_log.getBoolean("result")) {
                 JSONArray dataArr = result_log.getJSONArray("data");
                 JSONObject dataObject = dataArr.getJSONObject(0);
@@ -75,16 +75,24 @@ public class DownloadLogController {
                 JSONArray ip_logs = step_resultsObject.getJSONArray("ip_logs");
                 for (int i = 0; i < ip_logs.size(); i++) {
                     //获取下载文件所需要的参数
-                    JSONObject ip_logsObject = ip_logs.getJSONObject(0);
-                    String ip = ip_logsObject.getString("ip");
-                    String log_content = ip_logsObject.getString("log_content");
+                    // JSONObject ip_logsObject = ip_logs.getJSONObject(0);
+                    // String ip = ip_logsObject.getString("ip");
+                    // String log_content = ip_logsObject.getString("log_content");
                     //验证是否已经传输到文件共享服务器
-                    if (result_log.getIntValue("status") == StatusEnum.A3.getCode()) {
-                        callBKInterfaceService.download(ip, downLoadDTO.getPath(), ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse());
+                    if (result_log.getJSONArray("data").getJSONObject(0).getIntValue("status") == StatusEnum.A3.getCode()) {
+                        callBKInterfaceService.download(downLoadDTO.getIp(), downLoadDTO.getPath(), response);
+                    } else {
+                        if (response != null) {
+                            response.setCharacterEncoding("utf-8");
+                            response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("脚本执行失败, 脚本执行状态为：" + StatusEnum.valueOf("A" + result_log.getJSONArray("data").getJSONObject(0).getIntValue("status")))));
+                        }
                     }
                 }
             } else {
-                ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse().getWriter().write(JSONObject.toJSONString(ServerResponse.failure(result_log.getString("message"))));
+                if (response != null) {
+                    response.setCharacterEncoding("utf-8");
+                    response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure(result_log.getString("message"))));
+                }
             }
         }
     }
