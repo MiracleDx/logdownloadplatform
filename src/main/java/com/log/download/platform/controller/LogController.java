@@ -104,7 +104,7 @@ public class LogController {
                         vos.add(logDetail);
                     }
                     map.forEach((k, v) -> {
-                        list.addAll(v.stream().filter(e -> v.size() > 1 && !e.getPath().contains("tsf_default")).collect(Collectors.toList()));
+                        list.addAll(v.stream().filter(e -> v.size() > 1 && !e.getPath().contains("tsf_default") && !e.getPath().contains("sys_log")).collect(Collectors.toList()));
                     });
                 }
 
