@@ -88,20 +88,22 @@ public class LogController {
                         String[] arr = paths[j - 1].split("\t");
                         // 日志路径
                         String logPath = arr[0];
-                        // 日志名称
-                        String logName = logPath.substring(path.lastIndexOf("/")); 
                         logDetail.setPath(logPath);
                         logDetail.setIp(ip);
                         logDetail.setCreateTime(arr[arr.length-1]);
                         logDetail.setLabel(queryLogDetailDTO.getLabel());
-
-                        // 如果key不存在，就新增key和value，否则获取value
-                        List<LogDetailVO> vos = map.compute(logName, (k, v) -> {
-                            List<LogDetailVO> voList = new ArrayList<>();
-                            voList.add(logDetail);
-                            return voList;
-                        });
-                        vos.add(logDetail);
+                        
+                        if (!logPath.contains("---")) {
+                            // 日志名称
+                            String logName = logPath.substring(logPath.lastIndexOf("/"));
+                            // 如果key不存在，就新增key和value，否则获取value
+                            List<LogDetailVO> vos = map.compute(logName, (k, v) -> {
+                                List<LogDetailVO> voList = new ArrayList<>();
+                                voList.add(logDetail);
+                                return voList;
+                            });
+                            vos.add(logDetail);
+                        }
                     }
                     map.forEach((k, v) -> {
                         list.addAll(v.stream().filter(e -> v.size() > 1 && !e.getPath().contains("tsf_default") && !e.getPath().contains("sys_log")).collect(Collectors.toList()));
