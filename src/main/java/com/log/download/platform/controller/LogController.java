@@ -52,7 +52,7 @@ public class LogController {
             //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
             int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
             String params_log = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), job_instance_id);
-            
+
             JSONObject result_log = new JSONObject();
             long t1 = System.currentTimeMillis();
             boolean isFinished = false;
@@ -74,7 +74,7 @@ public class LogController {
                     return ServerResponse.failure("Timeout");
                 }
             }
-            
+
             //获取执行日志
             if (result_log.getBoolean("result")) {
                 JSONArray dataArr = result_log.getJSONArray("data");
@@ -116,9 +116,11 @@ public class LogController {
                             vos.add(logDetail);
                         }
                     }
-                    map.forEach((k, v) -> {
-                        list.addAll(v.stream().filter(e -> v.size() > 1 && !e.getPath().contains("tsf_default") && !e.getPath().contains("sys_log")).collect(Collectors.toList()));
-                    });
+                    map.forEach((k, v) -> list.addAll(v.stream()
+                            .filter(e -> v.size() > 1 
+                                    && !e.getPath().contains("tsf_default") 
+                                    && !e.getPath().contains("sys_log"))
+                            .distinct().collect(Collectors.toList())));
                 }
 
                 if (list.size() == 0) {
