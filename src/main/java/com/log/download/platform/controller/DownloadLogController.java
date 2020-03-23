@@ -39,6 +39,7 @@ public class DownloadLogController {
 
     @RequestMapping("/download")
     public void downloadLog(@RequestBody DownLoadDTO downLoadDTO) throws IOException {
+        HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
         String params = callBKInterfaceService.getFastPushFile(downLoadDTO);
         //调用快速分发文件接口
         JSONObject result = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_push_file/", params);
@@ -62,11 +63,16 @@ public class DownloadLogController {
 
                 long t2 = System.currentTimeMillis();
                 if (t2 - t1 > 30 * 1000) {
-                    ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse().getWriter().write(JSONObject.toJSONString(ServerResponse.failure("执行分发任务超时")));
-                    return;
+                    if (response != null) {
+                        response.setCharacterEncoding("utf-8");
+                        response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("执行分发任务超时")));
+                        return;
+                    } else {
+                        break;
+                    }
                 }
             }
-            HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
+            
             if (result_log.getBoolean("result")) {
                 JSONArray dataArr = result_log.getJSONArray("data");
                 JSONObject dataObject = dataArr.getJSONObject(0);
