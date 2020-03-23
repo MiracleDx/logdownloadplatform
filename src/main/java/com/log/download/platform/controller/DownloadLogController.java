@@ -65,7 +65,7 @@ public class DownloadLogController {
                 if (t2 - t1 > 30 * 1000) {
                     if (response != null) {
                         response.setCharacterEncoding("utf-8");
-                        response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("执行分发任务超时")));
+                        response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("执行分发任务超时， 脚本执行状态为：" + StatusEnum.valueOf("A" + result_log.getJSONArray("data").getJSONObject(0).getIntValue("status")))));
                         return;
                     } else {
                         break;
