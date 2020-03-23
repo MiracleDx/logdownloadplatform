@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -52,15 +53,20 @@ public class LogController {
             int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
             String params_log = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), job_instance_id);
             JSONObject result_log = new JSONObject();
-            while (true){
+            long t1 = System.currentTimeMillis();
+            while (true) {
                 try {
-                    Thread.sleep(2000);
+                    TimeUnit.SECONDS.sleep(2000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 result_log = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", params_log);
                 if (result_log.getJSONArray("data").getJSONObject(0).getBoolean("is_finished")) {
                     break;
+                }
+                long t2 = System.currentTimeMillis();
+                if (t2 - t1 > 10 * 1000) {
+                    return ServerResponse.failure("Timeout");
                 }
             }
             
@@ -92,7 +98,7 @@ public class LogController {
                         logDetail.setIp(ip);
                         logDetail.setCreateTime(arr[arr.length-1]);
                         logDetail.setLabel(queryLogDetailDTO.getLabel());
-                        
+
                         if (!logPath.contains("---")) {
                             // 日志名称
                             String logName = logPath.substring(logPath.lastIndexOf("/"));

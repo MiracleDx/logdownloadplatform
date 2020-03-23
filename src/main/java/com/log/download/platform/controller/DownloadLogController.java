@@ -43,8 +43,10 @@ public class DownloadLogController {
             int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
             String params_log = callBKInterfaceService.getJobInstanceLogParams(downLoadDTO.getLabel(), job_instance_id);
             JSONObject result_log = new JSONObject();
+            long t1 = System.currentTimeMillis();
             //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
             while (true){
+
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
@@ -52,6 +54,10 @@ public class DownloadLogController {
                 }
                 result_log = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", params_log);
                 if (result_log.getJSONArray("data").getJSONObject(0).getBoolean("is_finished")) {
+                    break;
+                }
+                long t2 = System.currentTimeMillis();
+                if (t2 - t1 > 10 * 1000) {
                     break;
                 }
             }
