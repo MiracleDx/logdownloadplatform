@@ -1,4 +1,4 @@
-const remote = "http://10.155.27.48:8080/"
+const remote = "/"
 const router = {
     "queryLogDetails": remote + "queryLogDetails",
     "getMenu": remote + "getMenu",
