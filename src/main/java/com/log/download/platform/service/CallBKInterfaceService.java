@@ -129,9 +129,9 @@ public class CallBKInterfaceService {
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
                 "\t\"bk_username\": \"" + bk_username + "\",\n" +
                 "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
-                "\t\"file_target_path\": \"/tmp/0_"+ip+"/"+path.substring(0,end)+"\",\n" +
+                "\t\"file_target_path\": \"/tmp/0_" + ip + "/" + path.substring(0, end) + "\",\n" +
                 "\t\"account\": \"root\",\n" +
-                "\t\"ip_list\": \"[{\"bk_cloud_id\": 0,\"ip\": \"10.155.27.48\"}]\",\n" +
+                "\t\"ip_list\": [{\"bk_cloud_id\": 0,\"ip\": \"10.155.27.48\"}],\n" +
                 "\t\"file_source\": [{\n" +
                 "\t\t\"files\":[\"" + path + "\"],\n" +
                 "\t\t\"account\": \"ubuntu\",\n" +
