@@ -237,7 +237,7 @@ public class MenuService {
 					third.setLabel(group);
 					third.setChildren(new ArrayList<>());
 					third.setIps(groupMap.get(group).stream().map(GatewayGroupBO::getIp).filter(StringUtils::isNoneBlank).collect(Collectors.toList()));
-					third.setBkParam(thirdBO.getServerName() + " " + thirdBO.getCluster());
+					third.setBkParam(thirdBO.getApplicationName() + " " + thirdBO.getApplicationName());
 
 					// 判断总/分公司
 					String[] split = group.split("-");
