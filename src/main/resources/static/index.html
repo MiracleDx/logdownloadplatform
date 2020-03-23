@@ -52,7 +52,7 @@
                             type="selection"
                             width="55">
                     </el-table-column>
-                    <el-table-column prop="ip"  label="CVM_IP">
+                    <el-table-column prop="ip"  label="CVM_IP" width="120">
                         <template slot-scope="scope">
                             <!-- 单行点击事件 -->
                             <div @click="toggleSelection([scope.row])">{{ scope.row.ip }}</div>
