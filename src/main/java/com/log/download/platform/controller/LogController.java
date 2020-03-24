@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -105,16 +102,19 @@ public class LogController {
                         logDetail.setCreateTime(arr[arr.length-1]);
                         logDetail.setLabel(queryLogDetailDTO.getLabel());
                                 
-                        if (!logPath.contains("---") && (!logPath.contains("No resources found") || !logPath.contains("No such file"))) {
+                        if (!logPath.contains("---") && !logPath.contains("No resources found") && !logPath.contains("No such file")) {
                             // 日志名称
                             String logName = logPath.substring(logPath.lastIndexOf("/"));
-                            // 如果key不存在，就新增key和value，否则获取value
-                            List<LogDetailVO> vos = map.compute(logName, (k, v) -> {
-                                List<LogDetailVO> voList = new ArrayList<>();
-                                voList.add(logDetail);
-                                return voList;
-                            });
-                            vos.add(logDetail);
+                            // 过滤torrent文件
+                            if (!logName.contains("torrent")) {
+                                // 如果key不存在，就新增key和value，否则获取value
+                                List<LogDetailVO> vos = map.compute(logName, (k, v) -> {
+                                    List<LogDetailVO> voList = new ArrayList<>();
+                                    voList.add(logDetail);
+                                    return voList;
+                                });
+                                vos.add(logDetail);
+                            }
                         }
                     }
                     map.forEach((k, v) -> list.addAll(v.stream()
