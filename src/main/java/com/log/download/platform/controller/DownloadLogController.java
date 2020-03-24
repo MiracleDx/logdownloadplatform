@@ -62,7 +62,7 @@ public class DownloadLogController {
                 isFinished = (result_log.getJSONArray("data").getJSONObject(0).getBoolean("is_finished"));
 
                 long t2 = System.currentTimeMillis();
-                if (t2 - t1 > 30 * 1000) {
+                if (t2 - t1 > 60 * 1000) {
                     if (response != null) {
                         response.setCharacterEncoding("utf-8");
                         response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("执行分发任务超时， 脚本执行状态为：" + StatusEnum.valueOf("A" + result_log.getJSONArray("data").getJSONObject(0).getIntValue("status")).getStatus())));
