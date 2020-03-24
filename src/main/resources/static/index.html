@@ -41,9 +41,16 @@
             
             <!-- 主体 -->
             <el-main style="height: 100%">
+                <!-- 选项卡 -->
+                <el-tabs v-model="activeName" @tab-click="handleClick">
+                    <el-tab-pane label="南云" name="10.157" ></el-tab-pane>
+                    <el-tab-pane label="北云" name="10.155" ></el-tab-pane>
+                </el-tabs>
+                
+                <!-- 表格 -->
                 <el-table
                         ref="multipleTable"
-                        :data="logDetails.slice((curPage - 1) * pageSize, curPage * pageSize).filter(data => !search || data.path.toLowerCase().includes(search.toLowerCase()) || data.ip.includes(search))"
+                        :data="logDetails.filter(data => data.ip.includes(activeName) && (!search || data.path.toLowerCase().includes(search.toLowerCase()) || data.ip.includes(search))).slice((curPage - 1) * pageSize, curPage * pageSize)"
                         border 
                         style="width: 100%"
                         @selection-change="handleSelectionChange">
@@ -66,7 +73,7 @@
                             </template>
                     </el-table-column>
                     
-                    <el-table-column prop="createTime"  label="生成时间">
+                    <el-table-column prop="createTime"  label="生成时间" width="150">
                         <template slot-scope="scope">
                             <!-- 单行点击事件 -->
                             <div @click="toggleSelection([scope.row])">{{ scope.row.createTime }}</div>
@@ -85,7 +92,7 @@
                         </template>
                         <!-- 下载日志 -->
                         <template slot-scope="scope">
-                            <el-button  @click="handleClick(scope.row)" type="text" size="small">下载日志</el-button>
+                            <el-button  @click="downloadLog(scope.row)" type="text" size="small">下载日志</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -94,9 +101,9 @@
                 <el-pagination 
                         background
                         layout="prev, pager, next, sizes, total, jumper"
-                        :page-sizes="[5, 10, 15, 20]" 
+                        :page-sizes="[10, 25, 35, 50]" 
                         :page-size="pageSize"
-                        :total="logDetails.length"
+                        :total="logDetails.filter(data => data.ip.includes(activeName) && (!search || data.path.toLowerCase().includes(search.toLowerCase()) || data.ip.includes(search))).length"
                         @current-change="handleCurrentChange"  
                         @size-change="handleSizeChange">
                 </el-pagination>
@@ -106,6 +113,7 @@
                     <el-button @click="toggleSelection()">取消选择</el-button>
                     <el-button @click="download">下载日志</el-button>
                 </div>
+                
             </el-main>
         </el-container>
     </el-container>
@@ -138,6 +146,8 @@
                     children: 'children',
                     label: 'label'
                 },
+                //
+                activeName: '10.157'
             }
         },
         methods: {
@@ -222,12 +232,12 @@
                 this.multipleSelection = val;
             },
             // 抓取日志
-            async handleClick(val) {
+            async downloadLog(val) {
                 console.log(val)
 
                 const loading = this.$loading({
                     lock: true,
-                    text: '获取' + val.ip + ':' + val.path + '的下载资源中',
+                    text: '获取' + val.ip + ':' + val.path + '的下载资源中...下载文件过大，可能会造成下载超时',
                     spinner: 'el-icon-loading',
                     background: 'rgba(0, 0, 0, 0.7)'
                 });
@@ -249,10 +259,11 @@
                     response.blob().then((blob) => {
                         console.log(blob)
                         const a = window.document.createElement('a');
-                        const downUrl = window.URL.createObjectURL(blob);// 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
-                        const filename = response.headers.get('Content-Disposition').split('filename=')[1].split('.');
+                        // 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
+                        const downUrl = window.URL.createObjectURL(blob);
+                        const filename = response.headers.get('Content-Disposition').split('filename=')[1];
                         a.href = downUrl;
-                        a.download = `${decodeURI(filename[0])}.${filename[1]}`;
+                        a.download = `${decodeURI(filename)}`;
                         loading.close();
                         a.click();
                         window.URL.revokeObjectURL(downUrl);
@@ -264,15 +275,12 @@
                     }).catch(e => console.log(e));
                     
                 }
-                
-               
-                
             },       
             // 下载
             async download() {
                 console.log(this.multipleSelection)
                 for (let val in this.multipleSelection) {
-                    this.handleClick(val)
+                    this.downloadLog(this.multipleSelection[val])
                 }
                 
                 // 使用fetch发送请求并拿到返回值
@@ -294,6 +302,11 @@
             handleSizeChange(val) {
                 this.pageSize = val;
             },
+            handleClick(tab, event) {
+                console.log(this.activeName)
+                console.log(this.logDetails.filter(data => data.ip.includes(this.activeName) && (!this.search || data.path.toLowerCase().includes(this.search.toLowerCase()) || data.ip.search(this.search))).length)
+                console.log(tab, event);
+            }
         },
         watch: {
             filterText(val) {
