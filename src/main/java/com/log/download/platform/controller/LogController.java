@@ -6,7 +6,6 @@ import com.log.download.platform.dto.QueryLogDetailDTO;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.service.CallBKInterfaceService;
 import com.log.download.platform.vo.LogDetailVO;
-import com.sun.org.apache.xpath.internal.FoundIndex;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -100,8 +99,9 @@ public class LogController {
                         logDetail.setPath(logPath);
                         logDetail.setIp(ip);
                         logDetail.setCreateTime(arr[arr.length-1]);
+                        logDetail.setSize(Integer.valueOf(arr[arr.length-2])/1024 + "M");
                         logDetail.setLabel(queryLogDetailDTO.getLabel());
-                                
+
                         if (!logPath.contains("---") && !logPath.contains("No resources found") && !logPath.contains("No such file")) {
                             // 日志名称
                             String logName = logPath.substring(logPath.lastIndexOf("/"));
@@ -118,8 +118,8 @@ public class LogController {
                         }
                     }
                     map.forEach((k, v) -> list.addAll(v.stream()
-                            .filter(e -> v.size() > 1 
-                                    && !e.getPath().contains("tsf_default") 
+                            .filter(e -> v.size() > 1
+                                    && !e.getPath().contains("tsf_default")
                                     && !e.getPath().contains("sys_log"))
                             .distinct().collect(Collectors.toList())));
                 }
@@ -128,6 +128,8 @@ public class LogController {
                     log.error("无日志文件");
                     return ServerResponse.failure("无日志文件");
                 } else {
+                    Collections.sort(list);
+                    Collections.reverse(list);
                     return ServerResponse.success(list);
                 }
             }

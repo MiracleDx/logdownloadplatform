@@ -2,6 +2,9 @@ package com.log.download.platform.vo;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * LogDetailVO
  * 
@@ -11,7 +14,7 @@ import lombok.Data;
  * Modified by:
  */
 @Data
-public class LogDetailVO {
+public class LogDetailVO implements Comparable<LogDetailVO>{
 	
 	private String ip;
 
@@ -22,4 +25,16 @@ public class LogDetailVO {
 	private String createTime;
 
 	private String label;
+
+	private String size;
+
+	@Override
+	public int compareTo(LogDetailVO logDetailVO) {
+		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		if (LocalDateTime.parse(this.createTime,df).isAfter(LocalDateTime.parse(logDetailVO.createTime,df))) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
 }
