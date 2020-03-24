@@ -6,6 +6,7 @@ import com.log.download.platform.dto.QueryLogDetailDTO;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.service.CallBKInterfaceService;
 import com.log.download.platform.vo.LogDetailVO;
+import com.sun.org.apache.xpath.internal.FoundIndex;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -103,8 +104,8 @@ public class LogController {
                         logDetail.setIp(ip);
                         logDetail.setCreateTime(arr[arr.length-1]);
                         logDetail.setLabel(queryLogDetailDTO.getLabel());
-
-                        if (!logPath.contains("---")) {
+                                
+                        if (!logPath.contains("---") && (!logPath.contains("No resources found") || !logPath.contains("No such file"))) {
                             // 日志名称
                             String logName = logPath.substring(logPath.lastIndexOf("/"));
                             // 如果key不存在，就新增key和value，否则获取value
