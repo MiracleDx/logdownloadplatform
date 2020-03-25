@@ -19,13 +19,24 @@
     .el-aside {
         color: #333;
     }
+
+    ::-webkit-scrollbar {
+        width: 3px;
+        height: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        border-radius: 3px;
+        -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    }
+
 </style>
 <body>
 <div id="app" v-cloak>
-    <el-container style="height: 100%; border: 1px solid #eee; display: flex">
+    <el-container style="border: 1px solid #eee; display: flex" ref="container">
         
         <!-- 侧边栏 -->
-        <el-aside width="350px" style="background-color: rgb(238, 241, 246)">
+        <el-aside width="350px">
             <el-input
                     placeholder="输入关键字进行过滤"
                     v-model="filterText">
@@ -40,7 +51,7 @@
             </el-header>
             
             <!-- 主体 -->
-            <el-main style="height: 100%">
+            <el-main style="height: 100%" ref="main">
                 <!-- 选项卡 -->
                 <el-tabs v-model="activeName" @tab-click="handleClick">
                     <el-tab-pane label="南云" name="10.157" ></el-tab-pane>
@@ -72,8 +83,15 @@
                                 <div @click="toggleSelection([scope.row])">{{ scope.row.path }}</div>
                             </template>
                     </el-table-column>
+
+                    <el-table-column prop="size"  label="文件大小" width="150">
+                        <template slot-scope="scope">
+                            <!-- 单行点击事件 -->
+                            <div @click="toggleSelection([scope.row])">{{ scope.row.size }}</div>
+                        </template>
+                    </el-table-column>
                     
-                    <el-table-column prop="createTime"  label="生成时间" width="150">
+                    <el-table-column prop="createTime"  label="生成时间" width="160">
                         <template slot-scope="scope">
                             <!-- 单行点击事件 -->
                             <div @click="toggleSelection([scope.row])">{{ scope.row.createTime }}</div>
@@ -146,8 +164,8 @@
                     children: 'children',
                     label: 'label'
                 },
-                //
-                activeName: '10.157'
+                // 活跃的tab页
+                activeName: '10.157',
             }
         },
         methods: {
@@ -322,10 +340,13 @@
                         this.showTree = true;
                     }, 100)
                 }
-            }
+            },
         },
         mounted() {
             this.menu();
+            // 获取浏览器可视区域高度
+            let clientHeight = `${document.documentElement.clientHeight}` - 50 + 'px';
+            console.log(this.$refs.container.$el.style.height = clientHeight)
         }
     })
 </script>
