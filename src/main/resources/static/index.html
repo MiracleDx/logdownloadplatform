@@ -52,18 +52,21 @@
             
             <!-- 主体 -->
             <el-main style="height: 100%" ref="main">
+                <!-- 历史信息页 -->
+                <el-page-header @back="goBack" :content="content" v-show="showHistory">
+                </el-page-header>
                 <!-- 选项卡 -->
                 <el-tabs v-model="activeName" @tab-click="handleClick">
                     <el-tab-pane label="南云" name="10.157" ></el-tab-pane>
                     <el-tab-pane label="北云" name="10.155" ></el-tab-pane>
                 </el-tabs>
-                
+
                 <!-- 表格 -->
                 <el-table
                         ref="multipleTable"
                         :data="logDetails.filter(data => data.ip.includes(activeName) && (!search || data.path.toLowerCase().includes(search.toLowerCase()) || data.ip.includes(search))).slice((curPage - 1) * pageSize, curPage * pageSize)"
                         border 
-                        style="width: 100%"
+                        style="width: 100%;"
                         @selection-change="handleSelectionChange">
                     <!-- 日志路径 -->
                     <el-table-column
@@ -108,9 +111,14 @@
                                     size="mini"
                                     placeholder="输入关键字搜索"/>
                         </template>
-                        <!-- 下载日志 -->
+                        
                         <template slot-scope="scope">
+                            <!-- 下载日志 -->
                             <el-button  @click="downloadLog(scope.row)" type="text" size="small">下载日志</el-button>
+                            <!-- 下载镜像 -->
+                            <el-tooltip class="item" effect="dark" content="下载缓存中的日志文件" placement="top">
+                                <el-button  @click="downloadHistoryLog(scope.row)" type="text" size="small" v-show="scope.row.mirror">下载镜像</el-button>
+                            </el-tooltip>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -125,13 +133,29 @@
                         @current-change="handleCurrentChange"  
                         @size-change="handleSizeChange">
                 </el-pagination>
-                
+            
                 <!-- 底部按钮 -->
                 <div style="margin-top: 20px">
                     <el-button @click="toggleSelection()">取消选择</el-button>
                     <el-button @click="download">下载日志</el-button>
+                    <el-tooltip class="item" effect="dark" content="查询该部署组的历史日志清单" placement="top">
+                        <el-button @click="history" v-show="!showHistory">查询历史</el-button>
+                    </el-tooltip>
                 </div>
-                
+
+                <el-backtop target=".logDetail" :bottom="100">
+                    <div style="{
+                            height: 100%;
+                            width: 100%;
+                            background-color: #f2f5f6;
+                            box-shadow: 0 0 6px rgba(0,0,0, .12);
+                            text-align: center;
+                            line-height: 40px;
+                            color: #1989fa;
+                          }">
+                        UP
+                    </div>
+                </el-backtop>
             </el-main>
         </el-container>
     </el-container>
@@ -166,6 +190,12 @@
                 },
                 // 活跃的tab页
                 activeName: '10.157',
+                // 显示历史页
+                showHistory: false,
+                // 历史页标题
+                content: "",
+                // 临时数据
+                tmpDetails: []
             }
         },
         methods: {
@@ -173,13 +203,15 @@
             handleNodeClick(data) {
                 console.log(data)
                 // 查找所有的父级
-                if (data.ips !== undefined && data.ips.length > 0) {
+                if (data.ips && data.ips.length > 0) {
+                    
                     const loading = this.$loading({
                         lock: true,
                         text: 'Loading',
                         spinner: 'el-icon-loading',
                         background: 'rgba(0, 0, 0, 0.7)'
                     });
+                    
                     fetch(router.queryLogDetails, {
                         method: 'post',
                         headers: {
@@ -188,7 +220,8 @@
                         body: JSON.stringify({
                             "label": data.cluster,
                             "ips": data.ips,
-                            "bkParam": data.bkParam
+                            "bkParam": data.bkParam,
+                            "isHistory": false
                         })
                     })
                         .then(response => response.json())
@@ -207,7 +240,7 @@
                             console.log(err)
                             this.$message.error(err)
                         })
-                } else if (data.ips !== undefined && data.ips.length === 0) {
+                } else if (data.ips && data.ips.length === 0) {
                     this.logDetails = []
                     this.$message.error("没有对应部署组IP")
                 }
@@ -293,7 +326,52 @@
                     }).catch(e => console.log(e));
                     
                 }
-            },       
+            },
+            // 抓取历史日志
+            async downloadHistoryLog(val) {
+                console.log(val)
+
+                const loading = this.$loading({
+                    lock: true,
+                    text: '获取' + val.ip + ':' + val.path + '的下载资源中...下载文件过大，可能会造成下载超时',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                });
+                // 使用fetch发送请求并拿到返回值
+                const response = await fetch(router.download, {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        'label': val.label,
+                        'ip': val.ip,
+                        'path': val.path
+                    })
+                });
+
+                if (response.headers.get('Content-Disposition')) {
+                    // 将文件流转为blob对象，并获取本地文件链接
+                    response.blob().then((blob) => {
+                        console.log(blob)
+                        const a = window.document.createElement('a');
+                        // 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
+                        const downUrl = window.URL.createObjectURL(blob);
+                        const filename = response.headers.get('Content-Disposition').split('filename=')[1];
+                        a.href = downUrl;
+                        a.download = `${decodeURI(filename)}`;
+                        loading.close();
+                        a.click();
+                        window.URL.revokeObjectURL(downUrl);
+                    });
+                } else {
+                    response.json().then((data) => {
+                        this.$message.error(data.message)
+                        loading.close();
+                    }).catch(e => console.log(e));
+
+                }
+            },
             // 下载
             async download() {
                 console.log(this.multipleSelection)
@@ -324,10 +402,112 @@
                 console.log(this.activeName)
                 console.log(this.logDetails.filter(data => data.ip.includes(this.activeName) && (!this.search || data.path.toLowerCase().includes(this.search.toLowerCase()) || data.ip.search(this.search))).length)
                 console.log(tab, event);
+            },
+            // 查询历史
+            history() {
+                // 获取当前选中节点
+                let node =  this.$refs.tree.getCurrentNode();
+                if (node && node.ips) {
+                    if (node.ips.length > 0) {
+                        // 将原始数据存入tmp
+                        this.tmpDetails = this.logDetails;
+                        this.content = node.label + " 历史日志查询"
+
+                        const loading = this.$loading({
+                            lock: true,
+                            text: 'Loading',
+                            spinner: 'el-icon-loading',
+                            background: 'rgba(0, 0, 0, 0.7)'
+                        });
+                        
+                        // 请求历史数据
+                        fetch(router.queryLogDetails, {
+                            method: 'post',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                "label": node.cluster,
+                                "ips": node.ips,
+                                "bkParam": node.bkParam,
+                                "isHistory": true
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data)
+                            loading.close();
+                            if (data.code === 1) {
+                                // 压入历史数据
+                                // this.logDetails = data.data;
+                                this.logDetails = [
+                                    {
+                                        "ip": "10.157",
+                                        "id": 0,
+                                        "path": "/history",
+                                        "createTime": "2020-03-25 09:35:48",
+                                        "label": null,
+                                        "size": "75M",
+                                        "mirror": true
+                                    },
+                                    {
+                                        "ip": "10.157",
+                                        "id": 1,
+                                        "path": "/history",
+                                        "createTime": "2020-03-25 09:35:48",
+                                        "label": null,
+                                        "size": "75M",
+                                        "mirror": false
+                                    },
+                                    {
+                                        "ip": "10.155",
+                                        "id": 2,
+                                        "path": "/history",
+                                        "createTime": "2020-03-25 09:35:48",
+                                        "label": null,
+                                        "size": "75M",
+                                        "mirror": false
+                                    },
+                                    {
+                                        "ip": "10.155",
+                                        "id": 2,
+                                        "path": "/history",
+                                        "createTime": "2020-03-25 09:35:48",
+                                        "label": null,
+                                        "size": "75M",
+                                        "mirror": true
+                                    }
+                                ]
+                            } else {
+                                this.logDetails = [];
+                                this.$message.error(data.message)
+                            }
+                            this.showHistory = true;
+                        })
+                        .catch(err => {
+                            loading.close();
+                            console.log(err)
+                            this.$message.error(err)
+                        })
+                    } else {
+                        this.logDetails = []
+                        this.$message.error("没有对应部署组IP")
+                    }
+                } else {
+                    this.$message.error("请先选择查询部署组")
+                }
+            },
+            // 返回查询当天日志
+            goBack() {
+                // 还原数据 清空tmp
+                this.logDetails = this.tmpDetails
+                this.tmpDetails = []
+                this.showHistory = false;
+                console.log('go back');
             }
         },
         watch: {
-            filterText(val) {
+            filterText(val) { 
                 this.$refs.tree.filter(val);
                 // 没有关键词后重新渲染tree组件
                 if (val === '') {
@@ -343,10 +523,20 @@
             },
         },
         mounted() {
+            // 初始化菜单数据
             this.menu();
+            
             // 获取浏览器可视区域高度
             let clientHeight = `${document.documentElement.clientHeight}` - 50 + 'px';
             console.log(this.$refs.container.$el.style.height = clientHeight)
+
+            // 初始化提示信息
+            this.$notify({
+                title: '提示',
+                dangerouslyUseHTMLString: true,
+                message: '当前页面查询结果为<strong>当天日志</strong><br>如需查询<strong>历史日志</strong><br>请点击表格下方的<strong>查询历史</strong>按钮',
+                duration: 0
+            });
         }
     })
 </script>
