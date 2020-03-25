@@ -98,8 +98,8 @@ public class LogController {
                         String logPath = arr[0];
                         logDetail.setPath(logPath);
                         logDetail.setIp(ip);
-                        logDetail.setCreateTime(arr[arr.length-1]);
-                        logDetail.setSize(Integer.valueOf(arr[arr.length-2])/1024 + "M");
+                        logDetail.setCreateTime(arr[arr.length - 1]);
+                        logDetail.setSize(Integer.parseInt(arr[arr.length-2]) / 1024 + "M");
                         logDetail.setLabel(queryLogDetailDTO.getLabel());
 
                         if (!logPath.contains("---") && !logPath.contains("No resources found") && !logPath.contains("No such file")) {
