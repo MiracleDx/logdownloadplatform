@@ -71,12 +71,16 @@ public class CallBKInterfaceService {
         int bk_biz_id = bkEnum.getCode();
         byte[] content = param.getBytes();
         String script_param = encoder.encodeToString(content);
+        int fastExecuteScript_id = script_id;
+        if (queryLogDetailDTO.getIsHistory()){
+            fastExecuteScript_id = 0;
+        }
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
                 "\t\"bk_username\": \"" + bk_username + "\",\n" +
                 "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
-                "\t\"script_id\": " + script_id + ",\n" +
+                "\t\"script_id\": " + fastExecuteScript_id + ",\n" +
                 "\t\"script_param\": \"" + script_param + "\",\n" +
                 "\t\"script_timeout\": 1000,\n" +
                 "\t\"account\": \"ubuntu\",\n" +

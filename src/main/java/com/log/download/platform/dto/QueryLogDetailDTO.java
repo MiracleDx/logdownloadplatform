@@ -27,4 +27,9 @@ public class QueryLogDetailDTO {
 	 * 蓝鲸需要的参数
 	 */
 	private String bkParam;
+
+	/**
+	 * 是否是历史查询
+	 */
+	private Boolean isHistory;
 }
