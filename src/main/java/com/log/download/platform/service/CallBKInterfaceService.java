@@ -18,6 +18,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
 
+/**
+ * CallBKInterfaceService
+ * 蓝鲸接口调用
+ *
+ * @author YaoDF
+ * Description:
+ * Created in: 2020-03-16 15:42
+ * Modified by:
+ */
 @Slf4j
 @Service
 public class CallBKInterfaceService {
@@ -35,7 +44,9 @@ public class CallBKInterfaceService {
     @Value("${getlogpath_script_id}")
     private int script_id;
 
-    //base64编码
+    /**
+     * base64编码
+     */
     final Base64.Encoder encoder = Base64.getEncoder();
 
 
