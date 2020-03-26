@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -46,60 +47,79 @@ public class MenuService {
 	 * @return
 	 * @throws IOException
 	 */
-	public List<MenuVO> getMenu(InputStream in) throws IOException {
+	public List<MenuVO> getMenu(InputStream in) {
 		ExcelReader excelReader = EasyExcel.read(in).build();
 
-		UploadDeploymentGroupListener uploadDeploymentGroupListener = new UploadDeploymentGroupListener();
 		// 读取sheet1
-		ReadSheet readSheet1 =
-				EasyExcel.readSheet(0).head(DeploymentGroup.class).registerReadListener(uploadDeploymentGroupListener).build();
+		UploadDeploymentGroupListener uploadDeploymentGroupListener = new UploadDeploymentGroupListener();
+		CompletableFuture<ReadSheet> readSheet1 = CompletableFuture
+				.supplyAsync(() -> EasyExcel.readSheet(0).head(DeploymentGroup.class).registerReadListener(uploadDeploymentGroupListener).build());
+		
 		// 读取sheet2
 		UploadGatewayGroupListener uploadGatewayGroupListener = new UploadGatewayGroupListener();
-		ReadSheet readSheet2 =
-				EasyExcel.readSheet(1).head(GatewayGroup.class).registerReadListener(uploadGatewayGroupListener).build();
-
-		excelReader.read(readSheet1, readSheet2);
-		// 这里千万别忘记关闭，读的时候会创建临时文件，到时磁盘会崩的
-		excelReader.finish();
-		in.close();
+		CompletableFuture<ReadSheet> readSheet2 = CompletableFuture
+				.supplyAsync(() -> EasyExcel.readSheet(1).head(GatewayGroup.class).registerReadListener(uploadGatewayGroupListener).build());
 		
-		// 转换BO
-		List<DeploymentGroupBO> deploymentGroupBOs = uploadDeploymentGroupListener.getList().stream().map(e -> {
-			DeploymentGroupBO bo = new DeploymentGroupBO();
-			BeanUtils.copyProperties(e, bo);
-			return bo;
-		}).collect(Collectors.toList());
+		// 获取sheet页信息
+		readSheet1.thenAcceptBoth(readSheet2, (sheet1, sheet2) -> {
+			excelReader.read(sheet1, sheet2);
+		}).thenRun(() -> {
+			// 这里千万别忘记关闭，读的时候会创建临时文件，到时磁盘会崩的
+			excelReader.finish();
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}).join();
 
-		//Stream.iterate(0, i -> i + 1).limit(bos.size()).forEach(i -> bos.get(i).setId(i));
-
-		// 转换BO
-		List<GatewayGroupBO> gatewayGroupBOs = uploadGatewayGroupListener.getList().stream().map(e -> {
-			GatewayGroupBO bo = new GatewayGroupBO();
-			BeanUtils.copyProperties(e, bo);
-			return bo;
-		}).collect(Collectors.toList());
 
 		// 获取aop代理对象
 		MenuService o = (MenuService) AopContext.currentProxy();
-		// 获得微服务菜单
-		List<MenuVO> serverMenu = convertServer2Tree(deploymentGroupBOs);
-		log.info("微服务菜单树转换成功");
-		List<MenuVO> gatewayMenu = convertGateway2Tree(gatewayGroupBOs);
 		
-		if (o.menu == null || o.menu.size() == 0) {
-			o.menu = new ArrayList<>();
-		}
+		// 转换微服务
+		CompletableFuture<List<MenuVO>> deployFuture = CompletableFuture.supplyAsync(() -> {
+			// 转换BO
+			List<DeploymentGroupBO> list = uploadDeploymentGroupListener.getList().stream().map(e -> {
+				DeploymentGroupBO bo = new DeploymentGroupBO();
+				BeanUtils.copyProperties(e, bo);
+				return bo;
+			}).collect(Collectors.toList());
+			// 获得微服务菜单
+			 return convertServer2Tree(list);
+		});
+
+		// 转换微服务网关
+		CompletableFuture<List<MenuVO>> gatewayFuture = CompletableFuture.supplyAsync(() -> {
+			// 转换BO
+			List<GatewayGroupBO> list = uploadGatewayGroupListener.getList().stream().map(e -> {
+				GatewayGroupBO bo = new GatewayGroupBO();
+				BeanUtils.copyProperties(e, bo);
+				return bo;
+			}).collect(Collectors.toList());
+			return convertGateway2Tree(list);
+		});
 		
-		MenuVO server = new MenuVO();
-		server.setLabel("微服务");
-		server.setChildren(serverMenu);
-		o.menu.add(server);
-		
-		MenuVO gateway = new MenuVO();
-		gateway.setLabel("微服务网关");
-		gateway.setChildren(gatewayMenu);
-		o.menu.add(gateway);
-		
+		// 转换菜单树
+		deployFuture.thenAcceptBoth(gatewayFuture, (d, g) -> {
+			log.info("微服务菜单树转换成功");
+
+			if (o.menu == null || o.menu.size() == 0) {
+				o.menu = new ArrayList<>();
+			}
+
+			MenuVO server = new MenuVO();
+			server.setLabel("微服务");
+			server.setChildren(d);
+			o.menu.add(server);
+
+			MenuVO gateway = new MenuVO();
+			gateway.setLabel("微服务网关");
+			gateway.setChildren(g);
+			o.menu.add(gateway);
+		}).join();
+
+		//Stream.iterate(0, i -> i + 1).limit(bos.size()).forEach(i -> bos.get(i).setId(i));
 		return menu;
 	}
 
