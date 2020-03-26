@@ -29,6 +29,12 @@ import java.util.stream.Collectors;
 @RestController
 public class LogController {
 
+    /**
+     * 调用接口返回的执行结果
+     */
+    public static final String RESULT = "result";
+    public static final String DATA = "data";
+
     @Resource
     private CallBKInterfaceService callBKInterfaceService;
 
@@ -43,14 +49,14 @@ public class LogController {
         //拼接快速执行脚本的参数
         String params = callBKInterfaceService.getFastExecuteScriptParams(queryLogDetailDTO);
         //执行脚本，并获取结果
-        JSONObject result = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_execute_script/", params);
+        JSONObject resultObject = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_execute_script/", params);
         //如果执行成功，查询执行日志
-        if (result.getBoolean("result")) {
+        if (resultObject.getBoolean(RESULT)) {
             //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
-            int job_instance_id = result.getJSONObject("data").getInteger("job_instance_id");
-            String params_log = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), job_instance_id);
+            int jobInstanceId = resultObject.getJSONObject(DATA).getInteger("job_instance_id");
+            String paramsLog = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), jobInstanceId);
 
-            JSONObject result_log = new JSONObject();
+            JSONObject resultLog = new JSONObject();
             long t1 = System.currentTimeMillis();
             boolean isFinished = false;
             while (!isFinished) {
@@ -59,11 +65,11 @@ public class LogController {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                result_log = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", params_log);
-                isFinished = result_log.getJSONArray("data").getJSONObject(0).getBoolean("is_finished");
+                resultLog = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", paramsLog);
+                isFinished = resultLog.getJSONArray(DATA).getJSONObject(0).getBoolean("is_finished");
 
-                if (result_log.toString().contains("Can not find Agent by ip")) {
-                    return ServerResponse.failure(result_log.getString("data"));
+                if (resultLog.toString().contains("Can not find Agent by ip")) {
+                    return ServerResponse.failure(resultLog.getString("data"));
                 }
 
                 long t2 = System.currentTimeMillis();
@@ -73,23 +79,23 @@ public class LogController {
             }
 
             //获取执行日志
-            if (result_log.getBoolean("result")) {
-                JSONArray dataArr = result_log.getJSONArray("data");
+            if (resultLog.getBoolean(RESULT)) {
+                JSONArray dataArr = resultLog.getJSONArray(DATA);
                 JSONObject dataObject = dataArr.getJSONObject(0);
-                JSONArray step_resultArr = dataObject.getJSONArray("step_results");
-                JSONObject step_resultsObject = step_resultArr.getJSONObject(0);
-                JSONArray ip_logs = step_resultsObject.getJSONArray("ip_logs");
-                String path = "";
+                JSONArray stepResultArr = dataObject.getJSONArray("step_results");
+                JSONObject stepResultsObject = stepResultArr.getJSONObject(0);
+                JSONArray ipLogs = stepResultsObject.getJSONArray("ip_logs");
+                String path;
                 List<LogDetailVO> list = new ArrayList<>();
 
-                for (int i = 0; i < ip_logs.size(); i++) {
-                    JSONObject ip_logs1 = ip_logs.getJSONObject(i);
-                    String log_content = ip_logs1.getString("log_content");
-                    String ip = ip_logs1.getString("ip");
-                    path = log_content;
+                for (int i = 0; i < ipLogs.size(); i++) {
+                    JSONObject ipLogs1 = ipLogs.getJSONObject(i);
+                    String logContent = ipLogs1.getString("log_content");
+                    String ip = ipLogs1.getString("ip");
+                    path = logContent;
                     String[] paths = path.split("\\n");
                     // 已存在的logName
-                    Map<String, List<LogDetailVO>> map = new HashMap<>();
+                    Map<String, List<LogDetailVO>> map = new HashMap<>(16);
                     for (int j = 1; j <= paths.length; j++) {
                         LogDetailVO logDetail = new LogDetailVO();
                         logDetail.setId(j);
@@ -133,10 +139,10 @@ public class LogController {
                     return ServerResponse.success(list);
                 }
             }
-            log.error(result.getString("message"));
-            return ServerResponse.failure(result.getString("message"));
+            log.error(resultObject.getString("message"));
+            return ServerResponse.failure(resultObject.getString("message"));
         }
-        log.error(result.getString("message"));
-        return ServerResponse.failure(result.getString("message"));
+        log.error(resultObject.getString("message"));
+        return ServerResponse.failure(resultObject.getString("message"));
     }
 }
