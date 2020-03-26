@@ -439,45 +439,7 @@
                             loading.close();
                             if (data.code === 1) {
                                 // 压入历史数据
-                                // this.logDetails = data.data;
-                                this.logDetails = [
-                                    {
-                                        "ip": "10.157",
-                                        "id": 0,
-                                        "path": "/history",
-                                        "createTime": "2020-03-25 09:35:48",
-                                        "label": null,
-                                        "size": "75M",
-                                        "mirror": true
-                                    },
-                                    {
-                                        "ip": "10.157",
-                                        "id": 1,
-                                        "path": "/history",
-                                        "createTime": "2020-03-25 09:35:48",
-                                        "label": null,
-                                        "size": "75M",
-                                        "mirror": false
-                                    },
-                                    {
-                                        "ip": "10.155",
-                                        "id": 2,
-                                        "path": "/history",
-                                        "createTime": "2020-03-25 09:35:48",
-                                        "label": null,
-                                        "size": "75M",
-                                        "mirror": false
-                                    },
-                                    {
-                                        "ip": "10.155",
-                                        "id": 2,
-                                        "path": "/history",
-                                        "createTime": "2020-03-25 09:35:48",
-                                        "label": null,
-                                        "size": "75M",
-                                        "mirror": true
-                                    }
-                                ]
+                                this.logDetails = data.data;
                             } else {
                                 this.logDetails = [];
                                 this.$message.error(data.message)
