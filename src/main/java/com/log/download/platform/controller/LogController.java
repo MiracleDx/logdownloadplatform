@@ -102,13 +102,12 @@ public class LogController {
                         String[] arr = paths[j - 1].split("\t");
                         // 日志路径
                         String logPath = arr[0];
-                        logDetail.setPath(logPath);
-                        logDetail.setIp(ip);
-                        logDetail.setCreateTime(arr[arr.length - 1]);
-                        logDetail.setSize(Integer.parseInt(arr[arr.length-2]) / 1024 + "M");
-                        logDetail.setLabel(queryLogDetailDTO.getLabel());
-
                         if (!logPath.contains("---") && !logPath.contains("No resources found") && !logPath.contains("No such file")) {
+                            logDetail.setPath(logPath);
+                            logDetail.setIp(ip);
+                            logDetail.setCreateTime(arr[arr.length - 1]);
+                            logDetail.setSize(Integer.parseInt(arr[arr.length-2]) / 1024 + "M");
+                            logDetail.setLabel(queryLogDetailDTO.getLabel());
                             // 日志名称
                             String logName = logPath.substring(logPath.lastIndexOf("/"));
                             // 过滤torrent文件
