@@ -142,20 +142,6 @@
                         <el-button @click="history" v-show="!showHistory">查询历史</el-button>
                     </el-tooltip>
                 </div>
-
-                <el-backtop target=".logDetail" :bottom="100">
-                    <div style="{
-                            height: 100%;
-                            width: 100%;
-                            background-color: #f2f5f6;
-                            box-shadow: 0 0 6px rgba(0,0,0, .12);
-                            text-align: center;
-                            line-height: 40px;
-                            color: #1989fa;
-                          }">
-                        UP
-                    </div>
-                </el-backtop>
             </el-main>
         </el-container>
     </el-container>
@@ -202,6 +188,11 @@
             // 菜单点击事件
             handleNodeClick(data) {
                 console.log(data)
+
+                this.logDetails = [];
+                this.tmpDetails = [];
+                this.showHistory = false;
+                
                 // 查找所有的父级
                 if (data.ips && data.ips.length > 0) {
                     

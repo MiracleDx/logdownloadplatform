@@ -212,7 +212,7 @@ public class CallBKInterfaceService {
      * @param list
      * @return
      */
-    public List getFileIsExists(List<LogDetailVO> list) {
+    public List<LogDetailVO> getFileIsExists(List<LogDetailVO> list) {
         List<LogDetailVO> logs = new ArrayList<>();
         String path;
         for (LogDetailVO log : list) {

@@ -102,11 +102,15 @@ public class LogController {
                         String[] arr = paths[j - 1].split("\t");
                         // 日志路径
                         String logPath = arr[0];
-                        if (!logPath.contains("---") && !logPath.contains("No resources found") && !logPath.contains("No such file")) {
+                        if (!logPath.contains("---") 
+                                && !logPath.contains("No resources found") 
+                                && !logPath.contains("No such file") 
+                                && !logPath.contains("Unable to connect to the server") 
+                                && !logPath.contains("certificate is valid")) {
                             logDetail.setPath(logPath);
                             logDetail.setIp(ip);
                             logDetail.setCreateTime(arr[arr.length - 1]);
-                            logDetail.setSize(Math.round(Double.valueOf(arr[arr.length-2])*100 / (1024 * 1024))/100.0 + "M");
+                            logDetail.setSize(Math.round(Double.parseDouble(arr[arr.length - 2]) * 100 / (1024 * 1024)) / 100.0 + "M");
                             logDetail.setLabel(queryLogDetailDTO.getLabel());
                             // 日志名称
                             String logName = logPath.substring(logPath.lastIndexOf("/"));
@@ -130,8 +134,8 @@ public class LogController {
                 }
 
                 if (list.size() == 0) {
-                    log.error("无日志文件");
-                    return ServerResponse.failure("无日志文件");
+                    log.error("蓝鲸查询无日志文件列表返回");
+                    return ServerResponse.failure("蓝鲸查询无日志文件列表返回");
                 } else {
                     List<LogDetailVO> logs = callBKInterfaceService.getFileIsExists(list);
                     Collections.sort(logs);
