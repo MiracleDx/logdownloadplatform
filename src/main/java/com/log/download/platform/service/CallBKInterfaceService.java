@@ -51,6 +51,9 @@ public class CallBKInterfaceService {
     @Value("${getlogpath_script_id}")
     private int script_id;
 
+    @Value("${historyScriptID}")
+    private int historyScriptID;
+
     /**
      * base64编码
      */
@@ -91,7 +94,7 @@ public class CallBKInterfaceService {
         String script_param = encoder.encodeToString(content);
         int fastExecuteScript_id = script_id;
         if (queryLogDetailDTO.getIsHistory()) {
-            fastExecuteScript_id = 8644;
+            fastExecuteScript_id = historyScriptID;
         }
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
