@@ -35,7 +35,9 @@ public class LogDetailVO implements Comparable<LogDetailVO>{
 		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 		if (LocalDateTime.parse(this.createTime, df).isAfter(LocalDateTime.parse(logDetailVO.createTime, df))) {
 			return 1;
-		} else {
+		}else if (this.createTime == logDetailVO.createTime){
+			return 0;
+		}else {
 			return -1;
 		}
 	}
