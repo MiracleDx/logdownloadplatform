@@ -107,6 +107,11 @@ public class MenuService {
 			if (o.menu == null || o.menu.size() == 0) {
 				o.menu = new ArrayList<>();
 			}
+			
+			// 清空缓存数据
+			if (o.menu.size() >= 2) {
+				o.menu.clear();
+			}
 
 			MenuVO server = new MenuVO();
 			server.setLabel("微服务");
