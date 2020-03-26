@@ -52,33 +52,30 @@ public class MenuService {
 
 		// 读取sheet1
 		UploadDeploymentGroupListener uploadDeploymentGroupListener = new UploadDeploymentGroupListener();
-		CompletableFuture<ReadSheet> readSheet1 = CompletableFuture
-				.supplyAsync(() -> EasyExcel.readSheet(0).head(DeploymentGroup.class).registerReadListener(uploadDeploymentGroupListener).build());
-		
 		// 读取sheet2
 		UploadGatewayGroupListener uploadGatewayGroupListener = new UploadGatewayGroupListener();
-		CompletableFuture<ReadSheet> readSheet2 = CompletableFuture
-				.supplyAsync(() -> EasyExcel.readSheet(1).head(GatewayGroup.class).registerReadListener(uploadGatewayGroupListener).build());
-		
-		// 获取sheet页信息
-		readSheet1.thenAcceptBoth(readSheet2, (sheet1, sheet2) -> {
-			excelReader.read(sheet1, sheet2);
-		}).thenRun(() -> {
-			// 这里千万别忘记关闭，读的时候会创建临时文件，到时磁盘会崩的
-			excelReader.finish();
-			try {
-				in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}).join();
 
+		// 获取sheet页信息
+		CompletableFuture
+				.supplyAsync(() -> EasyExcel.readSheet(0).head(DeploymentGroup.class).registerReadListener(uploadDeploymentGroupListener).build())
+				.thenAcceptBoth(CompletableFuture
+						.supplyAsync(() -> EasyExcel.readSheet(1).head(GatewayGroup.class).registerReadListener(uploadGatewayGroupListener).build()), (sheet1, sheet2) -> {
+					excelReader.read(sheet1, sheet2);
+				}).thenRun(() -> {
+					// 这里千万别忘记关闭，读的时候会创建临时文件，到时磁盘会崩的
+					excelReader.finish();
+					try {
+						in.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}).join();
 
 		// 获取aop代理对象
 		MenuService o = (MenuService) AopContext.currentProxy();
 		
-		// 转换微服务
-		CompletableFuture<List<MenuVO>> deployFuture = CompletableFuture.supplyAsync(() -> {
+		// 转换菜单树
+		CompletableFuture.supplyAsync(() -> {
 			// 转换BO
 			List<DeploymentGroupBO> list = uploadDeploymentGroupListener.getList().stream().map(e -> {
 				DeploymentGroupBO bo = new DeploymentGroupBO();
@@ -86,28 +83,23 @@ public class MenuService {
 				return bo;
 			}).collect(Collectors.toList());
 			// 获得微服务菜单
-			 return convertServer2Tree(list);
-		});
-
-		// 转换微服务网关
-		CompletableFuture<List<MenuVO>> gatewayFuture = CompletableFuture.supplyAsync(() -> {
+			return convertServer2Tree(list);
+		}).thenAcceptBoth(CompletableFuture.supplyAsync(() -> {
 			// 转换BO
 			List<GatewayGroupBO> list = uploadGatewayGroupListener.getList().stream().map(e -> {
 				GatewayGroupBO bo = new GatewayGroupBO();
 				BeanUtils.copyProperties(e, bo);
 				return bo;
 			}).collect(Collectors.toList());
+			// 获得微服务网关菜单
 			return convertGateway2Tree(list);
-		});
-		
-		// 转换菜单树
-		deployFuture.thenAcceptBoth(gatewayFuture, (d, g) -> {
+		}), (d, g) -> {
 			log.info("微服务菜单树转换成功");
 
 			if (o.menu == null || o.menu.size() == 0) {
 				o.menu = new ArrayList<>();
 			}
-			
+
 			// 清空缓存数据
 			if (o.menu.size() >= 2) {
 				o.menu.clear();
