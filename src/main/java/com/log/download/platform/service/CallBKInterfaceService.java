@@ -6,6 +6,7 @@ import com.log.download.platform.dto.DownLoadDTO;
 import com.log.download.platform.dto.HostDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
 import com.log.download.platform.response.ServerResponse;
+import com.log.download.platform.vo.LogDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -16,6 +17,10 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -31,6 +36,8 @@ import java.util.*;
 @Service
 public class CallBKInterfaceService {
 
+
+    public static final int TWOHOURS = 120;
 
     @Value("${bk_app_code}")
     private String bk_app_code;
@@ -83,7 +90,7 @@ public class CallBKInterfaceService {
         byte[] content = param.getBytes();
         String script_param = encoder.encodeToString(content);
         int fastExecuteScript_id = script_id;
-        if (queryLogDetailDTO.getIsHistory()){
+        if (queryLogDetailDTO.getIsHistory()) {
             fastExecuteScript_id = 0;
         }
         String params = "{\n" +
@@ -152,9 +159,9 @@ public class CallBKInterfaceService {
                 "\t\t\"account\": \"ubuntu\",\n" +
                 "\t\t\"ip_list\": [\n";
         String iplist = "\t\t{\n" +
-                        "\t\t\t\"bk_cloud_id\": 0,\n" +
-                        "\t\t\t\"ip\": \"" + ip + "\"\n" +
-                        "\t\t}\n";
+                "\t\t\t\"bk_cloud_id\": 0,\n" +
+                "\t\t\t\"ip\": \"" + ip + "\"\n" +
+                "\t\t}\n";
 
         params += iplist;
         params += "\t\t]\n\t}\n]}";
@@ -162,7 +169,6 @@ public class CallBKInterfaceService {
     }
 
     /**
-     *
      * @param path
      * @param response
      */
@@ -192,11 +198,66 @@ public class CallBKInterfaceService {
             // 设置response的Header
             response.addHeader("Content-Disposition", "attachment;filename=" + new String(filename.getBytes()));
             response.addHeader("Content-Length", "" + file.length());
-            
+
             response.setContentType("application/octet-stream");
             outputStream.write(buffer);
         } catch (IOException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    /**
+     * 获取文件是否合理存在于文件服务器
+     *
+     * @param list
+     * @return
+     */
+    public List getFileIsExists(List<LogDetailVO> list) {
+        List<LogDetailVO> logs = new ArrayList<>();
+        String path;
+        for (LogDetailVO log : list) {
+            path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + log.getPath();
+            File file = new File(path);
+            Calendar cal = Calendar.getInstance();
+            long time = file.lastModified();
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            cal.setTimeInMillis(time);
+            String modifiedTime = formatter.format(cal.getTime());
+            if (!file.exists()) {
+                log.setMirror(false);
+            } else {
+                if (isToday(log.getCreateTime(), modifiedTime)) {
+                    log.setMirror(true);
+                } else {
+                    file.delete();
+                    log.setMirror(false);
+                }
+            }
+            logs.add(log);
+        }
+        return logs;
+    }
+
+    /**
+     * 判断文件在文件服务的时间是否合法
+     *
+     * @param creatTime 文件在蓝鲸的创建时间
+     * @param time      文件在文件服务器的最后修改时间
+     * @return
+     */
+    public Boolean isToday(String creatTime, String time) {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime localDateTime = LocalDateTime.parse(creatTime, dtf);
+        LocalDateTime modifiedTime = LocalDateTime.parse(time, dtf);
+        LocalDateTime now = LocalDateTime.now();
+        //如果是蓝鲸创建时间是今天，判断文件在服务器上创建时间和当前时间是否间隔两个小时
+        if (now.getYear() == localDateTime.getYear() && now.getMonth() == localDateTime.getMonth()
+                && now.getDayOfMonth() == localDateTime.getDayOfMonth()) {
+            //获取两个时间的时间间隔
+            Duration duration = Duration.between(modifiedTime, now);
+            return duration.toMinutes() <= TWOHOURS;
+        } else {
+            return true;
         }
     }
 }

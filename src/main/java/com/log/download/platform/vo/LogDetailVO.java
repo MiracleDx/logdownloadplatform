@@ -28,6 +28,8 @@ public class LogDetailVO implements Comparable<LogDetailVO>{
 
 	private String size;
 
+	private Boolean mirror;
+
 	@Override
 	public int compareTo(LogDetailVO logDetailVO) {
 		DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");

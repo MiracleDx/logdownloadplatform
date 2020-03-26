@@ -41,6 +41,24 @@ public class DownloadLogController {
     @Resource
     private CallBKInterfaceService callBKInterfaceService;
 
+    /**
+     * 从本地获取镜像日志
+     *
+     * @param downLoadDTO
+     * @throws IOException
+     */
+    @RequestMapping("/downloadImage")
+    public void downloadImage(@RequestBody DownLoadDTO downLoadDTO) throws IOException {
+        HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
+        callBKInterfaceService.download(downLoadDTO.getIp(), downLoadDTO.getPath(), response);
+    }
+
+    /**
+     * 从蓝鲸获取日志
+     *
+     * @param downLoadDTO
+     * @throws IOException
+     */
     @RequestMapping("/download")
     public void downloadLog(@RequestBody DownLoadDTO downLoadDTO) throws IOException {
         HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
@@ -55,7 +73,7 @@ public class DownloadLogController {
             long t1 = System.currentTimeMillis();
             //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
             boolean isFinished = false;
-            while (!isFinished){
+            while (!isFinished) {
                 try {
                     TimeUnit.SECONDS.sleep(3);
                 } catch (InterruptedException e) {
@@ -76,7 +94,7 @@ public class DownloadLogController {
                     }
                 }
             }
-            
+
             if (resultLog.getBoolean(RESULT)) {
                 JSONArray dataArr = resultLog.getJSONArray("data");
                 JSONObject dataObject = dataArr.getJSONObject(0);
@@ -105,6 +123,7 @@ public class DownloadLogController {
                 }
             }
         }
+
     }
 
 

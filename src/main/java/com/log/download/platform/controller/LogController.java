@@ -134,9 +134,10 @@ public class LogController {
                     log.error("无日志文件");
                     return ServerResponse.failure("无日志文件");
                 } else {
-                    Collections.sort(list);
-                    Collections.reverse(list);
-                    return ServerResponse.success(list);
+                    List<LogDetailVO> logs = callBKInterfaceService.getFileIsExists(list);
+                    Collections.sort(logs);
+                    Collections.reverse(logs);
+                    return ServerResponse.success(logs);
                 }
             }
             log.error(resultObject.getString("message"));
