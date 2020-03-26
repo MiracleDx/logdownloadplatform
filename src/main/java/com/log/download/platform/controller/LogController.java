@@ -106,7 +106,7 @@ public class LogController {
                             logDetail.setPath(logPath);
                             logDetail.setIp(ip);
                             logDetail.setCreateTime(arr[arr.length - 1]);
-                            logDetail.setSize(Math.round(Double.valueOf(arr[arr.length-2])*100 / 1024)/100.0 + "M");
+                            logDetail.setSize(Math.round(Double.valueOf(arr[arr.length-2])*100 / (1024 * 1024))/100.0 + "M");
                             logDetail.setLabel(queryLogDetailDTO.getLabel());
                             // 日志名称
                             String logName = logPath.substring(logPath.lastIndexOf("/"));
