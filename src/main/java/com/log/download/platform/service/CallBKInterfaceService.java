@@ -91,7 +91,7 @@ public class CallBKInterfaceService {
         String script_param = encoder.encodeToString(content);
         int fastExecuteScript_id = script_id;
         if (queryLogDetailDTO.getIsHistory()) {
-            fastExecuteScript_id = 0;
+            fastExecuteScript_id = 8644;
         }
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
