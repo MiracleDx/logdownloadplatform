@@ -3,5 +3,6 @@ const router = {
     "queryLogDetails": remote + "queryLogDetails",
     "getMenu": remote + "getMenu",
     "upload": remote + "upload",
-    "download": remote + "download"
+    "download": remote + "download",
+    "downloadImage": remote + "downloadImage"
 }
