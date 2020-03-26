@@ -188,14 +188,12 @@
             // 菜单点击事件
             handleNodeClick(data) {
                 console.log(data)
-
-                this.logDetails = [];
-                this.tmpDetails = [];
-                this.showHistory = false;
                 
                 // 查找所有的父级
                 if (data.ips && data.ips.length > 0) {
-                    
+                    this.logDetails = [];
+                    this.tmpDetails = [];
+                    this.showHistory = false;
                     const loading = this.$loading({
                         lock: true,
                         text: 'Loading',
