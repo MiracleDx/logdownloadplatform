@@ -126,11 +126,21 @@ public class LogController {
                             }
                         }
                     }
-                    map.forEach((k, v) -> list.addAll(v.stream()
-                            .filter(e -> v.size() > 1
-                                    && !e.getPath().contains("tsf_default")
-                                    && !e.getPath().contains("sys_log"))
-                            .distinct().collect(Collectors.toList())));
+                    
+                    map.forEach((k, v) -> {
+                        // 多个同名日志
+                        if (v.size() > 1) {
+                            // 如果包含落盘日志
+                            if (v.stream().anyMatch(e -> e.getPath().contains("/log/"))) {
+                                // 存入落盘日志和sys_log
+                                list.addAll(v.stream().filter(e -> !e.getPath().contains("tsf_default") || e.getPath().contains("sys_log")).distinct().collect(Collectors.toList()));
+                            } else {
+                                list.addAll(v.stream().distinct().collect(Collectors.toList()));
+                            }
+                        } else {
+                            list.addAll(v);
+                        }
+                    });
                 }
 
                 if (list.size() == 0) {
