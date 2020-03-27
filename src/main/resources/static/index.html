@@ -138,8 +138,8 @@
                 <div style="margin-top: 20px">
                     <el-button @click="toggleSelection()">取消选择</el-button>
                     <el-button @click="download">下载日志</el-button>
-                    <el-tooltip class="item" effect="dark" content="查询该部署组的历史日志清单" placement="top">
-                        <el-button @click="history" v-show="!showHistory">查询历史</el-button>
+                    <el-tooltip class="item" effect="dark" content="查询该部署组1天前的历史日志清单" placement="top">
+                        <el-button @click="history(true)" v-show="!showHistory">查询历史</el-button>
                     </el-tooltip>
                 </div>
             </el-main>
@@ -339,27 +339,30 @@
                     })
                 });
 
-                if (response.headers.get('Content-Disposition')) {
-                    // 将文件流转为blob对象，并获取本地文件链接
-                    response.blob().then((blob) => {
-                        console.log(blob)
-                        const a = window.document.createElement('a');
-                        // 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
-                        const downUrl = window.URL.createObjectURL(blob);
-                        const filename = response.headers.get('Content-Disposition').split('filename=')[1];
-                        a.href = downUrl;
-                        a.download = `${decodeURI(filename)}`;
-                        loading.close();
-                        a.click();
-                        window.URL.revokeObjectURL(downUrl);
-                    });
-                } else {
-                    response.json().then((data) => {
-                        this.$message.error(data.message)
-                        loading.close();
-                    }).catch(e => console.log(e));
-
-                }
+                setTimeout(() => {
+                    if (response.headers.get('Content-Disposition')) {
+                        // 将文件流转为blob对象，并获取本地文件链接
+                        response.blob().then((blob) => {
+                            console.log(blob)
+                            const a = window.document.createElement('a');
+                            // 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
+                            const downUrl = window.URL.createObjectURL(blob);
+                            const filename = response.headers.get('Content-Disposition').split('filename=')[1];
+                            a.href = downUrl;
+                            a.download = `${decodeURI(filename)}`;
+                            loading.close();
+                            a.click();
+                            window.URL.revokeObjectURL(downUrl);
+                        });
+                    } else {
+                        response.json().then((data) => {
+                            this.$message.error(data.message)
+                            loading.close();
+                        }).catch(e => console.log(e));
+                    }
+                    // 刷新回调
+                    this.history(false)
+                }, 500)
             },
             // 下载
             async download() {
@@ -393,13 +396,16 @@
                 console.log(tab, event);
             },
             // 查询历史
-            history() {
+            history(val) {
                 // 获取当前选中节点
                 let node =  this.$refs.tree.getCurrentNode();
                 if (node && node.ips) {
                     if (node.ips.length > 0) {
-                        // 将原始数据存入tmp
-                        this.tmpDetails = this.logDetails;
+                        // 将原始数据存入tmp  val = true 点击按钮 val = false 刷新
+                        console.log(val)
+                        if (val) {
+                            this.tmpDetails = this.logDetails;
+                        }
                         this.content = node.label + " 历史日志查询"
 
                         const loading = this.$loading({
@@ -455,7 +461,7 @@
                 this.tmpDetails = []
                 this.showHistory = false;
                 console.log('go back');
-            }
+            },
         },
         watch: {
             filterText(val) { 
