@@ -73,8 +73,8 @@ public class LogController {
                 }
 
                 long t2 = System.currentTimeMillis();
-                if (t2 - t1 > 15 * 1000) {
-                    return ServerResponse.failure("Timeout");
+                if (t2 - t1 > 30 * 1000) {
+                    return ServerResponse.failure("蓝鲸调用执行查询任务超时");
                 }
             }
 
