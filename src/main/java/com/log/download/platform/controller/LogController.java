@@ -82,77 +82,77 @@ public class LogController {
             if (resultLog.getBoolean(RESULT)) {
                 JSONArray dataArr = resultLog.getJSONArray(DATA);
                 JSONObject dataObject = dataArr.getJSONObject(0);
-                JSONArray stepResultArr = dataObject.getJSONArray("step_results");
-                JSONObject stepResultsObject = stepResultArr.getJSONObject(0);
-                JSONArray ipLogs = stepResultsObject.getJSONArray("ip_logs");
-                String path;
                 List<LogDetailVO> list = new ArrayList<>();
-
-                for (int i = 0; i < ipLogs.size(); i++) {
-                    JSONObject ipLogs1 = ipLogs.getJSONObject(i);
-                    String logContent = ipLogs1.getString("log_content");
-                    String ip = ipLogs1.getString("ip");
-                    path = logContent;
-                    String[] paths = path.split("\\n");
-                    // 已存在的logName
-                    Map<String, List<LogDetailVO>> map = new HashMap<>(16);
-                    for (int j = 1; j <= paths.length; j++) {
-                        LogDetailVO logDetail = new LogDetailVO();
-                        logDetail.setId(j);
-                        String[] arr = paths[j - 1].split("\t");
-                        // 日志路径
-                        String logPath = arr[0];
-                        if (!logPath.contains("---") 
-                                && !logPath.contains("No resources found") 
-                                && !logPath.contains("No such file") 
-                                && !logPath.contains("Unable to connect to the server") 
-                                && !logPath.contains("certificate is valid")) {
-                            logDetail.setPath(logPath);
-                            logDetail.setIp(ip);
-                            logDetail.setCreateTime(arr[arr.length - 1]);
-                            logDetail.setSize(Math.round(Double.parseDouble(arr[arr.length - 2]) * 100 / (1024 * 1024)) / 100.0 + "M");
-                            logDetail.setLabel(queryLogDetailDTO.getLabel());
-                            // 日志名称
-                            String logName = logPath.substring(logPath.lastIndexOf("/"));
-                            // 过滤torrent文件
-                            if (!logName.contains("torrent")) {
-                                // 如果key不存在，就新增key和value，否则获取value
-                                List<LogDetailVO> vos = map.compute(logName, (k, v) -> {
-                                    List<LogDetailVO> voList = new ArrayList<>();
-                                    voList.add(logDetail);
-                                    return voList;
-                                });
-                                vos.add(logDetail);
+                String notFinished;
+                JSONArray stepResultArr = dataObject.getJSONArray("step_results");
+                for (int o = 0; o < stepResultArr.size(); o++) {
+                    JSONObject stepResultsObject = stepResultArr.getJSONObject(o);
+                    JSONArray ipLogs = stepResultsObject.getJSONArray("ip_logs");
+                    String path;
+                    for (int i = 0; i < ipLogs.size(); i++) {
+                        JSONObject ipLogs1 = ipLogs.getJSONObject(i);
+                        String logContent = ipLogs1.getString("log_content");
+                        String ip = ipLogs1.getString("ip");
+                        path = logContent;
+                        String[] paths = path.split("\\n");
+                        // 已存在的logName
+                        Map<String, List<LogDetailVO>> map = new HashMap<>(16);
+                        for (int j = 1; j <= paths.length; j++) {
+                            LogDetailVO logDetail = new LogDetailVO();
+                            logDetail.setId(j);
+                            String[] arr = paths[j - 1].split("\t");
+                            // 日志路径
+                            String logPath = arr[0];
+                            if (!logPath.contains("---")
+                                    && !logPath.contains("No resources found")
+                                    && !logPath.contains("No such file")
+                                    && !logPath.contains("Unable to connect to the server")
+                                    && !logPath.contains("certificate is valid")) {
+                                logDetail.setPath(logPath);
+                                logDetail.setIp(ip);
+                                logDetail.setCreateTime(arr[arr.length - 1]);
+                                logDetail.setSize(Math.round(Double.parseDouble(arr[arr.length - 2]) * 100 / (1024 * 1024)) / 100.0 + "M");
+                                logDetail.setLabel(queryLogDetailDTO.getLabel());
+                                // 日志名称
+                                String logName = logPath.substring(logPath.lastIndexOf("/"));
+                                // 过滤torrent文件
+                                if (!logName.contains("torrent")) {
+                                    // 如果key不存在，就新增key和value，否则获取value
+                                    List<LogDetailVO> vos = map.compute(logName, (k, v) -> {
+                                        List<LogDetailVO> voList = new ArrayList<>();
+                                        voList.add(logDetail);
+                                        return voList;
+                                    });
+                                    vos.add(logDetail);
+                                }
                             }
                         }
-                    }
-                    
-                    map.forEach((k, v) -> {
-                        // 多个同名日志
-                        if (v.size() > 1) {
-                            // 去重
-                            List<LogDetailVO> tmp = v.stream().distinct().collect(Collectors.toList());
-                            // 如果包含落盘日志
-                            if (tmp.stream().anyMatch(e -> e.getPath().contains("/log/"))) {
-                                // 存入落盘日志和sys_log
-                                list.addAll(tmp.stream().filter(e -> !e.getPath().contains("tsf_default") || e.getPath().contains("sys_log")).collect(Collectors.toList()));
+
+                        map.forEach((k, v) -> {
+                            // 多个同名日志
+                            if (v.size() > 1) {
+                                // 如果包含落盘日志
+                                if (v.stream().anyMatch(e -> e.getPath().contains("/log/"))) {
+                                    // 存入落盘日志和sys_log
+                                    list.addAll(v.stream().filter(e -> !e.getPath().contains("tsf_default") || e.getPath().contains("sys_log")).distinct().collect(Collectors.toList()));
+                                } else {
+                                    list.addAll(v.stream().distinct().collect(Collectors.toList()));
+                                }
                             } else {
-                                list.addAll(tmp);
+                                list.addAll(v);
                             }
-                        } else {
-                            list.addAll(v);
-                        }
-                    });
-                }
+                        });
+                    }
 
-                if (list.size() == 0) {
-                    log.error("蓝鲸查询无日志文件列表返回");
-                    return ServerResponse.failure("蓝鲸查询无日志文件列表返回");
-                } else {
-                    List<LogDetailVO> logs = callBKInterfaceService.getFileIsExists(list);
-                    Collections.sort(logs);
-                    Collections.reverse(logs);
-                    return ServerResponse.success(logs);
+                    if (list.size() == 0) {
+                        log.error("蓝鲸查询无日志文件列表返回");
+                        return ServerResponse.failure("蓝鲸查询无日志文件列表返回");
+                    } else {
+                        List<LogDetailVO> logs = callBKInterfaceService.getFileIsExists(list);
+                        Collections.sort(logs);
+                        Collections.reverse(logs);
+                        return ServerResponse.success(logs);
+                    }
                 }
             }
             log.error(resultObject.getString("message"));
