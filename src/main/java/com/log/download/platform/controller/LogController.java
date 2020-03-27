@@ -130,12 +130,14 @@ public class LogController {
                     map.forEach((k, v) -> {
                         // 多个同名日志
                         if (v.size() > 1) {
+                            // 去重
+                            List<LogDetailVO> tmp = v.stream().distinct().collect(Collectors.toList());
                             // 如果包含落盘日志
-                            if (v.stream().anyMatch(e -> e.getPath().contains("/log/"))) {
+                            if (tmp.stream().anyMatch(e -> e.getPath().contains("/log/"))) {
                                 // 存入落盘日志和sys_log
-                                list.addAll(v.stream().filter(e -> !e.getPath().contains("tsf_default") || e.getPath().contains("sys_log")).distinct().collect(Collectors.toList()));
+                                list.addAll(tmp.stream().filter(e -> !e.getPath().contains("tsf_default") || e.getPath().contains("sys_log")).collect(Collectors.toList()));
                             } else {
-                                list.addAll(v.stream().distinct().collect(Collectors.toList()));
+                                list.addAll(tmp);
                             }
                         } else {
                             list.addAll(v);
