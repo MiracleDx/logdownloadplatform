@@ -219,7 +219,10 @@
                             loading.close();
                             if (data.code === 1) {
                                 this.logDetails = data.data;
-                            } else {
+                            }else if(data.code === 50004){
+                                this.logDetails = data.data;
+                                this.$confirm('未查询到数据的ip为：'+data.message);
+                            }else {
                                 this.logDetails = [];
                                 this.$message.error(data.message)
                             }

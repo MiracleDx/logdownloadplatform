@@ -38,6 +38,7 @@ public enum ResponseCode {
     DATA_NOT_FOUND(50001, "数据未找到"),
     DATA_IS_WRONG(50002, "数据有误"),
     DATA_ALREADY_EXISTED(50003, "数据已存在"),
+    PARTIAL_DATA_NOT_FOUND(50004, "部分数据未找到"),
 
     /* 接口错误：60001-69999 */
     INTERFACE_INNER_INVOKE_ERROR(60001, "内部系统接口调用异常"),

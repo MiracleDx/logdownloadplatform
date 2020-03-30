@@ -16,6 +16,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.log.download.platform.response.ResponseCode.PARTIAL_DATA_NOT_FOUND;
+
 /**
  * LogController
  * 日志查询控制器
@@ -157,8 +159,10 @@ public class LogController {
                         List<LogDetailVO> logs = callBKInterfaceService.getFileIsExists(list);
                         Collections.sort(logs);
                         Collections.reverse(logs);
-
-                        return ServerResponse.success(notFinished, logs);
+                        if ("".equals(notFinished) && notFinished.length() == 0){
+                            return ServerResponse.failure(PARTIAL_DATA_NOT_FOUND.code(), notFinished, logs);
+                        }
+                        return ServerResponse.success(logs);
                     }
                 }
             }
