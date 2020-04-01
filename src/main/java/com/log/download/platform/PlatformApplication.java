@@ -8,7 +8,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.*;
@@ -36,7 +35,7 @@ public class PlatformApplication implements ApplicationRunner {
 		// 没有初始化菜单时，加载指定位置模版
 		if (menuService.menu == null || menuService.menu.size() == 0) {
 			InputStream in = null;
-			File file = new File(excelLocation + excelName);
+			File file = new File(excelLocation + File.separator + excelName);
 			if (file.exists()) {
 				try {
 					in = new FileInputStream(file);
