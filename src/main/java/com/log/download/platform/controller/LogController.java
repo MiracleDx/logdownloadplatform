@@ -123,12 +123,11 @@ public class LogController {
                                     // 过滤torrent文件
                                     if (!logName.contains("torrent")) {
                                         // 如果key不存在，就新增key和value，否则获取value
-                                        List<LogDetailVO> vos = map.compute(logName, (k, v) -> {
+                                        map.compute(logName, (k, v) -> {
                                             List<LogDetailVO> voList = new ArrayList<>();
                                             voList.add(logDetail);
                                             return voList;
-                                        });
-                                        vos.add(logDetail);
+                                        }).add(logDetail);
                                     }
                                 }
                             }
