@@ -221,7 +221,9 @@
                                 this.logDetails = data.data;
                             } else if(data.code === 50004) {
                                 this.logDetails = data.data;
-                                this.$confirm('未查询到数据的ip为：'+data.message,"蓝鲸查询出错/超时");
+                                this.$alert('未查询到数据的ip为：'+data.message, "蓝鲸查询出错/超时", {
+                                    confirmButtonText: '确定'
+                                });
                             } else {
                                 this.logDetails = [];
                                 this.$message.error(data.message)
@@ -478,10 +480,11 @@
                 
                 const loading = this.$loading({
                     lock: true,
-                    text: 'Loading',
+                    text: '开始回调 loading',
                     spinner: 'el-icon-loading',
                     background: 'rgba(0, 0, 0, 0.7)'
                 });
+                
                 fetch(router.findMirror, {
                     method: 'post',
                     headers: {
@@ -495,7 +498,9 @@
                     .then(response => response.json())
                     .then(data => {
                         console.log(data)
-                        loading.close();
+                        setTimeout(() => {
+                            loading.close();
+                        }, 500)
                         if (data.code === 1) {
                             this.logDetails.find(data => data.id === val.id).mirror = true
                         } else {
