@@ -312,6 +312,11 @@
                         loading.close();
                         a.click();
                         window.URL.revokeObjectURL(downUrl);
+
+                        // 下载后回调刷新当前行
+                        setTimeout(() => {
+                            this.callBackForDownload(val)
+                        }, 500)
                     });
                 } else {
                     response.json().then((data) => {
@@ -319,11 +324,6 @@
                         loading.close();
                     }).catch(e => console.log(e));
                 }
-
-                // 下载后回调刷新当前行
-                setTimeout(() => {
-                    this.callBackForDownload(val)
-                }, 500)
             },
             // 抓取历史日志
             async downloadHistoryLog(val) {
@@ -363,17 +363,17 @@
                             a.click();
                             window.URL.revokeObjectURL(downUrl);
                         });
+
+                        // 下载后回调刷新当前行
+                        setTimeout(() => {
+                            this.callBackForDownload(val)
+                        }, 500)
                     } else {
                         response.json().then((data) => {
                             this.$message.error(data.message)
                             loading.close();
                         }).catch(e => console.log(e));
                     }
-                }, 500)
-
-                // 下载后回调刷新当前行
-                setTimeout(() => {
-                    this.callBackForDownload(val)
                 }, 500)
             },
             // 下载
@@ -480,7 +480,7 @@
                 
                 const loading = this.$loading({
                     lock: true,
-                    text: '开始回调 loading',
+                    text: 'loading',
                     spinner: 'el-icon-loading',
                     background: 'rgba(0, 0, 0, 0.7)'
                 });
@@ -502,9 +502,10 @@
                             loading.close();
                         }, 500)
                         if (data.code === 1) {
-                            this.logDetails.find(data => data.id === val.id).mirror = true
-                        } else {
-                            this.$message.error(data.message)
+                            let index = this.logDetails.findIndex(item => item.id === val.id);
+                            let item = this.logDetails[index]
+                            item.mirror = true
+                            this.logDetails.splice(index, 1, item)
                         }
                     })
                     .catch(err => {
