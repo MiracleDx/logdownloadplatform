@@ -2,21 +2,27 @@ package com.log.download.platform.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.log.download.platform.dto.FindMirrorDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
+import com.log.download.platform.response.ResponseCode;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.service.CallBKInterfaceService;
 import com.log.download.platform.vo.LogDetailVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.xml.ws.Service;
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.log.download.platform.response.ResponseCode.PARTIAL_DATA_NOT_FOUND;
+import static com.log.download.platform.response.ResponseCode.SUCCESS;
 
 /**
  * LogController
@@ -173,5 +179,23 @@ public class LogController {
         }
         log.error(resultObject.getString("message"));
         return ServerResponse.failure(resultObject.getString("message"));
+    }
+
+    /**
+     * 回调函数，查询镜像是否已经存在
+     * @param findMirrorDTO
+     * @return
+     */
+    @PostMapping("/findMirror")
+    public ServerResponse<List<LogDetailVO>> findMirror(@RequestBody FindMirrorDTO findMirrorDTO){
+        if ("".equals(findMirrorDTO.getPath()) && findMirrorDTO.getPath() != null) {
+            String path = "/tmp" + File.separator + "0_" + findMirrorDTO.getIp() + File.separator + findMirrorDTO.getPath();
+            File file = new File(path);
+            if (file.exists()){
+                return ServerResponse.success();
+            }
+            return ServerResponse.failure(ResponseCode.DATA_NOT_FOUND.getCode(), ResponseCode.DATA_NOT_FOUND.getMessage());
+        }
+        return ServerResponse.failure("传送失败路径失败");
     }
 }
