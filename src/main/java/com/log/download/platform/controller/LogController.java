@@ -70,9 +70,9 @@ public class LogController {
                 resultLog = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", paramsLog);
                 isFinished = resultLog.getJSONArray(DATA).getJSONObject(0).getBoolean("is_finished");
 
-                if (resultLog.toString().contains("Can not find Agent by ip")) {
-                    return ServerResponse.failure(resultLog.getString("data"));
-                }
+//                if (resultLog.toString().contains("Can not find Agent by ip")) {
+//                    return ServerResponse.failure(resultLog.getString("data"));
+//                }
 
                 long t2 = System.currentTimeMillis();
                 if (t2 - t1 > 30 * 1000) {
@@ -97,7 +97,7 @@ public class LogController {
                         String logContent = ipLogs1.getString("log_content");
                         String ip = ipLogs1.getString("ip");
                         int errorCode = ipLogs1.getInteger("error_code");
-                        if (ipStatus == 9 && errorCode == 0) {
+                        if (ipStatus == 9 && errorCode == 0 && !logContent.contains("Can not find Agent by ip")) {
                             path = logContent;
                             String[] paths = path.split("\\n");
                             // 已存在的logName
@@ -148,22 +148,24 @@ public class LogController {
                                 }
                             });
                         } else {
-                            notFinished += ip + ",";
+                            if (!notFinished.contains(ip)) {
+                                notFinished += ip + ",";
+                            }
                         }
                     }
+                }
 
-                    if (list.size() == 0) {
-                        log.error("蓝鲸查询无日志文件列表返回");
-                        return ServerResponse.failure("蓝鲸查询无日志文件列表返回");
-                    } else {
-                        List<LogDetailVO> logs = callBKInterfaceService.getFileIsExists(list);
-                        Collections.sort(logs);
-                        Collections.reverse(logs);
-                        if ("".equals(notFinished) && notFinished.length() == 0){
-                            return ServerResponse.failure(PARTIAL_DATA_NOT_FOUND.code(), notFinished, logs);
-                        }
-                        return ServerResponse.success(logs);
+                if (list.size() == 0) {
+                    log.error("蓝鲸查询无日志文件列表返回");
+                    return ServerResponse.failure("蓝鲸查询无日志文件列表返回");
+                } else {
+                    List<LogDetailVO> logs = callBKInterfaceService.getFileIsExists(list);
+                    Collections.sort(logs);
+                    Collections.reverse(logs);
+                    if (!"".equals(notFinished) && notFinished.length() > 0){
+                        return ServerResponse.failure(PARTIAL_DATA_NOT_FOUND.code(), notFinished.substring(0, notFinished.length() - 1), logs);
                     }
+                    return ServerResponse.success(logs);
                 }
             }
             log.error(resultObject.getString("message"));

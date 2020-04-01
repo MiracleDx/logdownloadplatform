@@ -221,7 +221,7 @@
                                 this.logDetails = data.data;
                             }else if(data.code === 50004){
                                 this.logDetails = data.data;
-                                this.$confirm('未查询到数据的ip为：'+data.message);
+                                this.$confirm('未查询到数据的ip为：'+data.message,"蓝鲸查询出错/超时");
                             }else {
                                 this.logDetails = [];
                                 this.$message.error(data.message)
