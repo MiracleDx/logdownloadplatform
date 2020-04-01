@@ -4,5 +4,6 @@ const router = {
     "getMenu": remote + "getMenu",
     "upload": remote + "upload",
     "download": remote + "download",
-    "downloadImage": remote + "downloadImage"
+    "downloadImage": remote + "downloadImage",
+    "findMirror": remote + "findMirror"
 }

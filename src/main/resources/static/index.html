@@ -219,10 +219,10 @@
                             loading.close();
                             if (data.code === 1) {
                                 this.logDetails = data.data;
-                            }else if(data.code === 50004){
+                            } else if(data.code === 50004) {
                                 this.logDetails = data.data;
                                 this.$confirm('未查询到数据的ip为：'+data.message,"蓝鲸查询出错/超时");
-                            }else {
+                            } else {
                                 this.logDetails = [];
                                 this.$message.error(data.message)
                             }
@@ -316,8 +316,12 @@
                         this.$message.error(data.message)
                         loading.close();
                     }).catch(e => console.log(e));
-                    
                 }
+
+                // 下载后回调刷新当前行
+                setTimeout(() => {
+                    this.callBackForDownload(val)
+                }, 500)
             },
             // 抓取历史日志
             async downloadHistoryLog(val) {
@@ -363,8 +367,11 @@
                             loading.close();
                         }).catch(e => console.log(e));
                     }
-                    // 刷新回调
-                    this.history(false)
+                }, 500)
+
+                // 下载后回调刷新当前行
+                setTimeout(() => {
+                    this.callBackForDownload(val)
                 }, 500)
             },
             // 下载
@@ -465,6 +472,40 @@
                 this.showHistory = false;
                 console.log('go back');
             },
+            
+            // 下载后回调刷新当前行
+            callBackForDownload(val) {
+                
+                const loading = this.$loading({
+                    lock: true,
+                    text: 'Loading',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                });
+                fetch(router.findMirror, {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "ip": val.ip,
+                        "path": val.path,
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                        loading.close();
+                        if (data.code === 1) {
+                            this.logDetails.find(data => data.id === val.id).mirror = true
+                        }
+                    })
+                    .catch(err => {
+                        loading.close();
+                        console.log(err)
+                        this.$message.error(err)
+                    })
+            }
         },
         watch: {
             filterText(val) { 
