@@ -112,6 +112,7 @@ public class LogController {
                                         && !logPath.contains("No resources found")
                                         && !logPath.contains("No such file")
                                         && !logPath.contains("Unable to connect to the server")
+                                        && !logPath.contains("Error from server")
                                         && !logPath.contains("certificate is valid")) {
                                     logDetail.setPath(logPath);
                                     logDetail.setIp(ip);
