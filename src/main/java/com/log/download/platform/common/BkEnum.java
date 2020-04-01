@@ -32,8 +32,8 @@ public enum BkEnum {
 	C015("c015", 84),
 	C016("c016", 85),
 	P01("p01", 15),
-	p02("p02", 19),
-	ua("ua", 18);
+	P02("p02", 19),
+	UA("ua", 18);
 	
 	private String business;
 	
