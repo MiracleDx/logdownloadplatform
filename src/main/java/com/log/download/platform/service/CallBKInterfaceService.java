@@ -279,11 +279,7 @@ public class CallBKInterfaceService {
         String ip = downLoadDTO.getIp();
         BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
         int bk_biz_id = bkEnum.getCode();
-
         int fastExecuteScript_id = getcontainerlog;
-        if (downLoadDTO.getIsHistory()) {
-            fastExecuteScript_id = gethistorycontainerlog;
-        }
         String[] arr = downLoadDTO.getPath().split("/");
         String path = arr[arr.length - 1];
         String[] paths = path.split("-");
