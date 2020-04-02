@@ -220,8 +220,12 @@
                             loading.close();
                             if (data.code === 1) {
                                 this.logDetails = data.data;
+                                // 两次变更刷新model
+                                this.logDetails.reverse().reverse();
                             } else if(data.code === 50004) {
                                 this.logDetails = data.data;
+                                // 两次变更刷新model
+                                this.logDetails.reverse().reverse();
                                 this.$alert('未查询到数据的ip为：'+data.message, "蓝鲸查询出错/超时", {
                                     confirmButtonText: '确定'
                                 });
@@ -448,6 +452,8 @@
                             if (data.code === 1) {
                                 // 压入历史数据
                                 this.logDetails = data.data;
+                                // 两次变更刷新model
+                                this.logDetails.reverse().reverse();
                             } else {
                                 this.logDetails = [];
                                 this.$message.error(data.message)
@@ -471,6 +477,8 @@
             goBack() {
                 // 还原数据 清空tmp
                 this.logDetails = this.tmpDetails
+                // 两次变更刷新model
+                this.logDetails.reverse().reverse();
                 this.tmpDetails = []
                 this.showHistory = false;
                 console.log('go back');
