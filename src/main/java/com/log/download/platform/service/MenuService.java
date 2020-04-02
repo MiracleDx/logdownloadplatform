@@ -177,18 +177,6 @@ public class MenuService {
 							third.setLabel(group);
 							third.setChildren(new ArrayList<>());
 
-//							if (firstLabel.contains("bj") || firstLabel.contains("gz")) {
-//								third.setIps(groupMap.get(group).stream()
-//										.filter(e -> e.getNameSpace().contains(firstLabel
-//												.substring(firstLabel.lastIndexOf("-"))))
-//										.map(DeploymentGroupBO::getIp).filter(StringUtils::isNoneBlank)
-//										.collect(Collectors.toList()));
-//							} else {
-//								third.setIps(groupMap.get(group).stream()
-//										.map(DeploymentGroupBO::getIp).filter(StringUtils::isNoneBlank)
-//										.collect(Collectors.toList()));
-//							}
-
 							third.setIps(groupMap.get(group).stream()
 									.filter(e -> StringUtils.equals(e.getNameSpace(), firstLabel))
 									.map(DeploymentGroupBO::getIp).filter(StringUtils::isNoneBlank)
