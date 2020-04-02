@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.log.download.platform.response.ResponseCode.PARTIAL_DATA_NOT_FOUND;
+import static java.util.stream.Collectors.partitioningBy;
 
 /**
  * LogController
@@ -116,6 +117,7 @@ public class LogController {
                                         && !logPath.contains("No such file")
                                         && !logPath.contains("Unable to connect to the server")
                                         && !logPath.contains("Error from server")
+                                        && !logPath.contains("cannot exec into a container")
                                         && !logPath.contains("certificate is valid")) {
                                     logDetail.setPath(logPath);
                                     logDetail.setIp(ip);
@@ -165,7 +167,7 @@ public class LogController {
                 } else {
                     List<LogDetailVO> logs = callBKInterfaceService.getFileIsExists(list);
 
-                    Map<Boolean, List<LogDetailVO>> collect = logs.stream().collect(Collectors.partitioningBy(data -> data.getSize() > 0));
+                    Map<Boolean, List<LogDetailVO>> collect = logs.stream().collect(partitioningBy(data -> data.getSize() > 0));
                     // 日志大小大于0的日志
                     List<LogDetailVO> gtZero = collect.get(true);
                     // 日志大小等于0的日志
