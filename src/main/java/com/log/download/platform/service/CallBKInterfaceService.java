@@ -54,6 +54,12 @@ public class CallBKInterfaceService {
     @Value("${historyScriptID}")
     private int historyScriptID;
 
+    @Value("${getcontainerlog}")
+    private int getcontainerlog;
+
+    @Value("${gethistorycontainerlog}")
+    private int gethistorycontainerlog;
+
     /**
      * base64编码
      */
@@ -149,6 +155,9 @@ public class CallBKInterfaceService {
         String ip = downLoadDTO.getIp();
         String path = downLoadDTO.getPath();
         int end = path.lastIndexOf("/");
+        if (path.contains("/tsf_default/") && !path.contains("sys_log")) {
+            return getContainerScriptParams(downLoadDTO);
+        }
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
@@ -262,5 +271,45 @@ public class CallBKInterfaceService {
         } else {
             return true;
         }
+    }
+
+
+    public String getContainerScriptParams(DownLoadDTO downLoadDTO) {
+        String label = downLoadDTO.getLabel();
+        String ip = downLoadDTO.getIp();
+        BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
+        int bk_biz_id = bkEnum.getCode();
+
+        int fastExecuteScript_id = getcontainerlog;
+        if (downLoadDTO.getIsHistory()) {
+            fastExecuteScript_id = gethistorycontainerlog;
+        }
+        String[] arr = downLoadDTO.getPath().split("/");
+        String path = arr[arr.length - 1];
+        String[] paths = path.split("-");
+        String namespace = paths[1] + "-" + paths[3];
+        String group = paths[1] + "-" + paths[2] + "-" +paths[3] + "-" +paths[4];
+        String flag = group + "-" + paths[5] + "-" + paths[6];
+        String param = namespace + " " + group + " " + flag + " " + path;
+        byte[] content = param.getBytes();
+        String script_param = encoder.encodeToString(content);
+        String params = "{\n" +
+                "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
+                "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
+                "\t\"bk_username\": \"" + bk_username + "\",\n" +
+                "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
+                "\t\"script_id\": " + fastExecuteScript_id + ",\n" +
+                "\t\"script_param\": \"" + script_param + "\",\n" +
+                "\t\"script_timeout\": 1000,\n" +
+                "\t\"account\": \"ubuntu\",\n" +
+                "\t\"is_param_sensitive\": 0,\n" +
+                "\t\"ip_list\": [\n" +
+                "\t\t{\n" +
+                "\t\t\t\"bk_cloud_id\":0,\n" +
+                "\t\t\t\"ip\":"+ ip +",\n" +
+                "\t\t}\n" +
+                "\t]\n" +
+                "}";
+        return params;
     }
 }

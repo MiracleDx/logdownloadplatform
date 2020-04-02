@@ -27,4 +27,9 @@ public class DownLoadDTO {
      * 文件路径
      */
     private String path;
+
+    /**
+     * 历史查询
+     */
+    private Boolean isHistory;
 }
