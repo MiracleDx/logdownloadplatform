@@ -226,7 +226,7 @@
                             } else if(data.code === 50004) {
                                 this.logDetails = data.data;
                                 this.$forceUpdate()
-                                this.$alert('未查询到数据的ip为：'+data.message, "蓝鲸查询出错/超时", {
+                                this.$alert('未查询到数据的ip为：' + data.message, "蓝鲸查询出错/超时", {
                                     confirmButtonText: '确定'
                                 });
                             } else {
