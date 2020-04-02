@@ -220,12 +220,10 @@
                             loading.close();
                             if (data.code === 1) {
                                 this.logDetails = data.data;
-                                // 两次变更刷新model
-                                this.logDetails.reverse().reverse();
+                                this.$forceUpdate()
                             } else if(data.code === 50004) {
                                 this.logDetails = data.data;
-                                // 两次变更刷新model
-                                this.logDetails.reverse().reverse();
+                                this.$forceUpdate()
                                 this.$alert('未查询到数据的ip为：'+data.message, "蓝鲸查询出错/超时", {
                                     confirmButtonText: '确定'
                                 });
@@ -257,6 +255,7 @@
                         console.log(data)
                         if (data.code === 1) {
                             this.data = data.data;
+                            this.$forceUpdate()
                         } else {
                             this.$message.error(data.message)
                         }
@@ -422,6 +421,7 @@
                         console.log(val)
                         if (val) {
                             this.tmpDetails = this.logDetails;
+                            this.$forceUpdate()
                         }
                         this.content = node.label + " 历史日志查询"
 
@@ -452,8 +452,7 @@
                             if (data.code === 1) {
                                 // 压入历史数据
                                 this.logDetails = data.data;
-                                // 两次变更刷新model
-                                this.logDetails.reverse().reverse();
+                                this.$forceUpdate()
                             } else {
                                 this.logDetails = [];
                                 this.$message.error(data.message)
@@ -477,8 +476,7 @@
             goBack() {
                 // 还原数据 清空tmp
                 this.logDetails = this.tmpDetails
-                // 两次变更刷新model
-                this.logDetails.reverse().reverse();
+                this.$forceUpdate()
                 this.tmpDetails = []
                 this.showHistory = false;
                 console.log('go back');
@@ -511,6 +509,7 @@
                             loading.close();
                         }, 500)
                         if (data.code === 1) {
+                            // 更新数组中指定索引的值
                             let index = this.logDetails.findIndex(item => item.id === val.id);
                             let item = this.logDetails[index]
                             item.mirror = true
