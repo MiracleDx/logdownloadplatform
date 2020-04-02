@@ -113,6 +113,7 @@ public class LogController {
                                 // 日志路径
                                 String logPath = arr[0];
                                 if (!logPath.contains("---")
+                                        && !logPath.contains("error: ")
                                         && !logPath.contains("No resources found")
                                         && !logPath.contains("No such file")
                                         && !logPath.contains("Unable to connect to the server")
