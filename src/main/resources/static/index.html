@@ -255,7 +255,6 @@
                         console.log(data)
                         if (data.code === 1) {
                             this.data = data.data;
-                            this.$forceUpdate()
                         } else {
                             this.$message.error(data.message)
                         }
