@@ -194,6 +194,8 @@
                 if (data.ips && data.ips.length > 0) {
                     this.logDetails = [];
                     this.tmpDetails = [];
+                    this.pageSize = 10; 
+                    this.curPage = 1;
                     this.showHistory = false;
                     const loading = this.$loading({
                         lock: true,
