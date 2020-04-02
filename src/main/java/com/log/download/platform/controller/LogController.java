@@ -88,7 +88,7 @@ public class LogController {
                 JSONArray dataArr = resultLog.getJSONArray(DATA);
                 JSONObject dataObject = dataArr.getJSONObject(0);
                 List<LogDetailVO> list = new ArrayList<>();
-                String notFinished = "";
+                StringBuilder notFinished = new StringBuilder();
                 JSONArray stepResultArr = dataObject.getJSONArray("step_results");
                 for (int o = 0; o < stepResultArr.size(); o++) {
                     JSONObject stepResultsObject = stepResultArr.getJSONObject(o);
@@ -120,7 +120,8 @@ public class LogController {
                                     logDetail.setPath(logPath);
                                     logDetail.setIp(ip);
                                     logDetail.setCreateTime(arr[arr.length - 1]);
-                                    logDetail.setSize(Math.round(Double.parseDouble(arr[arr.length - 2]) * 100 / (1024 * 1024)) / 100.0 + "M");
+                                    logDetail.setSize(Math.round(Double.parseDouble(arr[arr.length - 2]) * 100 / (1024 * 1024)) / 100.0);
+                                    logDetail.setUnit("M");
                                     logDetail.setLabel(queryLogDetailDTO.getLabel());
                                     // 日志名称
                                     String logName = logPath.substring(logPath.lastIndexOf("/"));
@@ -151,8 +152,8 @@ public class LogController {
                                 }
                             });
                         } else {
-                            if (!notFinished.contains(ip)) {
-                                notFinished += ip + ",";
+                            if (!notFinished.toString().contains(ip)) {
+                                notFinished.append(ip).append(",");
                             }
                         }
                     }
@@ -163,9 +164,18 @@ public class LogController {
                     return ServerResponse.failure("蓝鲸查询无日志文件列表返回");
                 } else {
                     List<LogDetailVO> logs = callBKInterfaceService.getFileIsExists(list);
-                    Collections.sort(logs);
-                    Collections.reverse(logs);
-                    if (!"".equals(notFinished) && notFinished.length() > 0){
+
+                    Map<Boolean, List<LogDetailVO>> collect = logs.stream().collect(Collectors.partitioningBy(data -> data.getSize() > 0));
+                    // 日志大小大于0的日志
+                    List<LogDetailVO> gtZero = collect.get(true);
+                    // 日志大小等于0的日志
+                    List<LogDetailVO> eqZero = collect.get(false);
+                    // 对日志大小大于0的日志逆序
+                    logs = gtZero.stream().sorted(Comparator.comparing(LogDetailVO::getCreateTime).reversed()).collect(Collectors.toList());
+                    // 添加日志大小等于0的日志
+                    logs.addAll(eqZero);
+                    
+                    if (!"".equals(notFinished.toString()) && notFinished.length() > 0){
                         return ServerResponse.failure(PARTIAL_DATA_NOT_FOUND.code(), notFinished.substring(0, notFinished.length() - 1), logs);
                     }
                     return ServerResponse.success(logs);

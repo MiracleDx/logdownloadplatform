@@ -90,7 +90,7 @@
                     <el-table-column prop="size"  label="文件大小" width="150">
                         <template slot-scope="scope">
                             <!-- 单行点击事件 -->
-                            <div @click="toggleSelection([scope.row])">{{ scope.row.size }}</div>
+                            <div @click="toggleSelection([scope.row])">{{ scope.row.size + scope.row.unit }}</div>
                         </template>
                     </el-table-column>
                     
