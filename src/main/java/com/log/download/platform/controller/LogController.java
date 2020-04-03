@@ -119,6 +119,7 @@ public class LogController {
                                         && !logPath.contains("Unable to connect to the server")
                                         && !logPath.contains("Error from server")
                                         && !logPath.contains("cannot exec into a container")
+                                        && !logPath.contains("command terminated with exit code 1")
                                         && !logPath.contains("certificate is valid")) {
                                     logDetail.setPath(logPath);
                                     logDetail.setIp(ip);
