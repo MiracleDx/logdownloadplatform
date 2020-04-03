@@ -9,6 +9,7 @@ import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.service.CallBKInterfaceService;
 import com.log.download.platform.vo.LogDetailVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -111,8 +112,8 @@ public class LogController {
                                 logDetail.setId(j);
                                 String[] arr = paths[j - 1].split("\t");
                                 // 日志路径
-                                String logPath = arr[0];
-                                if (!logPath.contains("---")
+                                String logPath = StringUtils.isEmpty(arr[0]) ? arr[1] : arr[0];
+                                if (!StringUtils.isEmpty(logPath) && !logPath.contains("---")
                                         && !logPath.contains("error: ")
                                         && !logPath.contains("No resources found")
                                         && !logPath.contains("No such file")

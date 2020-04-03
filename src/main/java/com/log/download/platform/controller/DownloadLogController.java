@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import static com.log.download.platform.controller.LogController.DATA;
+
 
 /**
  * DownloadLogController
@@ -62,8 +64,37 @@ public class DownloadLogController {
     @RequestMapping("/download")
     public void downloadLog(@RequestBody DownLoadDTO downLoadDTO) throws IOException {
         HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
-        String params = callBKInterfaceService.getFastPushFile(downLoadDTO);
+        String params = "";
         //调用快速分发文件接口
+        if (downLoadDTO.getPath().contains("/tsf_default/")) {
+            params = callBKInterfaceService.getContainerScriptParams(downLoadDTO);
+            JSONObject getContainerJson = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_execute_script/", params);
+            //如果执行成功，查询执行日志
+            if (getContainerJson.getBoolean(RESULT)) {
+                //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
+                int jobInstanceId = getContainerJson.getJSONObject(DATA).getInteger("job_instance_id");
+                String paramsLog = callBKInterfaceService.getJobInstanceLogParams(downLoadDTO.getLabel(), jobInstanceId);
+
+                JSONObject resultLog = new JSONObject();
+                long t1 = System.currentTimeMillis();
+                boolean isFinished = false;
+                while (!isFinished) {
+                    try {
+                        TimeUnit.SECONDS.sleep(3);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    resultLog = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", paramsLog);
+                    isFinished = resultLog.getJSONArray(DATA).getJSONObject(0).getBoolean("is_finished");
+
+                    long t2 = System.currentTimeMillis();
+                    if (t2 - t1 > 30 * 1000) {
+                        response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("蓝鲸调用执行查询任务超时")));
+                    }
+                }
+            }
+        }
+        params = callBKInterfaceService.getFastPushFile(downLoadDTO);
         JSONObject result = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_push_file/", params);
         if (result.getBoolean(RESULT)) {
             int jobInstanceId = result.getJSONObject("data").getInteger("job_instance_id");
@@ -125,8 +156,7 @@ public class DownloadLogController {
         } else {
             response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure(result.getString("message"))));
         }
+        response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure(result.getString("message"))));
 
     }
-
-
 }

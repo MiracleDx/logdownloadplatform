@@ -57,8 +57,11 @@ public class CallBKInterfaceService {
     @Value("${getcontainerlog}")
     private int getcontainerlog;
 
-    @Value("${gethistorycontainerlog}")
-    private int gethistorycontainerlog;
+    @Value("${msgwScriptID}")
+    private int msgwScriptID;
+
+    @Value("${historymsgwScriptID}")
+    private int historymsgwScriptID;
 
     /**
      * base64编码
@@ -68,7 +71,6 @@ public class CallBKInterfaceService {
 
     /**
      * 根据传参和url调用蓝鲸接口
-     *
      * @param url
      * @param params
      * @return
@@ -99,9 +101,20 @@ public class CallBKInterfaceService {
         byte[] content = param.getBytes();
         String script_param = encoder.encodeToString(content);
         int fastExecuteScript_id = script_id;
-        if (queryLogDetailDTO.getIsHistory()) {
-            fastExecuteScript_id = historyScriptID;
+        if(param.contains("msgw")) {
+            if (queryLogDetailDTO.getIsHistory()) {
+                fastExecuteScript_id = historymsgwScriptID;
+            } else {
+                fastExecuteScript_id = msgwScriptID;
+            }
+        } else {
+            if (queryLogDetailDTO.getIsHistory()) {
+                fastExecuteScript_id = historyScriptID;
+            }  else {
+                fastExecuteScript_id = script_id;
+            }
         }
+
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
@@ -155,8 +168,10 @@ public class CallBKInterfaceService {
         String ip = downLoadDTO.getIp();
         String path = downLoadDTO.getPath();
         int end = path.lastIndexOf("/");
-        if (path.contains("/tsf_default/") && !path.contains("sys_log")) {
-            return getContainerScriptParams(downLoadDTO);
+        if (path.contains("/tsf_default/")) {
+            String tmp = path.split("/")[4];
+            String[] patharr = path.split("-");
+            path = "/log/" + patharr[1] + "-" + patharr[2] + "-" + patharr[3] + "-" + patharr[4] + "/" + tmp;
         }
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
@@ -302,7 +317,7 @@ public class CallBKInterfaceService {
                 "\t\"ip_list\": [\n" +
                 "\t\t{\n" +
                 "\t\t\t\"bk_cloud_id\":0,\n" +
-                "\t\t\t\"ip\":"+ ip +",\n" +
+                "\t\t\t\"ip\":\""+ ip +"\"\n" +
                 "\t\t}\n" +
                 "\t]\n" +
                 "}";
