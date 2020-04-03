@@ -57,9 +57,6 @@ public class CallBKInterfaceService {
     @Value("${getcontainerlog}")
     private int getcontainerlog;
 
-    @Value("${gethistorycontainerlog}")
-    private int gethistorycontainerlog;
-
     /**
      * base64编码
      */
