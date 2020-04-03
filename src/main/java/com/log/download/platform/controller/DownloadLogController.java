@@ -122,6 +122,8 @@ public class DownloadLogController {
                     response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure(resultLog.getString("message"))));
                 }
             }
+        } else {
+            response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure(result.getString("message"))));
         }
 
     }
