@@ -2,6 +2,7 @@ package com.log.download.platform.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.log.download.platform.common.JsonWordEnum;
 import com.log.download.platform.dto.FindMirrorDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
 import com.log.download.platform.response.ResponseCode;
@@ -36,12 +37,6 @@ import static java.util.stream.Collectors.partitioningBy;
 @RestController
 public class LogController {
 
-    /**
-     * 调用接口返回的执行结果
-     */
-    public static final String RESULT = "result";
-    public static final String DATA = "data";
-
     @Resource
     private CallBKInterfaceService callBKInterfaceService;
 
@@ -58,9 +53,9 @@ public class LogController {
         //执行脚本，并获取结果
         JSONObject resultObject = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_execute_script/", params);
         //如果执行成功，查询执行日志
-        if (resultObject.getBoolean(RESULT)) {
+        if (resultObject.getBoolean(JsonWordEnum.result.getJsonWord())) {
             //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
-            int jobInstanceId = resultObject.getJSONObject(DATA).getInteger("job_instance_id");
+            int jobInstanceId = resultObject.getJSONObject(JsonWordEnum.data.getJsonWord()).getInteger(JsonWordEnum.job_instance_id.getJsonWord());
             String paramsLog = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), jobInstanceId);
 
             JSONObject resultLog = new JSONObject();
@@ -73,7 +68,7 @@ public class LogController {
                     e.printStackTrace();
                 }
                 resultLog = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", paramsLog);
-                isFinished = resultLog.getJSONArray(DATA).getJSONObject(0).getBoolean("is_finished");
+                isFinished = resultLog.getJSONArray(JsonWordEnum.data.getJsonWord()).getJSONObject(0).getBoolean(JsonWordEnum.is_finished.getJsonWord());
 
 //                if (resultLog.toString().contains("Can not find Agent by ip")) {
 //                    return ServerResponse.failure(resultLog.getString("data"));
@@ -86,20 +81,20 @@ public class LogController {
             }
 
             //获取执行日志
-            if (resultLog.getBoolean(RESULT)) {
-                JSONArray dataArr = resultLog.getJSONArray(DATA);
+            if (resultLog.getBoolean(JsonWordEnum.result.getJsonWord())) {
+                JSONArray dataArr = resultLog.getJSONArray(JsonWordEnum.data.getJsonWord());
                 JSONObject dataObject = dataArr.getJSONObject(0);
                 List<LogDetailVO> list = new ArrayList<>();
                 StringBuilder notFinished = new StringBuilder();
-                JSONArray stepResultArr = dataObject.getJSONArray("step_results");
+                JSONArray stepResultArr = dataObject.getJSONArray(JsonWordEnum.step_results.getJsonWord());
                 for (int o = 0; o < stepResultArr.size(); o++) {
                     JSONObject stepResultsObject = stepResultArr.getJSONObject(o);
-                    JSONArray ipLogs = stepResultsObject.getJSONArray("ip_logs");
-                    int ipStatus = stepResultsObject.getInteger("ip_status");
+                    JSONArray ipLogs = stepResultsObject.getJSONArray(JsonWordEnum.ip_logs.getJsonWord());
+                    int ipStatus = stepResultsObject.getInteger(JsonWordEnum.ip_status.getJsonWord());
                     String path;
                     for (int i = 0; i < ipLogs.size(); i++) {
                         JSONObject ipLogs1 = ipLogs.getJSONObject(i);
-                        String logContent = ipLogs1.getString("log_content");
+                        String logContent = ipLogs1.getString(JsonWordEnum.log_content.getJsonWord());
                         String ip = ipLogs1.getString("ip");
                         int errorCode = ipLogs1.getInteger("error_code");
                         if (ipStatus == 9 && errorCode == 0 && !logContent.contains("Can not find Agent by ip")) {
@@ -186,11 +181,11 @@ public class LogController {
                     return ServerResponse.success(logs);
                 }
             }
-            log.error(resultObject.getString("message"));
-            return ServerResponse.failure(resultObject.getString("message"));
+            log.error(resultObject.getString(JsonWordEnum.message.getJsonWord()));
+            return ServerResponse.failure(resultObject.getString(JsonWordEnum.message.getJsonWord()));
         }
-        log.error(resultObject.getString("message"));
-        return ServerResponse.failure(resultObject.getString("message"));
+        log.error(resultObject.getString(JsonWordEnum.message.getJsonWord()));
+        return ServerResponse.failure(resultObject.getString(JsonWordEnum.message.getJsonWord()));
     }
 
     /**

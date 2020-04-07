@@ -22,6 +22,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import static com.log.download.platform.controller.LogController.DATA;
 
 /**
  * CallBKInterfaceService
@@ -289,12 +292,11 @@ public class CallBKInterfaceService {
     }
 
 
-    public String getContainerScriptParams(DownLoadDTO downLoadDTO) {
+    public String getContainerScriptParams(DownLoadDTO downLoadDTO, int fastExecuteScript_id) {
         String label = downLoadDTO.getLabel();
         String ip = downLoadDTO.getIp();
         BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
         int bk_biz_id = bkEnum.getCode();
-        int fastExecuteScript_id = getcontainerlog;
         String[] arr = downLoadDTO.getPath().split("/");
         String path = arr[arr.length - 1];
         String[] paths = path.split("-");
@@ -322,5 +324,28 @@ public class CallBKInterfaceService {
                 "\t]\n" +
                 "}";
         return params;
+    }
+
+    public Boolean isFinish(String label, int jobInstanceId, Long timeOut) {
+        String paramsLog = getJobInstanceLogParams(label, jobInstanceId);
+
+        JSONObject resultLog = new JSONObject();
+        long t1 = System.currentTimeMillis();
+        boolean isFinished = false;
+        while (!isFinished) {
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            resultLog = callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", paramsLog);
+            isFinished = resultLog.getJSONArray(DATA).getJSONObject(0).getBoolean("is_finished");
+
+            long t2 = System.currentTimeMillis();
+            if (t2 - t1 > timeOut) {
+                return isFinished;
+            }
+        }
+        return isFinished;
     }
 }
