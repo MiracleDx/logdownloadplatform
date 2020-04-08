@@ -97,6 +97,7 @@ public class DownloadLogController {
                         .getJSONArray(JsonWordEnum.step_results.getJsonWord()).getJSONObject(0)
                         .getJSONArray(JsonWordEnum.ip_logs.getJsonWord()).getJSONObject(0)
                         .getString(JsonWordEnum.log_content.getJsonWord());
+                ip = ip.replaceAll("\n", "");
                 if (Pattern.matches(REGEX_IP_ADDR, ip)){
                     downLoadDTO.setIp(ip);
                 } else {
