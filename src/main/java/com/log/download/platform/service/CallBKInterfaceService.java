@@ -2,6 +2,7 @@ package com.log.download.platform.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.log.download.platform.common.BkEnum;
+import com.log.download.platform.common.JsonWordEnum;
 import com.log.download.platform.dto.DownLoadDTO;
 import com.log.download.platform.dto.HostDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
@@ -24,7 +25,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.log.download.platform.controller.LogController.DATA;
 
 /**
  * CallBKInterfaceService
@@ -339,7 +339,7 @@ public class CallBKInterfaceService {
                 e.printStackTrace();
             }
             resultLog = callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", paramsLog);
-            isFinished = resultLog.getJSONArray(DATA).getJSONObject(0).getBoolean("is_finished");
+            isFinished = resultLog.getJSONArray(JsonWordEnum.data.getJsonWord()).getJSONObject(0).getBoolean(JsonWordEnum.is_finished.getJsonWord());
 
             long t2 = System.currentTimeMillis();
             if (t2 - t1 > timeOut) {
