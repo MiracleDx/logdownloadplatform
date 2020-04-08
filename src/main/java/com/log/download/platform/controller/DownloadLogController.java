@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 
 /**
@@ -56,6 +57,9 @@ public class DownloadLogController {
     @Value("${getcontainerip}")
     private int getcontainerip;
 
+    @Value("${REGEX_IP_ADDR}")
+    private String REGEX_IP_ADDR;
+
 
     /**
      * 从本地获取镜像日志
@@ -87,8 +91,15 @@ public class DownloadLogController {
             if (getContainerJson.getBoolean(RESULT) && callBKInterfaceService.isFinish(downLoadDTO.getLabel(),
                     getContainerJson.getJSONObject(JsonWordEnum.data.getJsonWord()).getInteger(JsonWordEnum.job_instance_id.getJsonWord()), 30 * 1000L)) {
                 //获取到日志真实ip
-                String ip = "";
-                downLoadDTO.setIp(ip);
+                String ip = getContainerJson.getJSONArray(JsonWordEnum.data.getJsonWord()).getJSONObject(0)
+                        .getJSONArray(JsonWordEnum.step_results.getJsonWord()).getJSONObject(0)
+                        .getJSONArray(JsonWordEnum.ip_logs.getJsonWord()).getJSONObject(0)
+                        .getString(JsonWordEnum.log_content.getJsonWord());
+                if (Pattern.matches(REGEX_IP_ADDR, ip)){
+                    downLoadDTO.setIp(ip);
+                } else {
+                    response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("蓝鲸获取容器所在ip错误：" + ip)));
+                }
                 params = callBKInterfaceService.getContainerScriptParams(downLoadDTO, getcontainerlog);
                 JSONObject downloadJson = callBKInterfaceService.callLanJingInterface(fastExecuteScriptUrl, params);
                 if (!downloadJson.getBoolean(RESULT) || !callBKInterfaceService.isFinish(downLoadDTO.getLabel(),
