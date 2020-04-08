@@ -57,7 +57,6 @@ public class LogController {
             //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
             int jobInstanceId = resultObject.getJSONObject(JsonWordEnum.data.getJsonWord()).getInteger(JsonWordEnum.job_instance_id.getJsonWord());
             String paramsLog = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), jobInstanceId);
-
             JSONObject resultLog = new JSONObject();
             long t1 = System.currentTimeMillis();
             boolean isFinished = false;
@@ -69,11 +68,6 @@ public class LogController {
                 }
                 resultLog = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", paramsLog);
                 isFinished = resultLog.getJSONArray(JsonWordEnum.data.getJsonWord()).getJSONObject(0).getBoolean(JsonWordEnum.is_finished.getJsonWord());
-
-//                if (resultLog.toString().contains("Can not find Agent by ip")) {
-//                    return ServerResponse.failure(resultLog.getString("data"));
-//                }
-
                 long t2 = System.currentTimeMillis();
                 if (t2 - t1 > 30 * 1000) {
                     return ServerResponse.failure("蓝鲸调用执行查询任务超时");

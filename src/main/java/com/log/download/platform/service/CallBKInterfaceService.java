@@ -170,12 +170,12 @@ public class CallBKInterfaceService {
         int bk_biz_id = bkEnum.getCode();
         String ip = downLoadDTO.getIp();
         String path = downLoadDTO.getPath();
-        int end = path.lastIndexOf("/");
         if (path.contains("/tsf_default/")) {
             String tmp = path.split("/")[4];
             String[] patharr = path.split("-");
-            path = "log/" + patharr[1] + "-" + patharr[2] + "-" + patharr[3] + "-" + patharr[4] + "/" + tmp;
+            path = "/log/" + patharr[1] + "-" + patharr[2] + "-" + patharr[3] + "-" + patharr[4] + "/" + tmp;
         }
+        int end = path.lastIndexOf("/");
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
