@@ -83,17 +83,16 @@ public class DownloadLogController {
     public void downloadLog(@RequestBody DownLoadDTO downLoadDTO) throws IOException {
         HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
         String params = "";
-        //调用快速分发文件接口
+        //如果是容器内的日志，采取
         if (downLoadDTO.getPath().contains(JsonWordEnum.tsf_default.getJsonWord())) {
             params = callBKInterfaceService.getContainerScriptParams(downLoadDTO, getcontainerip);
             JSONObject getContainerJson = callBKInterfaceService.callLanJingInterface(fastExecuteScriptUrl, params);
             int jobInstanceId = getContainerJson.getJSONObject(JsonWordEnum.data.getJsonWord()).getInteger(JsonWordEnum.job_instance_id.getJsonWord());
             String paramip = callBKInterfaceService.getJobInstanceLogParams(downLoadDTO.getLabel(), jobInstanceId);
-            JSONObject resultLog = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", paramip);
-            boolean isFinished = resultLog.getJSONArray(JsonWordEnum.data.getJsonWord()).getJSONObject(0).getBoolean(JsonWordEnum.is_finished.getJsonWord());
             //如果执行成功，查询执行日志
-            if (getContainerJson.getBoolean(RESULT) && isFinished) {
+            if (getContainerJson.getBoolean(RESULT) && callBKInterfaceService.isFinish(downLoadDTO.getLabel(), jobInstanceId, 30 * 1000L)) {
                 //获取到日志真实ip
+                JSONObject resultLog = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", paramip);
                 String ip = resultLog.getJSONArray(JsonWordEnum.data.getJsonWord()).getJSONObject(0)
                         .getJSONArray(JsonWordEnum.step_results.getJsonWord()).getJSONObject(0)
                         .getJSONArray(JsonWordEnum.ip_logs.getJsonWord()).getJSONObject(0)
