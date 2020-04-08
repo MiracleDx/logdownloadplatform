@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static com.log.download.platform.controller.LogController.DATA;
-
 
 /**
  * DownloadLogController
@@ -87,14 +85,14 @@ public class DownloadLogController {
             JSONObject getContainerJson = callBKInterfaceService.callLanJingInterface(fastExecuteScriptUrl, params);
             //如果执行成功，查询执行日志
             if (getContainerJson.getBoolean(RESULT) && callBKInterfaceService.isFinish(downLoadDTO.getLabel(),
-                    getContainerJson.getJSONObject(DATA).getInteger(JsonWordEnum.job_instance_id.getJsonWord()), 30 * 1000L)) {
+                    getContainerJson.getJSONObject(JsonWordEnum.data.getJsonWord()).getInteger(JsonWordEnum.job_instance_id.getJsonWord()), 30 * 1000L)) {
                 //获取到日志真实ip
                 String ip = "";
                 downLoadDTO.setIp(ip);
                 params = callBKInterfaceService.getContainerScriptParams(downLoadDTO, getcontainerlog);
                 JSONObject downloadJson = callBKInterfaceService.callLanJingInterface(fastExecuteScriptUrl, params);
                 if (!downloadJson.getBoolean(RESULT) || !callBKInterfaceService.isFinish(downLoadDTO.getLabel(),
-                        getContainerJson.getJSONObject(DATA).getInteger(JsonWordEnum.job_instance_id.getJsonWord()), 30 * 1000L)) {
+                        getContainerJson.getJSONObject(JsonWordEnum.data.getJsonWord()).getInteger(JsonWordEnum.job_instance_id.getJsonWord()), 30 * 1000L)) {
                     response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("蓝鲸分发文件超时")));
                 }
             } else {
