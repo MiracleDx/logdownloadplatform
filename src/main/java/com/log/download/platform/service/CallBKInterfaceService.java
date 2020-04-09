@@ -203,7 +203,10 @@ public class CallBKInterfaceService {
      * @param response
      */
     public void download(String ip, String path, HttpServletResponse response) throws IOException {
-
+        if (path.contains("/tsf_default/")){
+            String[] temp = path.split("-");
+            path = path.replace("/data/tsf_default/logs","/log/" + temp[1] + "-" + temp[2] + "-" + temp[3] + "-" + temp[4]);
+        }
         path = "/tmp" + File.separator + "0_" + ip + File.separator + path;
         // path是指欲下载的文件的路径。
         File file = new File(path);

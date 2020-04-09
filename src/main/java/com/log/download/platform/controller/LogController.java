@@ -190,7 +190,12 @@ public class LogController {
     @PostMapping("/findMirror")
     public ServerResponse<List<LogDetailVO>> findMirror(@RequestBody FindMirrorDTO findMirrorDTO){
         if (!"".equals(findMirrorDTO.getPath()) && findMirrorDTO.getPath() != null) {
-            String path = "/tmp" + File.separator + "0_" + findMirrorDTO.getIp() + File.separator + findMirrorDTO.getPath();
+            String path = "";
+            if (findMirrorDTO.getPath().contains("/data/tsf_default/")){
+                path = "/tmp" + File.separator + "*" + File.separator + findMirrorDTO.getPath().replace("/data/tsf_default/logs/", "log/");
+            } else {
+                path = "/tmp" + File.separator + "0_" + findMirrorDTO.getIp() + File.separator + findMirrorDTO.getPath();
+            }
             File file = new File(path);
             if (file.exists()){
                 return ServerResponse.success();
