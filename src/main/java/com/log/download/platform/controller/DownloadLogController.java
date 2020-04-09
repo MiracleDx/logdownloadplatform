@@ -83,7 +83,9 @@ public class DownloadLogController {
     public void downloadLog(@RequestBody DownLoadDTO downLoadDTO) throws IOException {
         HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
         String params = "";
-        //如果是容器内的日志，采取
+        //存储cvmip
+        downLoadDTO.setCvmip(downLoadDTO.getIp());
+        //如果是容器内的日志，采取容器ip
         if (downLoadDTO.getPath().contains(JsonWordEnum.tsf_default.getJsonWord())) {
             params = callBKInterfaceService.getContainerScriptParams(downLoadDTO, getcontainerip);
             JSONObject getContainerJson = callBKInterfaceService.callLanJingInterface(fastExecuteScriptUrl, params);
@@ -91,28 +93,35 @@ public class DownloadLogController {
             String paramip = callBKInterfaceService.getJobInstanceLogParams(downLoadDTO.getLabel(), jobInstanceId);
             //如果执行成功，查询执行日志
             if (getContainerJson.getBoolean(RESULT) && callBKInterfaceService.isFinish(downLoadDTO.getLabel(), jobInstanceId, 30 * 1000L)) {
-                //获取到日志真实ip
+                //获取到日志真实容器ip
                 JSONObject resultLog = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/", paramip);
                 String ip = resultLog.getJSONArray(JsonWordEnum.data.getJsonWord()).getJSONObject(0)
                         .getJSONArray(JsonWordEnum.step_results.getJsonWord()).getJSONObject(0)
                         .getJSONArray(JsonWordEnum.ip_logs.getJsonWord()).getJSONObject(0)
                         .getString(JsonWordEnum.log_content.getJsonWord());
                 ip = ip.replaceAll("\n", "");
+                //校验ip
                 if (Pattern.matches(REGEX_IP_ADDR, ip)){
                     downLoadDTO.setIp(ip);
                 } else {
                     response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("蓝鲸获取容器所在ip错误：" + ip)));
+                    return;
                 }
+                //调用落盘脚本
                 params = callBKInterfaceService.getContainerScriptParams(downLoadDTO, getcontainerlog);
                 JSONObject downloadJson = callBKInterfaceService.callLanJingInterface(fastExecuteScriptUrl, params);
+                //确定日志是否落盘
                 if (!downloadJson.getBoolean(RESULT) || !callBKInterfaceService.isFinish(downLoadDTO.getLabel(),
                         getContainerJson.getJSONObject(JsonWordEnum.data.getJsonWord()).getInteger(JsonWordEnum.job_instance_id.getJsonWord()), 30 * 1000L)) {
-                    response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("蓝鲸分发文件超时")));
+                    response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("蓝鲸落盘超时")));
+                    return;
                 }
             } else {
                 response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("蓝鲸调用执行查询任务超时")));
+                return;
             }
         }
+        //拼接快速分发文件参数
         params = callBKInterfaceService.getFastPushFile(downLoadDTO);
         JSONObject result = callBKInterfaceService.callLanJingInterface(fastPushFileUrl, params);
         if (result.getBoolean(RESULT)) {
@@ -161,12 +170,19 @@ public class DownloadLogController {
                     // String ip = ip_logsObject.getString("ip");
                     // String log_content = ip_logsObject.getString("log_content");
                     //验证是否已经传输到文件共享服务器
-                    if (resultLog.getJSONArray(JsonWordEnum.data.getJsonWord()).getJSONObject(0).getIntValue(JsonWordEnum.status.getJsonWord()) == StatusEnum.A3.getCode()) {
-                        callBKInterfaceService.download(downLoadDTO.getIp(), downLoadDTO.getPath(), response);
+                    if (resultLog.getJSONArray(JsonWordEnum.data.getJsonWord()).getJSONObject(0).getIntValue(JsonWordEnum.status.getJsonWord()) == StatusEnum.A3.getCode() && !stepResultsObject.toString().contains("is not exist")) {
+                        callBKInterfaceService.download(downLoadDTO.getCvmip(), downLoadDTO.getPath(), response);
+                    }else if(stepResultsObject.toString().contains("is not exist")) {
+                        if (response != null) {
+                            response.setCharacterEncoding("utf-8");
+                            response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("蓝鲸能够未查询到该文件")));
+                            return;
+                        }
                     } else {
                         if (response != null) {
                             response.setCharacterEncoding("utf-8");
                             response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("脚本执行失败, 脚本执行状态为：" + StatusEnum.valueOf("A" + resultLog.getJSONArray(JsonWordEnum.data.getJsonWord()).getJSONObject(0).getIntValue(JsonWordEnum.status.getJsonWord())).getStatus())));
+                            return;
                         }
                     }
                 }
@@ -174,10 +190,12 @@ public class DownloadLogController {
                 if (response != null) {
                     response.setCharacterEncoding("utf-8");
                     response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure(resultLog.getString(JsonWordEnum.message.getJsonWord()))));
+                    return;
                 }
             }
         } else {
             response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure(result.getString("message"))));
+            return;
         }
         response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure(result.getString(JsonWordEnum.message.getJsonWord()))));
 

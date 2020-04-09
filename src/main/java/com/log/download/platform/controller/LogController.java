@@ -192,10 +192,12 @@ public class LogController {
         if (!"".equals(findMirrorDTO.getPath()) && findMirrorDTO.getPath() != null) {
             String path = "";
             if (findMirrorDTO.getPath().contains("/data/tsf_default/")){
-                path = "/tmp" + File.separator + "*" + File.separator + findMirrorDTO.getPath().replace("/data/tsf_default/logs/", "log/");
+                String[] patharr = findMirrorDTO.getPath().split("-");
+                path = "/tmp" + File.separator + "0_" + findMirrorDTO.getIp() + File.separator + findMirrorDTO.getPath().replace("/data/tsf_default/logs", "/log/" + patharr[1] + "-" + patharr[2] + "-" + patharr[3] + "-" + patharr[4]);
             } else {
                 path = "/tmp" + File.separator + "0_" + findMirrorDTO.getIp() + File.separator + findMirrorDTO.getPath();
             }
+            log.info("查找日志镜像路径: {}", path);
             File file = new File(path);
             if (file.exists()){
                 return ServerResponse.success();

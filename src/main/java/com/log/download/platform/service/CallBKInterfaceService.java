@@ -164,6 +164,11 @@ public class CallBKInterfaceService {
 
     }
 
+    /**
+     * 拼接快速分发文件的接口参数
+     * @param downLoadDTO
+     * @return
+     */
     public String getFastPushFile(DownLoadDTO downLoadDTO) {
         String label = downLoadDTO.getLabel();
         BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
@@ -181,7 +186,7 @@ public class CallBKInterfaceService {
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
                 "\t\"bk_username\": \"" + bk_username + "\",\n" +
                 "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
-                "\t\"file_target_path\": \"/tmp/0_" + ip + "/" + path.substring(0, end) + "\",\n" +
+                "\t\"file_target_path\": \"/tmp/0_" + downLoadDTO.getCvmip() + "/" + path.substring(0, end) + "\",\n" +
                 "\t\"account\": \"root\",\n" +
                 "\t\"ip_list\": [{\"bk_cloud_id\": 0,\"ip\": \"10.155.27.48\"}],\n" +
                 "\t\"file_source\": [{\n" +
@@ -248,18 +253,26 @@ public class CallBKInterfaceService {
     public List<LogDetailVO> getFileIsExists(List<LogDetailVO> list) {
         List<LogDetailVO> logs = new ArrayList<>();
         String path;
+        //Calendar cal = Calendar.getInstance();
         for (LogDetailVO log : list) {
-            path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + log.getPath();
+            if (log.getPath().contains("/data/tsf_default/") && !log.getPath().contains("sys_log.log")){
+                System.out.println(log.getPath());
+                String[] patharr = log.getPath().split("-");
+                path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + log.getPath().replace("/data/tsf_default/logs", "/log/" + patharr[1] + "-" + patharr[2] + "-" + patharr[3] + "-" + patharr[4]);
+            } else {
+                path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + log.getPath();
+            }
             File file = new File(path);
-            Calendar cal = Calendar.getInstance();
-            long time = file.lastModified();
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            cal.setTimeInMillis(time);
-            String modifiedTime = formatter.format(cal.getTime());
             if (!file.exists()) {
                 log.setMirror(false);
             } else {
-                if (isToday(log.getCreateTime(), modifiedTime)) {
+                //最后修改时间
+                String mtime = executeLinuxCmd(path);
+                //long time = file.lastModified();
+                //SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                //cal.setTimeInMillis(time);
+                //String modifiedTime = formatter.format(cal.getTime());
+                if (isToday(log.getCreateTime(), mtime)) {
                     log.setMirror(true);
                 } else {
                     file.delete();
@@ -329,6 +342,13 @@ public class CallBKInterfaceService {
         return params;
     }
 
+    /**
+     * 作业是否执行结束
+     * @param label
+     * @param jobInstanceId
+     * @param timeOut
+     * @return
+     */
     public Boolean isFinish(String label, int jobInstanceId, Long timeOut) {
         String paramsLog = getJobInstanceLogParams(label, jobInstanceId);
 
@@ -350,5 +370,33 @@ public class CallBKInterfaceService {
             }
         }
         return isFinished;
+    }
+
+    /**
+     * 获取文件在服务器上的生成时间
+     * @param path
+     * @return
+     */
+    public String executeLinuxCmd(String path) {
+        String cmd = "stat " + path + " | grep Modify";
+        Runtime run = Runtime.getRuntime();
+        try {
+            Process process = run.exec(new String[] {"/bin/sh", "-c", cmd});
+            InputStream in = process.getInputStream();
+            BufferedReader bs = new BufferedReader(new InputStreamReader(in));
+            List<String> list = new ArrayList<String>();
+            String result = null;
+            while ((result = bs.readLine()) != null) {
+                System.out.println("job result [" + result + "]");
+                list.add(result);
+            }
+            in.close();
+            process.destroy();
+
+            return list.get(0).substring(0, list.get(0).lastIndexOf(":")).replace("Modify: ", "");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

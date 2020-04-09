@@ -28,4 +28,9 @@ public class DownLoadDTO {
      */
     private String path;
 
+    /**
+     * 日志分发ip
+     */
+    private String cvmip;
+
 }

@@ -285,6 +285,13 @@
             async downloadLog(val) {
                 console.log(val)
 
+                if (val.path.includes("/data/tsf_default/logs/sys_log")) {
+                    this.$alert('容器内syslog日志暂无法下载，请联系部署组提取', "下载日志出错", {
+                        confirmButtonText: '确定'
+                    });
+                    return;
+                }
+
                 const loading = this.$loading({
                     lock: true,
                     text: '获取' + val.ip + ':' + val.path + '的下载资源中...下载文件过大，可能会造成下载超时',
