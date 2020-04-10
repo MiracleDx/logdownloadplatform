@@ -1,4 +1,4 @@
-package com.log.download.platform.util;
+package com.log.download.platform.context;
 
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -11,14 +11,14 @@ import javax.servlet.http.HttpSession;
 import java.util.Objects;
 
 /**
- * RequestContextUtil
+ * RequestContext
  *
  * @author Dongx
  * Description:
  * Created in: 2019-01-14 17:09
  * Modified by:
  */
-public class RequestContextUtil {
+public class RequestContext {
 
 	public static HttpServletRequest getRequest() {
 		return getRequestAttributes().getRequest();
