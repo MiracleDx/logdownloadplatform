@@ -54,6 +54,7 @@ public class LogController {
         JSONObject resultObject = callBKInterfaceService.callLanJingInterface("http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_execute_script/", params);
         //如果执行成功，查询执行日志
         if (resultObject.getBoolean(JsonWordEnum.result.getJsonWord())) {
+            //——————————————————————————————————————————————————————
             //验证执行结果，若未执行完则继续查询，知道查询的作业执行完成
             int jobInstanceId = resultObject.getJSONObject(JsonWordEnum.data.getJsonWord()).getInteger(JsonWordEnum.job_instance_id.getJsonWord());
             String paramsLog = callBKInterfaceService.getJobInstanceLogParams(queryLogDetailDTO.getLabel(), jobInstanceId);
@@ -73,7 +74,7 @@ public class LogController {
                     return ServerResponse.failure("蓝鲸调用执行查询任务超时");
                 }
             }
-
+            //——————————————————————————————————————————————————————————————————
             //获取执行日志
             if (resultLog.getBoolean(JsonWordEnum.result.getJsonWord())) {
                 JSONArray dataArr = resultLog.getJSONArray(JsonWordEnum.data.getJsonWord());
@@ -152,7 +153,7 @@ public class LogController {
                         }
                     }
                 }
-
+                //————————————————————————————————————————————————————————————————————————————————————————
                 if (list.size() == 0) {
                     log.error("蓝鲸查询无日志文件列表返回");
                     return ServerResponse.failure("蓝鲸查询无日志文件列表返回");
