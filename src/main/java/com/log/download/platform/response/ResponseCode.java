@@ -47,7 +47,8 @@ public enum ResponseCode {
     SPECIFIED_QUESTIONED_USER_NOT_EXIST(HttpStatus.SC_INTERNAL_SERVER_ERROR, "某业务出现问题"),
 
     /* 系统错误：500 Internal Server Error */
-    SYSTEM_INNER_ERROR(HttpStatus.SC_INTERNAL_SERVER_ERROR, "系统繁忙，请稍后重试")
+    SYSTEM_INNER_ERROR(HttpStatus.SC_INTERNAL_SERVER_ERROR, "系统繁忙，请稍后重试"),
+    SERVICE_NOT_DEFINED(HttpStatus.SC_INTERNAL_SERVER_ERROR, "no service not defined")
     
     ;
     
