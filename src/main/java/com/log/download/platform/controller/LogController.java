@@ -202,7 +202,7 @@ public class LogController {
             if (file.exists()){
                 return ServerResponse.success();
             }
-            return ServerResponse.failure(ResponseCode.DATA_NOT_FOUND.getCode(), ResponseCode.DATA_NOT_FOUND.getMessage());
+            return ServerResponse.failure(ResponseCode.DATA_NOT_FOUND.code(), ResponseCode.DATA_NOT_FOUND.message());
         }
         return ServerResponse.failure("传送路径失败");
     }
