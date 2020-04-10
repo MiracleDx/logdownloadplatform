@@ -1,5 +1,6 @@
 package com.log.download.platform.config;
 
+import com.log.download.platform.util.IpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -68,7 +69,7 @@ public class LogAspectConfig {
                     (endTime - startTime) / 1000_000);
         } else {
             log.info("AOP_TYPE: [{}], URL: [{}], HTTP_METHOD: [{}], REQUEST_IP: [{}], REQUEST_METHOD: [{}], REQUEST_ARGS: [{}], RESPONSE_ARGS: [{}], RESPONSE_TIME: [{}]",
-                    flag ? "service" : "controller", request.getRequestURL().toString(), request.getMethod(), request.getRemoteAddr(), requestMethod, requestArgs, result,
+                    flag ? "service" : "controller", IpUtil.getRealIp(request), request.getMethod(), request.getRemoteAddr(), requestMethod, requestArgs, result,
                     (endTime - startTime) / 1000_000);
         }
        
