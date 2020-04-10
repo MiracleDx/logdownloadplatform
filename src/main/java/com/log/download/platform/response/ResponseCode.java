@@ -9,7 +9,7 @@ import org.apache.http.HttpStatus;
 public enum ResponseCode {
 
     /* 成功状态码 200 */
-    SUCCESS(HttpStatus.SC_OK, "成功"),
+    SUCCESS(HttpStatus.SC_OK, "success"),
 
     /* 参数错误：400 Bad Request */
     PARAM_IS_INVALID(HttpStatus.SC_BAD_REQUEST, "参数无效"),
@@ -48,8 +48,8 @@ public enum ResponseCode {
 
     /* 系统错误：500 Internal Server Error */
     SYSTEM_INNER_ERROR(HttpStatus.SC_INTERNAL_SERVER_ERROR, "系统繁忙，请稍后重试"),
-    SERVICE_NOT_DEFINED(HttpStatus.SC_INTERNAL_SERVER_ERROR, "no service not defined")
-    
+    SERVICE_NOT_DEFINED(HttpStatus.SC_INTERNAL_SERVER_ERROR, "no service not defined"),
+    REPEAT_SUBMIT_OPERATION_EXCEPTION(HttpStatus.SC_INTERNAL_SERVER_ERROR, "重复请求");
     ;
     
     private Integer code;
