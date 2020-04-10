@@ -104,6 +104,7 @@ public class CallBKInterfaceService {
         byte[] content = param.getBytes();
         String script_param = encoder.encodeToString(content);
         int fastExecuteScript_id = script_id;
+        //根据脚本入参的参数，判断是否网关，选择脚本id
         if(param.contains("msgw")) {
             if (queryLogDetailDTO.getIsHistory()) {
                 fastExecuteScript_id = historymsgwScriptID;
@@ -117,7 +118,7 @@ public class CallBKInterfaceService {
                 fastExecuteScript_id = script_id;
             }
         }
-
+        //拼接接口入参
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
                 "\t\"bk_app_secret\": \"" + bk_app_secret + "\",\n" +
@@ -150,6 +151,12 @@ public class CallBKInterfaceService {
         return paramResult;
     }
 
+    /**
+     * 拼接作业执行日志接口入参
+     * @param label
+     * @param job_instance_id
+     * @return
+     */
     public String getJobInstanceLogParams(String label, int job_instance_id) {
         BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
         int bk_biz_id = bkEnum.getCode();
@@ -165,7 +172,7 @@ public class CallBKInterfaceService {
     }
 
     /**
-     * 拼接快速分发文件的接口参数
+     * 拼装快速下载文件的接口参数
      * @param downLoadDTO
      * @return
      */
@@ -175,11 +182,13 @@ public class CallBKInterfaceService {
         int bk_biz_id = bkEnum.getCode();
         String ip = downLoadDTO.getIp();
         String path = downLoadDTO.getPath();
+        //如果是容器内的日志需要重新拼装
         if (path.contains("/tsf_default/")) {
             String tmp = path.split("/")[4];
             String[] patharr = path.split("-");
             path = "/log/" + patharr[1] + "-" + patharr[2] + "-" + patharr[3] + "-" + patharr[4] + "/" + tmp;
         }
+        //准备截取路径，去除文件名，只保留路径
         int end = path.lastIndexOf("/");
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + bk_app_code + "\",\n" +
@@ -307,7 +316,12 @@ public class CallBKInterfaceService {
         }
     }
 
-
+    /**
+     * 拼接容器脚本参数
+     * @param downLoadDTO
+     * @param fastExecuteScript_id
+     * @return
+     */
     public String getContainerScriptParams(DownLoadDTO downLoadDTO, int fastExecuteScript_id) {
         String label = downLoadDTO.getLabel();
         String ip = downLoadDTO.getIp();

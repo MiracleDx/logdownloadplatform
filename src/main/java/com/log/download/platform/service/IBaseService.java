@@ -27,11 +27,7 @@ public interface IBaseService {
 	 * @param response
 	 */
 	default void download(String ip, String path, HttpServletResponse response) throws IOException {
-		if (path.contains("/tsf_default/")){
-			String[] temp = path.split("-");
-			path = path.replace("/data/tsf_default/logs","/log/" + temp[1] + "-" + temp[2] + "-" + temp[3] + "-" + temp[4]);
-		}
-		path = "/tmp" + File.separator + "0_" + ip + File.separator + path;
+		path = "/tmp" + File.separator + "0_" + ip + File.separator + processingContainerRealPath(path);
 		// path是指欲下载的文件的路径。
 		File file = new File(path);
 		if (!file.exists()) {
@@ -63,6 +59,23 @@ public interface IBaseService {
 	}
 
 	/**
+	 * 处理容器日志路径
+	 * @param path
+	 * tmp[1]=中心名称  c014
+	 * tmp[2]=应用名称  01014020
+	 * tmp[3]=分公司编码  3300
+	 * tmp[4]=部署组id  1
+	 * @return
+	 */
+	default String processingContainerRealPath(String path) {
+		if (path.contains("/tsf_default/") && !path.contains("sys_log.log")){
+			String[] temp = path.split("-");
+			path = path.replace("/data/tsf_default/logs","/log/" + temp[1] + "-" + temp[2] + "-" + temp[3] + "-" + temp[4]);
+		}
+		return path;
+	}
+
+	/**
 	 * 获取文件是否合理存在于文件服务器
 	 *
 	 * @param list
@@ -71,25 +84,14 @@ public interface IBaseService {
 	default List<LogDetailVO> getFileIsExists(List<LogDetailVO> list) {
 		List<LogDetailVO> logs = new ArrayList<>();
 		String path;
-		//Calendar cal = Calendar.getInstance();
 		for (LogDetailVO log : list) {
-			if (log.getPath().contains("/data/tsf_default/") && !log.getPath().contains("sys_log.log")){
-				System.out.println(log.getPath());
-				String[] patharr = log.getPath().split("-");
-				path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + log.getPath().replace("/data/tsf_default/logs", "/log/" + patharr[1] + "-" + patharr[2] + "-" + patharr[3] + "-" + patharr[4]);
-			} else {
-				path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + log.getPath();
-			}
+			path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + processingContainerRealPath(log.getPath());
 			File file = new File(path);
 			if (!file.exists()) {
 				log.setMirror(false);
 			} else {
-				//最后修改时间
+				//调用服务器指令，获取最后修改时间
 				String mtime = executeLinuxCmd(path);
-				//long time = file.lastModified();
-				//SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-				//cal.setTimeInMillis(time);
-				//String modifiedTime = formatter.format(cal.getTime());
 				if (isToday(log.getCreateTime(), mtime)) {
 					log.setMirror(true);
 				} else {
