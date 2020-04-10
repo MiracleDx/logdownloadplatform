@@ -25,17 +25,17 @@ import java.util.*;
 public class BkUtil {
 
     /**
-     * BKAPP
+     * 应用ID
      */
     private final String BK_APP_CODE = "logdownder";
 
     /**
-     * BK秘钥
+     * 安全秘钥
      */
     private final String BK_APP_SECRET = "855d69c9-2ed4-4d08-9a88-7a56a2564e12";
 
     /**
-     * BK用户名
+     * 当前用户用户名
      */
     private final String BK_USERNAME = "admin";
 
