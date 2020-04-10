@@ -50,6 +50,20 @@ public class BkUtil {
 	 */
 	private final String GET_JOB_INSTANCE_LOG_URL = "http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/";
 
+	
+	private BkUtil() {
+		
+	}
+	
+	private static class SingletonInstance {
+		private static final BkUtil instance = new BkUtil();
+	}
+	
+	public static BkUtil getInstance() {
+		return SingletonInstance.instance;
+	}
+	
+	
 	/**
 	 * 调用蓝鲸接口
 	 * @param url
