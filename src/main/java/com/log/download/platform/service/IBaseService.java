@@ -1,8 +1,11 @@
 package com.log.download.platform.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.log.download.platform.dto.FindMirrorDTO;
+import com.log.download.platform.dto.QueryLogDetailDTO;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.vo.LogDetailVO;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -76,6 +79,17 @@ public interface IBaseService {
 	}
 
 
-	
-	public void test();
+	/**
+	 * 查询对应部署组下的日志清单
+	 * @param queryLogDetailDTO
+	 * @return
+	 */
+	List<LogDetailVO> queryLogDetails(QueryLogDetailDTO queryLogDetailDTO);
+
+	/**
+	 * 判断镜像文件是否存在
+	 * @param findMirrorDTO
+	 * @return
+	 */
+	Boolean findMirror(@RequestBody FindMirrorDTO findMirrorDTO);
 }
