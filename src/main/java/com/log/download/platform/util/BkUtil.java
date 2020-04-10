@@ -35,15 +35,35 @@ public class BkUtil {
 	 */
 	private final String BK_USERNAME = "admin";
 
+	/**
+	 * 共享服务器地址
+	 */
+	private final String SHARED_SERVER = "10.155.27.48";
 
-	public JSONObject requestBKInterface(String url, String params, RestTemplate restTemplate) {
+	/**
+	 * 调用蓝鲸执行脚本url
+	 */
+	private final String FAST_EXECUTE_SCRIPT_URL = "http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_execute_script/";
+
+	/**
+	 * 调用蓝鲸查询脚本结果url
+	 */
+	private final String GET_JOB_INSTANCE_LOG_URL = "http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/";
+
+	/**
+	 * 调用蓝鲸接口
+	 * @param url
+	 * @param params
+	 * @param restTemplate
+	 * @return
+	 */
+	public JSONObject requestBkInterface(String url, String params, RestTemplate restTemplate) {
 		//请求头
 		HttpHeaders headers = new HttpHeaders();
-		HttpEntity httpEntity = new HttpEntity(params, headers);
+		HttpEntity<String> httpEntity = new HttpEntity<>(params, headers);
 		//发送请求调用接口
 		ResponseEntity<String> request = restTemplate.postForEntity(url, httpEntity, String.class);
-		JSONObject resultData = JSONObject.parseObject(request.getBody());
-		return resultData;
+		return JSONObject.parseObject(request.getBody());
 	}
 
 	/**
@@ -57,17 +77,17 @@ public class BkUtil {
 	public String getFastExecuteScriptParams(String label, String[] ips, String param, int scriptId) {
 	
 		BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
-		int bk_biz_id = bkEnum.getCode();
+		int bkBizId = bkEnum.getCode();
 		byte[] content = param.getBytes();
-		String script_param = Base64.getEncoder().encodeToString(content);
+		String scriptParam = Base64.getEncoder().encodeToString(content);
 
 		String params = "{\n" +
 				"\t\"bk_app_code\": \"" + BK_APP_CODE + "\",\n" +
 				"\t\"bk_app_secret\": \"" + BK_APP_SECRET + "\",\n" +
 				"\t\"bk_username\": \"" + BK_USERNAME + "\",\n" +
-				"\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
+				"\t\"bk_biz_id\": " + bkBizId + ",\n" +
 				"\t\"script_id\": " + scriptId + ",\n" +
-				"\t\"script_param\": \"" + script_param + "\",\n" +
+				"\t\"script_param\": \"" + scriptParam + "\",\n" +
 				"\t\"script_timeout\": 1000,\n" +
 				"\t\"account\": \"ubuntu\",\n" +
 				"\t\"is_param_sensitive\": 0,\n" +
@@ -123,16 +143,16 @@ public class BkUtil {
 	 */
 	public String getFastPushFile(String label, String ip, String path, String cvmIp) {
 		BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
-		int bk_biz_id = bkEnum.getCode();
+		int bkBizId = bkEnum.getCode();
 		int end = path.lastIndexOf("/");
 		String params = "{\n" +
 				"\t\"bk_app_code\": \"" + BK_APP_CODE + "\",\n" +
 				"\t\"bk_app_secret\": \"" + BK_APP_SECRET + "\",\n" +
 				"\t\"bk_username\": \"" + BK_USERNAME + "\",\n" +
-				"\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
+				"\t\"bk_biz_id\": " + bkBizId + ",\n" +
 				"\t\"file_target_path\": \"/tmp/0_" + cvmIp + "/" + path.substring(0, end) + "\",\n" +
 				"\t\"account\": \"root\",\n" +
-				"\t\"ip_list\": [{\"bk_cloud_id\": 0,\"ip\": \"10.155.27.48\"}],\n" +
+				"\t\"ip_list\": [{\"bk_cloud_id\": 0,\"ip\": \"" + SHARED_SERVER + "\"}],\n" +
 				"\t\"file_source\": [{\n" +
 				"\t\t\"files\":[\"" + path + "\"],\n" +
 				"\t\t\"account\": \"ubuntu\",\n" +
