@@ -40,6 +40,7 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
 		ResponseResult annClazz = null;
 		ResponseResult annMethod = null;
 		// 获取声明类注解
+		assert method != null;
 		annClazz = method.getDeclaringClass().getAnnotation(ResponseResult.class);
 		if (annClazz == null) {
 			// 获取方法注解
@@ -74,7 +75,7 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
 		}
 		
 		if (body == null) {
-			return ServerResponse.failure(ResponseCode.DATA_NOT_FOUND.getCode(), ResponseCode.DATA_NOT_FOUND.getMessage());
+			return ServerResponse.failure(ResponseCode.DATA_NOT_FOUND.code(), ResponseCode.DATA_NOT_FOUND.message());
 		}
 		return ServerResponse.success(body);
 	}

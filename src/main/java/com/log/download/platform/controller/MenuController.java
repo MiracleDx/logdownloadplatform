@@ -1,6 +1,8 @@
 package com.log.download.platform.controller;
 
-import com.log.download.platform.response.ServerResponse;
+import com.log.download.platform.exception.DataNotFoundException;
+import com.log.download.platform.response.ResponseCode;
+import com.log.download.platform.response.ResponseResult;
 import com.log.download.platform.service.MenuService;
 import com.log.download.platform.vo.MenuVO;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import java.util.List;
  * Modified by:
  */
 @Slf4j
+@ResponseResult
 @RestController
 public class MenuController {
 
@@ -26,11 +29,10 @@ public class MenuController {
 	private MenuService menuService;
 	
 	@GetMapping("/getMenu")
-	public ServerResponse<List<MenuVO>> getMenu() {
+	public List<MenuVO> getMenu() {
 		if (menuService.menu == null || menuService.menu.size() == 0) {
-			log.error("菜单加载失败，请联系部署组，上传正确的日志清单文件");
-			return ServerResponse.failure("菜单加载失败，请联系部署组，上传正确的日志清单文件");
+			throw new DataNotFoundException(ResponseCode.MENU_EXCEL_NOT_FOUND);
 		}
-		return ServerResponse.success(menuService.menu);
+		return menuService.menu;
 	}
 }

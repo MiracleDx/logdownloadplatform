@@ -45,7 +45,7 @@ public class ServerResponse<T> implements IResult {
     }
 
     public static <T> ServerResponse<T> success() {
-        return new ServerResponse(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage());
+        return new ServerResponse(ResponseCode.SUCCESS.code(), ResponseCode.SUCCESS.message());
     }
 
     public static <T> ServerResponse<T> success(Integer code) {
@@ -53,15 +53,15 @@ public class ServerResponse<T> implements IResult {
     }
 
     public static <T> ServerResponse<T> success(String message) {
-        return new ServerResponse<>(ResponseCode.SUCCESS.getCode(), message);
+        return new ServerResponse<>(ResponseCode.SUCCESS.code(), message);
     }
 
     public static <T> ServerResponse<T> success(T data) {
-        return new ServerResponse<>(ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMessage(), data);
+        return new ServerResponse<>(ResponseCode.SUCCESS.code(), ResponseCode.SUCCESS.message(), data);
     }
 
     public static <T> ServerResponse<T> success(String message, T data) {
-        return new ServerResponse<>(ResponseCode.SUCCESS.getCode(), message, data);
+        return new ServerResponse<>(ResponseCode.SUCCESS.code(), message, data);
     }
 
     public static <T> ServerResponse<T> failure(Integer code) {
@@ -69,7 +69,7 @@ public class ServerResponse<T> implements IResult {
     }
 
     public static <T> ServerResponse<T> failure(String message) {
-        return new ServerResponse<>(ResponseCode.PARAM_IS_INVALID.getCode(), message);
+        return new ServerResponse<>(ResponseCode.PARAM_IS_INVALID.code(), message);
     }
 
     public static <T> ServerResponse<T> failure(Integer code, String message) {
@@ -77,7 +77,7 @@ public class ServerResponse<T> implements IResult {
     }
 
     public static <T> ServerResponse<T> failure(String message, T data) {
-        return new ServerResponse<>(ResponseCode.SYSTEM_INNER_ERROR.getCode(), message, data);
+        return new ServerResponse<>(ResponseCode.SYSTEM_INNER_ERROR.code(), message, data);
     }
 
     public static <T> ServerResponse<T> failure(Integer code, String message, T data) {

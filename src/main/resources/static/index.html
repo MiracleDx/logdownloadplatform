@@ -220,10 +220,10 @@
                         .then(data => {
                             console.log(data)
                             loading.close();
-                            if (data.code === 1) {
+                            if (data.code === 200) {
                                 this.logDetails = data.data;
                                 this.$forceUpdate()
-                            } else if(data.code === 50004) {
+                            } else if(data.code === 408) {
                                 this.logDetails = data.data;
                                 this.$forceUpdate()
                                 this.$alert('未查询到数据的ip为：' + data.message, "蓝鲸查询出错/超时", {
@@ -255,7 +255,7 @@
                     .then(response => response.json())
                     .then(data => {
                         console.log(data)
-                        if (data.code === 1) {
+                        if (data.code === 200) {
                             this.data = data.data;
                         } else {
                             this.$message.error(data.message)
@@ -457,7 +457,7 @@
                         .then(data => {
                             console.log(data)
                             loading.close();
-                            if (data.code === 1) {
+                            if (data.code === 200) {
                                 // 压入历史数据
                                 this.logDetails = data.data;
                                 this.$forceUpdate()
@@ -516,7 +516,7 @@
                         setTimeout(() => {
                             loading.close();
                         }, 500)
-                        if (data.code === 1) {
+                        if (data.code === 200) {
                             // 更新数组中指定索引的值
                             let index = this.logDetails.findIndex(item => item.id === val.id);
                             let item = this.logDetails[index]
