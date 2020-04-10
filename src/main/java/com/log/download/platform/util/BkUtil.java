@@ -74,6 +74,10 @@ public class BkUtil {
 	public JSONObject requestBkInterface(String url, String params, RestTemplate restTemplate) {
 		//请求头
 		HttpHeaders headers = new HttpHeaders();
+		headers.add("Accept", "application/json");
+		headers.add("Accept-Encoding", "gzip");
+		headers.add("Content-Encoding", "UTF-8");
+		headers.add("Content-Type", "application/json; charset=UTF-8");
 		HttpEntity<String> httpEntity = new HttpEntity<>(params, headers);
 		//发送请求调用接口
 		ResponseEntity<String> request = restTemplate.postForEntity(url, httpEntity, String.class);
