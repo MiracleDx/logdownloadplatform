@@ -69,7 +69,7 @@ public class LogAspectConfig {
                     (endTime - startTime) / 1000_000);
         } else {
             log.info("AOP_TYPE: [{}], URL: [{}], HTTP_METHOD: [{}], REQUEST_IP: [{}], REQUEST_METHOD: [{}], REQUEST_ARGS: [{}], RESPONSE_ARGS: [{}], RESPONSE_TIME: [{}]",
-                    flag ? "service" : "controller", IpUtil.getRealIp(request), request.getMethod(), request.getRemoteAddr(), requestMethod, requestArgs, result,
+                    flag ? "service" : "controller", request.getRequestURI(), request.getMethod(), IpUtil.getRealIp(request), requestMethod, requestArgs, result,
                     (endTime - startTime) / 1000_000);
         }
        
