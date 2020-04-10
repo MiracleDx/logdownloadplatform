@@ -10,7 +10,7 @@ import lombok.Data;
  */
 @Data
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class ServerResponse<T> {
+public class ServerResponse<T> implements IResult {
 
     private static final long serialVersionUID = 1L;
     
