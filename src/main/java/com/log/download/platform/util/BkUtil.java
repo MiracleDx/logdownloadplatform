@@ -3,8 +3,6 @@ package com.log.download.platform.util;
 import com.alibaba.fastjson.JSONObject;
 import com.log.download.platform.common.BkEnum;
 import com.log.download.platform.dto.HostDTO;
-import com.log.download.platform.service.IBaseService;
-import com.log.download.platform.vo.LogDetailVO;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
