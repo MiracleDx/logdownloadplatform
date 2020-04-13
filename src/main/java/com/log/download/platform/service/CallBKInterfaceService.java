@@ -303,7 +303,7 @@ public class CallBKInterfaceService {
     public Boolean isToday(String creatTime, String time) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         LocalDateTime localDateTime = LocalDateTime.parse(creatTime, dtf);
-    LocalDateTime modifiedTime = LocalDateTime.parse(time, dtf);
+        LocalDateTime modifiedTime = LocalDateTime.parse(time, dtf);
         LocalDateTime now = LocalDateTime.now();
         //如果是蓝鲸创建时间是今天，判断文件在服务器上创建时间和当前时间是否间隔两个小时
         if (now.getYear() == localDateTime.getYear() && now.getMonth() == localDateTime.getMonth()
