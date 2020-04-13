@@ -1,7 +1,10 @@
 package com.log.download.platform.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.log.download.platform.bo.JobStatusBO;
+import com.log.download.platform.common.BkConstant;
 import com.log.download.platform.common.BkEnum;
+import com.log.download.platform.common.JsonWordEnum;
 import com.log.download.platform.dto.HostDTO;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +16,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * BkUtil
@@ -87,6 +91,23 @@ public class BkUtil {
         return requestBkInterface(GET_JOB_INSTANCE_LOG_URL, params, restTemplate);
     }
 
+    /**
+     * 获取蓝鲸执行脚本id
+     * @param jsonObject
+     * @return
+     */
+    public Integer getJobInstanceId(JSONObject jsonObject) {
+        return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
+    }
+
+    /**
+     * 获取蓝鲸执行脚本状态
+     * @param jsonObject
+     * @return
+     */
+    public Boolean getJobInstanceStatus(JSONObject jsonObject) {
+        return jsonObject.getBoolean(BkConstant.RESULT);
+    }
 
     /**
      * 调用蓝鲸接口
@@ -107,6 +128,39 @@ public class BkUtil {
         //发送请求调用接口
         ResponseEntity<String> request = restTemplate.postForEntity(url, httpEntity, String.class);
         return JSONObject.parseObject(request.getBody());
+    }
+
+    /**
+     * 获取蓝鲸脚本执行状态及脚本结果（超时中断任务）
+     * @param label
+     * @param jobInstanceId
+     * @param restTemplate
+     * @return
+     */
+    public JobStatusBO getjobStatus(String label, int jobInstanceId, RestTemplate restTemplate) {
+        JobStatusBO jobStatusBO = new JobStatusBO();
+        String paramsLog = BkUtil.getInstance().getJobInstanceLogParams(label, jobInstanceId);
+        JSONObject resultLog = new JSONObject();
+        long t1 = System.currentTimeMillis();
+        boolean isFinished = false;
+        //循环调用查询作业执行情况
+        //到达等待时间的阈值，会直接中断
+        while (!isFinished) {
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            resultLog = this.requestGetJobInstanceLog(paramsLog, restTemplate);
+            isFinished = resultLog.getJSONArray(BkConstant.DATA).getJSONObject(0).getBoolean(BkConstant.IS_FINISHED);
+            long t2 = System.currentTimeMillis();
+            if (t2 - t1 > 30 * 1000) {
+                break;
+            }
+        }
+        jobStatusBO.setIsFinished(isFinished);
+        jobStatusBO.setResult(resultLog);
+        return jobStatusBO;
     }
 
     /**
