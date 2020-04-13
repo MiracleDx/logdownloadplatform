@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
 import com.log.download.platform.bo.JobStatusBO;
 import com.log.download.platform.common.JsonWordEnum;
+import com.log.download.platform.dto.DownLoadDTO;
 import com.log.download.platform.dto.FindMirrorDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
 import com.log.download.platform.response.ServerResponse;
@@ -238,5 +239,11 @@ public interface IBaseService {
      * @param findMirrorDTO
      * @return
      */
-    Boolean findMirror(@RequestBody FindMirrorDTO findMirrorDTO);
+    Boolean findMirror(FindMirrorDTO findMirrorDTO);
+
+    /**
+     * 调用蓝鲸快速分发接口
+     * @param downLoadDTO
+     */
+    void fastPushFile(DownLoadDTO downLoadDTO);
 }
