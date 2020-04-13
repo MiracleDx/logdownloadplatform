@@ -4,8 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.log.download.platform.bo.JobStatusBO;
 import com.log.download.platform.common.BkConstant;
 import com.log.download.platform.common.BkEnum;
-import com.log.download.platform.common.JsonWordEnum;
 import com.log.download.platform.dto.HostDTO;
+import com.log.download.platform.exception.RemoteAccessException;
+import com.log.download.platform.response.ResponseCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +30,8 @@ import java.util.concurrent.TimeUnit;
  * Modified by:
  */
 public class BkUtil {
+    
+    Logger logger = LoggerFactory.getLogger(BkUtil.class);
 
     /**
      * 应用ID
@@ -58,6 +63,10 @@ public class BkUtil {
      */
     private final String GET_JOB_INSTANCE_LOG_URL = "http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/get_job_instance_log/";
 
+    /**
+     * 调用蓝鲸快速分发url
+     */
+    private final String FAST_PUSH_FILE_URL = "http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_push_file/";
 
     private BkUtil() {
 
@@ -72,7 +81,7 @@ public class BkUtil {
     }
 
     /**
-     * 调用蓝鲸执行脚本
+     * 调用蓝鲸文件分发接口
      * @param params
      * @param restTemplate
      * @return
@@ -82,13 +91,33 @@ public class BkUtil {
     }
 
     /**
-     * 调用蓝鲸执行脚本
+     * 调用蓝鲸快速执行脚本
+     * @param params
+     * @param restTemplate
+     * @return
+     */
+    public JSONObject requestFastPushFile(String params, RestTemplate restTemplate) {
+        return requestBkInterface(FAST_PUSH_FILE_URL, params, restTemplate);
+    }
+
+    /**
+     * 查询蓝鲸脚本执行情况
      * @param params
      * @param restTemplate
      * @return
      */
     public JSONObject requestGetJobInstanceLog(String params, RestTemplate restTemplate) {
         return requestBkInterface(GET_JOB_INSTANCE_LOG_URL, params, restTemplate);
+    }
+
+    /**
+     * 获取蓝鲸执行脚本id
+     * @param jsonObject
+     * @return
+     */
+    public Integer getJobInstanceId(String params, RestTemplate restTemplate) {
+        JSONObject jsonObject = requestFastExecuteScript(params, restTemplate);
+        return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
     }
 
     /**
@@ -127,37 +156,74 @@ public class BkUtil {
         HttpEntity<String> httpEntity = new HttpEntity<>(params, headers);
         //发送请求调用接口
         ResponseEntity<String> request = restTemplate.postForEntity(url, httpEntity, String.class);
+        logger.info("request url: {}, request params: {}, request response: {}", url, httpEntity, request.getBody());
         return JSONObject.parseObject(request.getBody());
     }
 
     /**
      * 获取蓝鲸脚本执行状态及脚本结果（超时中断任务）
-     * @param label
+     * @param bkBizId
      * @param jobInstanceId
      * @param restTemplate
      * @return
      */
-    public JobStatusBO getjobStatus(String label, int jobInstanceId, RestTemplate restTemplate) {
-        JobStatusBO jobStatusBO = new JobStatusBO();
-        String paramsLog = BkUtil.getInstance().getJobInstanceLogParams(label, jobInstanceId);
-        JSONObject resultLog = new JSONObject();
+    public JobStatusBO getJobStatus(int bkBizId, int jobInstanceId, RestTemplate restTemplate) {
+        int count = 0;
+        // 调用蓝鲸执行脚本
+        //JSONObject jsonObject = requestFastExecuteScript(params, restTemplate);
+        //// 查询脚本是否执行完毕
+        //do {
+        //    jsonObject = ;
+        //    // 执行完毕直接跳出循环
+        //    if (getJobInstanceStatus(jsonObject)) {
+        //        break;
+        //    }
+        //    
+        //    logger.info("request get_job_instance_log {} times", count);
+        //    count ++;
+        //    try {
+        //        TimeUnit.SECONDS.sleep(1);
+        //    } catch (InterruptedException e) {
+        //        e.printStackTrace();
+        //    }
+        //} while (!getJobInstanceStatus(jsonObject));
+
+        //if (!getJobInstanceStatus(jsonObject)) {
+        //    throw new RemoteAccessException(ResponseCode.SYSTEM_INNER_ERROR, jsonObject.getString("message"));
+        //}
+
+        // 获取蓝鲸调用日志的脚本执行id
+        //int jobInstanceId = getJobInstanceId(jsonObject);
+        // 获取蓝鲸脚本查询参数
+        String params = getJobInstanceLogParams(bkBizId, jobInstanceId);
         long t1 = System.currentTimeMillis();
         boolean isFinished = false;
-        //循环调用查询作业执行情况
-        //到达等待时间的阈值，会直接中断
+        //循环调用查询作业执行情况 到达等待时间的阈值，会直接中断
+        JSONObject resultLog = null;
+        count = 0;
         while (!isFinished) {
+            resultLog = requestGetJobInstanceLog(params, restTemplate);
+            isFinished = resultLog.getJSONArray(BkConstant.DATA).getJSONObject(0).getBoolean(BkConstant.IS_FINISHED);
+            
+            // 执行结束直接跳出循环
+            if (isFinished) {
+                break;
+            }
+
+            logger.info("request fast_execute_script {} times", count);
+            count ++;
             try {
                 TimeUnit.SECONDS.sleep(3);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            resultLog = this.requestGetJobInstanceLog(paramsLog, restTemplate);
-            isFinished = resultLog.getJSONArray(BkConstant.DATA).getJSONObject(0).getBoolean(BkConstant.IS_FINISHED);
             long t2 = System.currentTimeMillis();
             if (t2 - t1 > 30 * 1000) {
                 break;
             }
         }
+        
+        JobStatusBO jobStatusBO = new JobStatusBO();
         jobStatusBO.setIsFinished(isFinished);
         jobStatusBO.setResult(resultLog);
         return jobStatusBO;
@@ -166,16 +232,13 @@ public class BkUtil {
     /**
      * 获取快速执行脚本入参
      *
-     * @param label
+     * @param bkBizId
      * @param ips
      * @param param
      * @param scriptId
      * @return
      */
-    public String getFastExecuteScriptParams(String label, String[] ips, String param, int scriptId) {
-
-        BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
-        int bkBizId = bkEnum.getCode();
+    public String getFastExecuteScriptParams(int bkBizId, String[] ips, String param, int scriptId) {
         byte[] content = param.getBytes();
         String scriptParam = Base64.getEncoder().encodeToString(content);
 
@@ -214,13 +277,11 @@ public class BkUtil {
     /**
      * 获取脚本执行结果入参
      *
-     * @param label
+     * @param bkBizId
      * @param jobInstanceId
      * @return
      */
-    public String getJobInstanceLogParams(String label, int jobInstanceId) {
-        BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
-        int bkBizId = bkEnum.getCode();
+    public String getJobInstanceLogParams(int bkBizId, int jobInstanceId) {
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + BK_APP_CODE + "\",\n" +
                 "\t\"bk_app_secret\": \"" + BK_APP_SECRET + "\",\n" +
@@ -233,17 +294,24 @@ public class BkUtil {
     }
 
     /**
+     * 获取蓝鲸业务Id
+     * @param label
+     * @return
+     */
+    public int getBkBizId(String label) {
+        return BkEnum.valueOf(label.toUpperCase()).getCode();
+    }
+
+    /**
      * 拼接快速分发文件的接口参数
      *
-     * @param label
+     * @param bkBizId
      * @param ip
      * @param path
      * @param cvmIp
      * @return
      */
-    public String getFastPushFile(String label, String ip, String path, String cvmIp) {
-        BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
-        int bkBizId = bkEnum.getCode();
+    public String getFastPushFileParams(int bkBizId, String ip, String path, String cvmIp) {
         int end = path.lastIndexOf("/");
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + BK_APP_CODE + "\",\n" +
@@ -270,15 +338,13 @@ public class BkUtil {
     /**
      * 获取查询容器入参
      *
-     * @param label
-     * @param ips
+     * @param bkBizId
+     * @param ip
      * @param path
      * @param scriptId
      * @return
      */
-    public String getContainerScriptParams(String label, String ip, String path, int scriptId) {
-        BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
-        int bk_biz_id = bkEnum.getCode();
+    public String getContainerScriptParams(String bkBizId, String ip, String path, int scriptId) {
         String[] arr = path.split("/");
         path = arr[arr.length - 1];
         String[] paths = path.split("-");
@@ -292,7 +358,7 @@ public class BkUtil {
                 "\t\"bk_app_code\": \"" + BK_APP_CODE + "\",\n" +
                 "\t\"bk_app_secret\": \"" + BK_APP_SECRET + "\",\n" +
                 "\t\"bk_username\": \"" + BK_USERNAME + "\",\n" +
-                "\t\"bk_biz_id\": " + bk_biz_id + ",\n" +
+                "\t\"bk_biz_id\": " + bkBizId + ",\n" +
                 "\t\"script_id\": " + scriptId + ",\n" +
                 "\t\"script_param\": \"" + script_param + "\",\n" +
                 "\t\"script_timeout\": 1000,\n" +

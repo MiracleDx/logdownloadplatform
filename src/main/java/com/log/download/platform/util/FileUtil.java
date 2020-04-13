@@ -1,6 +1,8 @@
 package com.log.download.platform.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.log.download.platform.exception.DataNotFoundException;
+import com.log.download.platform.response.ResponseCode;
 import com.log.download.platform.response.ServerResponse;
 
 import javax.servlet.http.HttpServletResponse;
@@ -39,12 +41,11 @@ public class FileUtil {
      * @param path  文件在文件服务器上的路径
      * @param response
      */
-    public void download(String ip, String path, HttpServletResponse response) throws IOException {
+    public void download(String ip, String path, HttpServletResponse response) {
         // path是指欲下载的文件的路径。
         File file = new File(path);
         if (!file.exists()) {
-            response.setCharacterEncoding("utf-8");
-            response.getWriter().write(JSONObject.toJSONString(ServerResponse.failure("文件" + path + "不存在")));
+            throw new DataNotFoundException(ResponseCode.DATA_NOT_FOUND, "日志文件" + path.substring(path.lastIndexOf("/")) + "不存在");
         }
         // 取得文件名。
         String filename = file.getName();

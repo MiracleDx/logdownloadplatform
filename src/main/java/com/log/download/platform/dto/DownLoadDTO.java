@@ -31,6 +31,6 @@ public class DownLoadDTO {
     /**
      * 日志分发ip
      */
-    private String cvmip;
+    private String cvmIp;
 
 }
