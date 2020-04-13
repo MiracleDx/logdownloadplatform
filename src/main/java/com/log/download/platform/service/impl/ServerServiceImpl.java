@@ -103,7 +103,7 @@ public class ServerServiceImpl implements IBaseService {
 			JSONObject result = jobStatus.getResult();
 			JSONObject data = result.getJSONArray(BkConstant.DATA).getJSONObject(0);
 			JSONObject stepResults = data.getJSONArray(BkConstant.STEP_RESULTS).getJSONObject(0);
-			String logContent =  stepResults.toString();
+			String logContent = stepResults.toString();
 			if (data.getIntValue(BkConstant.STATUS) == StatusEnum.A3.getCode()) {
 				// 判断是否找到文件
 				String notExist = "is not exist";
