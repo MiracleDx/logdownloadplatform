@@ -60,11 +60,11 @@ public class BkUtil {
     }
 
     private static class SingletonInstance {
-        private static final BkUtil instance = new BkUtil();
+        private static final BkUtil INSTANCE = new BkUtil();
     }
 
     public static BkUtil getInstance() {
-        return SingletonInstance.instance;
+        return SingletonInstance.INSTANCE;
     }
 
 
