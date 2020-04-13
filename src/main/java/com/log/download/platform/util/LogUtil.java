@@ -36,6 +36,7 @@ public class LogUtil {
 	 * @param path
 	 * @return
 	 */
+	//todo 判断有问题，需要增加判断条件，判断网关文件
 	public LogEnum logType(String path) {
 		if (path.contains(MSGW)) {
 			return LogEnum.gateway;

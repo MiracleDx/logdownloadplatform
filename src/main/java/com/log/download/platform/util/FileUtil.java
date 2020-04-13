@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.log.download.platform.exception.DataNotFoundException;
 import com.log.download.platform.response.ResponseCode;
 import com.log.download.platform.response.ServerResponse;
+import com.log.download.platform.vo.LogDetailVO;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -38,7 +40,8 @@ public class FileUtil {
 
     /**
      * 下载文件
-     * @param path  文件在文件服务器上的路径
+     *
+     * @param path     文件在文件服务器上的路径
      * @param response
      */
     public void download(String ip, String path, HttpServletResponse response) {
@@ -72,21 +75,55 @@ public class FileUtil {
     }
 
     /**
+     * 获取文件是否合理存在于文件服务器
+     *
+     * @param list
+     * @return
+     */
+    public List<LogDetailVO> getFileIsExists(List<LogDetailVO> list) {
+        List<LogDetailVO> logs = new ArrayList<>();
+        String path;
+        for (LogDetailVO log : list) {
+            if (log.getPath().contains("/data/tsf_default/") && !log.getPath().contains("sys_log.log")) {
+                String[] patharr = log.getPath().split("-");
+                path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + log.getPath().replace("/data/tsf_default/logs", "/log/" + patharr[1] + "-" + patharr[2] + "-" + patharr[3] + "-" + patharr[4]);
+            } else {
+                path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + log.getPath();
+            }
+            File file = new File(path);
+            if (!file.exists()) {
+                log.setMirror(false);
+            } else {
+                //最后修改时间
+                String mtime = executeLinuxCmd(path);
+                if (isToday(log.getCreateTime(), mtime)) {
+                    log.setMirror(true);
+                } else {
+                    file.delete();
+                    log.setMirror(false);
+                }
+            }
+            logs.add(log);
+        }
+        return logs;
+    }
+
+    /**
      * 获取文件在服务器上的生成时间
-     * @param path  文件在文件服务器上的生成时间
+     *
+     * @param path 文件在文件服务器上的生成时间
      * @return
      */
     public String executeLinuxCmd(String path) {
         String cmd = "stat " + path + " | grep Modify";
         Runtime run = Runtime.getRuntime();
         try {
-            Process process = run.exec(new String[] {"/bin/sh", "-c", cmd});
+            Process process = run.exec(new String[]{"/bin/sh", "-c", cmd});
             InputStream in = process.getInputStream();
             BufferedReader bs = new BufferedReader(new InputStreamReader(in));
             List<String> list = new ArrayList<String>();
             String result = null;
             while ((result = bs.readLine()) != null) {
-                System.out.println("job result [" + result + "]");
                 list.add(result);
             }
             in.close();
@@ -118,9 +155,38 @@ public class FileUtil {
             Duration duration = Duration.between(modifiedTime, now);
             //若时间间隔小于2小时，则说明合法存在
             return duration.toMinutes() <= TWOHOURS;
-        } else {
-            return true;
         }
+        return true;
     }
+
+    /**
+     * 判断路径和文件名是否合法
+     *
+     * @param logPath
+     * @return
+     */
+    public boolean pathLegal(String logPath) {
+        if (!StringUtils.isEmpty(logPath) && !logPath.contains("---")
+                && !logPath.contains("error: ")
+                && !logPath.contains("No resources found")
+                && !logPath.contains("No such file")
+                && !logPath.contains("Unable to connect to the server")
+                && !logPath.contains("Error from server")
+                && !logPath.contains("cannot exec into a container")
+                && !logPath.contains("command terminated with exit code 1")
+                && !logPath.contains("certificate is valid")) {
+            //日志文件名
+            String fileName = logPath.substring(logPath.lastIndexOf("/") + 1, logPath.length());
+            // 日志路径
+            String logName = logPath.substring(logPath.lastIndexOf("/"));
+            if (!logName.contains("torrent") && ("gateway.log".equals(fileName) || fileName.split("-").length == 9)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
 
 }

@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  * Modified by:
  */
 public class BkUtil {
-    
+
     Logger logger = LoggerFactory.getLogger(BkUtil.class);
 
     /**
@@ -112,11 +112,13 @@ public class BkUtil {
 
     /**
      * 获取蓝鲸执行脚本id
-     * @param jsonObject
+     * @param params
+     * @param restTemplate
      * @return
      */
     public Integer getJobInstanceId(String params, RestTemplate restTemplate) {
         JSONObject jsonObject = requestFastExecuteScript(params, restTemplate);
+        //todo 获取不到作业id的异常处理
         return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
     }
 
@@ -126,6 +128,7 @@ public class BkUtil {
      * @return
      */
     public Integer getJobInstanceId(JSONObject jsonObject) {
+        //todo 获取不到作业id的异常处理
         return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
     }
 
@@ -169,31 +172,6 @@ public class BkUtil {
      */
     public JobStatusBO getJobStatus(int bkBizId, int jobInstanceId, RestTemplate restTemplate) {
         int count = 0;
-        // 调用蓝鲸执行脚本
-        //JSONObject jsonObject = requestFastExecuteScript(params, restTemplate);
-        //// 查询脚本是否执行完毕
-        //do {
-        //    jsonObject = ;
-        //    // 执行完毕直接跳出循环
-        //    if (getJobInstanceStatus(jsonObject)) {
-        //        break;
-        //    }
-        //    
-        //    logger.info("request get_job_instance_log {} times", count);
-        //    count ++;
-        //    try {
-        //        TimeUnit.SECONDS.sleep(1);
-        //    } catch (InterruptedException e) {
-        //        e.printStackTrace();
-        //    }
-        //} while (!getJobInstanceStatus(jsonObject));
-
-        //if (!getJobInstanceStatus(jsonObject)) {
-        //    throw new RemoteAccessException(ResponseCode.SYSTEM_INNER_ERROR, jsonObject.getString("message"));
-        //}
-
-        // 获取蓝鲸调用日志的脚本执行id
-        //int jobInstanceId = getJobInstanceId(jsonObject);
         // 获取蓝鲸脚本查询参数
         String params = getJobInstanceLogParams(bkBizId, jobInstanceId);
         long t1 = System.currentTimeMillis();
@@ -222,7 +200,7 @@ public class BkUtil {
                 break;
             }
         }
-        
+
         JobStatusBO jobStatusBO = new JobStatusBO();
         jobStatusBO.setIsFinished(isFinished);
         jobStatusBO.setResult(resultLog);
