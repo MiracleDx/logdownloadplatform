@@ -39,6 +39,11 @@ public class BusinessException extends RuntimeException {
 		this.message = responseCode.message();
 	}
 
+	public BusinessException(ResponseCode responseCode, String msg) {
+		this.code = responseCode.code();
+		this.message = msg;
+	}
+
 
 	@Override
 	public void printStackTrace() {

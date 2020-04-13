@@ -16,4 +16,12 @@ public class InternalServerException extends BusinessException {
 	public InternalServerException(ResponseCode responseCode) {
 		super(responseCode);
 	}
+
+	public InternalServerException(Integer code, String msg) {
+		super(code, msg);
+	}
+
+	public InternalServerException(ResponseCode responseCode, String msg) {
+		super(responseCode, msg);
+	}
 }

@@ -17,4 +17,11 @@ public class ParamValidException extends BusinessException {
         super(responseCode);
     }
 
+    public ParamValidException(Integer code, String msg) {
+        super(code, msg);
+    }
+
+    public ParamValidException(ResponseCode responseCode, String msg) {
+        super(responseCode, msg);
+    }
 }

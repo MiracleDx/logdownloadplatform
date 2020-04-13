@@ -15,4 +15,12 @@ public class DataNotFoundException extends BusinessException {
 	public DataNotFoundException(ResponseCode responseCode) {
 		super(responseCode);
 	}
+
+	public DataNotFoundException(Integer code, String msg) {
+		super(code, msg);
+	}
+
+	public DataNotFoundException(ResponseCode responseCode, String msg) {
+		super(responseCode, msg);
+	}
 }

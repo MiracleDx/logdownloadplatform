@@ -16,4 +16,13 @@ public class RemoteAccessException extends BusinessException {
 	public RemoteAccessException(ResponseCode responseCode) {
 		super(responseCode);
 	}
+
+
+	public RemoteAccessException(Integer code, String msg) {
+		super(code, msg);
+	}
+
+	public RemoteAccessException(ResponseCode responseCode, String msg) {
+		super(responseCode, msg);
+	}
 }

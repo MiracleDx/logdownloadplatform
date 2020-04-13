@@ -15,4 +15,12 @@ public class DataConflictException extends BusinessException {
 	public DataConflictException(ResponseCode responseCode) {
 		super(responseCode);
 	}
+
+	public DataConflictException(Integer code, String msg) {
+		super(code, msg);
+	}
+
+	public DataConflictException(ResponseCode responseCode, String msg) {
+		super(responseCode, msg);
+	}
 }
