@@ -67,6 +67,26 @@ public class BkUtil {
         return SingletonInstance.INSTANCE;
     }
 
+    /**
+     * 调用蓝鲸执行脚本
+     * @param params
+     * @param restTemplate
+     * @return
+     */
+    public JSONObject requestFastExecuteScript(String params, RestTemplate restTemplate) {
+        return requestBkInterface(FAST_EXECUTE_SCRIPT_URL, params, restTemplate);
+    }
+
+    /**
+     * 调用蓝鲸执行脚本
+     * @param params
+     * @param restTemplate
+     * @return
+     */
+    public JSONObject requestGetJobInstanceLog(String params, RestTemplate restTemplate) {
+        return requestBkInterface(GET_JOB_INSTANCE_LOG_URL, params, restTemplate);
+    }
+
 
     /**
      * 调用蓝鲸接口
@@ -202,7 +222,7 @@ public class BkUtil {
      * @param scriptId
      * @return
      */
-    public String getContainerScriptParams(String label, String ip, String[] ips, String path, int scriptId) {
+    public String getContainerScriptParams(String label, String ip, String path, int scriptId) {
         BkEnum bkEnum = BkEnum.valueOf(label.toUpperCase());
         int bk_biz_id = bkEnum.getCode();
         String[] arr = path.split("/");
