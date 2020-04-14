@@ -46,10 +46,24 @@
         
         <!-- 头部 -->
         <el-container>
+
             <el-header style="text-align: center; justify-content: center; line-height: 24px">
-                <h1>日志下载平台</h1>
+                <h1 @click="centerDialogVisible = true">日志下载平台</h1>
             </el-header>
-            
+
+            <el-dialog
+                    title="公告"
+                    :visible.sync="centerDialogVisible"
+                    width="30%"
+                    center>
+                <span v-html="message"></span>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="centerDialogVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="centerDialogVisible = false">确 定</el-button>
+                  </span>
+            </el-dialog>
+
+
             <!-- 主体 -->
             <el-main style="height: 100%" ref="main">
                 <!-- 历史信息页 -->
@@ -182,7 +196,9 @@
                 // 历史页标题
                 content: "",
                 // 临时数据
-                tmpDetails: []
+                tmpDetails: [],
+                centerDialogVisible: false,
+                message: ""
             }
         },
         methods: {
@@ -531,6 +547,26 @@
                         console.log(err)
                         this.$message.error(err)
                     })
+            },
+            getNotice() {
+                fetch(router.getNotice, {
+                    method: 'get',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                        if (data.code === 200) {
+                            // 更新数组中指定索引的值
+                           this.message = data.data[0];
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err)
+                        this.$message.error(err)
+                    })
             }
         },
         watch: {
@@ -552,6 +588,7 @@
         mounted() {
             // 初始化菜单数据
             this.menu();
+            this.getNotice();
             
             // 获取浏览器可视区域高度
             let clientHeight = `${document.documentElement.clientHeight}` - 50 + 'px';
@@ -561,7 +598,7 @@
             this.$notify({
                 title: '提示',
                 dangerouslyUseHTMLString: true,
-                message: '当前页面查询结果为<strong>当天日志</strong><br>如需查询<strong>历史日志</strong><br>请点击表格下方的<strong>查询历史</strong>按钮',
+                message: '点击<strong>标题栏</strong>可以查看当前版本公告<br>当前页面查询结果为<strong>当天日志</strong><br>如需查询<strong>历史日志</strong><br>请点击表格下方的<strong>查询历史</strong>按钮',
                 duration: 0
             });
         }
