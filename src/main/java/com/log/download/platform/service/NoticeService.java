@@ -47,8 +47,6 @@ public class NoticeService {
 			} catch (IOException e) {
 				log.error("write notice file error", e);
 			}
-
-
 		}
 	}
 
