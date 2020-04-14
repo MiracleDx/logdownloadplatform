@@ -141,16 +141,9 @@ public class LogPathService {
                     }
                 }
             }
+            //判断文件是否已经存在于文件服务器上
             List<LogDetailVO> logs = fileUtil.getFileIsExists(list);
-            Map<Boolean, List<LogDetailVO>> collect = logs.stream().collect(partitioningBy(data -> data.getSize() > 0));
-            // 日志大小大于0的日志
-            List<LogDetailVO> gtZero = collect.get(true);
-            // 日志大小等于0的日志
-            List<LogDetailVO> eqZero = collect.get(false);
-            // 对日志大小大于0的日志逆序
-            logs = gtZero.stream().sorted(Comparator.comparing(LogDetailVO::getCreateTime).reversed()).collect(Collectors.toList());
-            // 添加日志大小等于0的日志
-            logs.addAll(eqZero);
+            logs = sortLogs(logs);
             String notFinishedip = "";
             if (!"".equals(notFinished.toString()) && notFinished.length() > 0){
                 notFinishedip = notFinished.substring(0, notFinished.length() - 1);
@@ -163,4 +156,18 @@ public class LogPathService {
         }
         return null;
     }
+
+    public List<LogDetailVO> sortLogs(List<LogDetailVO> logs) {
+        Map<Boolean, List<LogDetailVO>> collect = logs.stream().collect(partitioningBy(data -> data.getSize() > 0));
+        // 日志大小大于0的日志
+        List<LogDetailVO> gtZero = collect.get(true);
+        // 日志大小等于0的日志
+        List<LogDetailVO> eqZero = collect.get(false);
+        // 对日志大小大于0的日志逆序
+        logs = gtZero.stream().sorted(Comparator.comparing(LogDetailVO::getCreateTime).reversed()).collect(Collectors.toList());
+        // 添加日志大小等于0的日志
+        logs.addAll(eqZero);
+        return logs;
+    }
+
 }
