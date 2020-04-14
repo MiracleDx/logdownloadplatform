@@ -1,6 +1,7 @@
 package com.log.download.platform.service;
 
 import com.log.download.platform.dto.NoticeDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.List;
  * Created in: 2020-04-14 15:28
  * Modified by:
  */
+@Slf4j
 @Service
 public class NoticeService {
 
@@ -38,12 +40,12 @@ public class NoticeService {
 				try {
 					fileOutputStream.write(content.getBytes());
 				} catch (IOException e) {
-					e.printStackTrace();
+					log.error("write notice file error", e);
 				}
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				log.error("notice file not found", e);
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error("write notice file error", e);
 			}
 
 
@@ -71,10 +73,10 @@ public class NoticeService {
 							}
 							NOTICE.add(String.join("", str));
 						} catch (FileNotFoundException e) {
-							e.printStackTrace();
+							log.error("read notice file not found", e);
 						}
 					} catch (IOException e) {
-						e.printStackTrace();
+						log.error("read notice file error", e);
 					}
 				}
 			}
