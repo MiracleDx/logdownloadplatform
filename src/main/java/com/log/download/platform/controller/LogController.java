@@ -59,20 +59,8 @@ public class LogController {
      */
     @PostMapping("/findMirror")
     public ServerResponse<List<LogDetailVO>> findMirror(@RequestBody FindMirrorDTO findMirrorDTO) {
-        if (!"".equals(findMirrorDTO.getPath()) && findMirrorDTO.getPath() != null) {
-            String path = "";
-            if (findMirrorDTO.getPath().contains("/data/tsf_default/")) {
-                String[] patharr = findMirrorDTO.getPath().split("-");
-                path = "/tmp" + File.separator + "0_" + findMirrorDTO.getIp() + File.separator + findMirrorDTO.getPath().replace("/data/tsf_default/logs", "/log/" + patharr[1] + "-" + patharr[2] + "-" + patharr[3] + "-" + patharr[4]);
-            } else {
-                path = "/tmp" + File.separator + "0_" + findMirrorDTO.getIp() + File.separator + findMirrorDTO.getPath();
-            }
-            log.info("查找日志镜像路径: {}", path);
-            File file = new File(path);
-            if (file.exists()) {
-                return ServerResponse.success();
-            }
-            return ServerResponse.failure(ResponseCode.DATA_NOT_FOUND.code(), ResponseCode.DATA_NOT_FOUND.message());
+        if (logPathService.findFile(findMirrorDTO.getPath(), findMirrorDTO.getIp())) {
+            return ServerResponse.success();
         }
         return ServerResponse.failure("传送路径失败");
     }
