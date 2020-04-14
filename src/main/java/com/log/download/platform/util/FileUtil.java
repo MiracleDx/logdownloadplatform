@@ -176,10 +176,10 @@ public class FileUtil {
                 && !logPath.contains("command terminated with exit code 1")
                 && !logPath.contains("certificate is valid")) {
             //日志文件名
-            String fileName = logPath.substring(logPath.lastIndexOf("/") + 1, logPath.length());
+            //String fileName = logPath.substring(logPath.lastIndexOf("/") + 1, logPath.length());
             // 日志路径
             String logName = logPath.substring(logPath.lastIndexOf("/"));
-            if (!logName.contains("torrent") && ("gateway.log".equals(fileName) || fileName.split("-").length == 9)) {
+            if (!logName.contains("torrent")) {
                 return true;
             } else {
                 return false;
