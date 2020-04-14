@@ -179,7 +179,7 @@ public class BkUtil {
         //循环调用查询作业执行情况 到达等待时间的阈值，会直接中断
         JSONObject resultLog = null;
         count = 0;
-        while (!isFinished) {
+        while (true) {
             resultLog = requestGetJobInstanceLog(params, restTemplate);
             isFinished = resultLog.getJSONArray(BkConstant.DATA).getJSONObject(0).getBoolean(BkConstant.IS_FINISHED);
             
@@ -415,7 +415,7 @@ public class BkUtil {
             List<String> list = new ArrayList<String>();
             String result = null;
             while ((result = bs.readLine()) != null) {
-                System.out.println("job result [" + result + "]");
+                logger.info("job result [{}]", result);
                 list.add(result);
             }
             in.close();
