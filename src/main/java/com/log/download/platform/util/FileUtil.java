@@ -1,9 +1,7 @@
 package com.log.download.platform.util;
 
-import com.alibaba.fastjson.JSONObject;
 import com.log.download.platform.exception.DataNotFoundException;
 import com.log.download.platform.response.ResponseCode;
-import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.vo.LogDetailVO;
 import org.apache.commons.lang3.StringUtils;
 
@@ -80,32 +78,20 @@ public class FileUtil {
      * @param list
      * @return
      */
-    public List<LogDetailVO> getFileIsExists(List<LogDetailVO> list) {
-        List<LogDetailVO> logs = new ArrayList<>();
-        String path;
-        for (LogDetailVO log : list) {
-            if (log.getPath().contains("/data/tsf_default/") && !log.getPath().contains("sys_log.log")) {
-                String[] patharr = log.getPath().split("-");
-                path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + log.getPath().replace("/data/tsf_default/logs", "/log/" + patharr[1] + "-" + patharr[2] + "-" + patharr[3] + "-" + patharr[4]);
-            } else {
-                path = "/tmp" + File.separator + "0_" + log.getIp() + File.separator + log.getPath();
-            }
-            File file = new File(path);
-            if (!file.exists()) {
-                log.setMirror(false);
-            } else {
-                //最后修改时间
-                String mtime = executeLinuxCmd(path);
-                if (isToday(log.getCreateTime(), mtime)) {
-                    log.setMirror(true);
-                } else {
-                    file.delete();
-                    log.setMirror(false);
-                }
-            }
-            logs.add(log);
-        }
-        return logs;
+    public Boolean getFileIsExists(String path, String createTime) {
+		File file = new File(path);
+		if (!file.exists()) {
+			return false;
+		} else {
+			//最后修改时间
+			String mtime = executeLinuxCmd(path);
+			if (isToday(createTime, mtime)) {
+				return true;
+			} else {
+				file.delete();
+				return false;
+			}
+		}
     }
 
     /**

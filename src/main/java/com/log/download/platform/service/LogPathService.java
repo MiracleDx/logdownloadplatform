@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -99,17 +100,19 @@ public class LogPathService {
                 }
             }
             //判断文件是否已经存在于文件服务器上
-            List<LogDetailVO> logs = fileUtil.getFileIsExists(logPathBO.getList());
-            logs = sortLogs(logs);
-            String notFinishedip = "";
+            logPathBO.getList().parallelStream().forEach(e -> {
+                // 校验日志路径
+                String path = LogUtil.getInstance().processingCvmPath(e.getPath());
+                Boolean fileIsExists = FileUtil.getInstance().getFileIsExists(path, e.getCreateTime());
+                e.setMirror(fileIsExists);
+            });
+            sortLogs(logPathBO.getList());
+            String notFinishedIp = "";
             if (!"".equals(logPathBO.getNotFinish()) && logPathBO.getNotFinish().length() > 0){
-                notFinishedip = logPathBO.getNotFinish().substring(0, logPathBO.getNotFinish().length() - 1);
+                notFinishedIp = logPathBO.getNotFinish().substring(0, logPathBO.getNotFinish().length() - 1);
             }
-            LogPathBO logPath = LogPathBO.builder()
-                    .list(logs)
-                    .notFinish(notFinishedip)
-                    .build();
-            return logPath;
+            logPathBO.setNotFinish(notFinishedIp);
+            return logPathBO;
         }
         return null;
     }
