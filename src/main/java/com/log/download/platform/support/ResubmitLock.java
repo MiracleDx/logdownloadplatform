@@ -1,13 +1,12 @@
 package com.log.download.platform.support;
 
 import com.log.download.platform.util.MD5Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * ResubmitLock
@@ -19,10 +18,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class ResubmitLock {
 	
-	private static final ConcurrentHashMap<String, Object> LOCK_CACHE = new ConcurrentHashMap<>(200);
+	private static final Logger logger = LoggerFactory.getLogger(ResubmitLock.class);
 	
-	// todo 优化线程池
-	private static final ScheduledThreadPoolExecutor EXECUTOR = new ScheduledThreadPoolExecutor(5, new ThreadPoolExecutor.DiscardPolicy());
+	private static final ConcurrentHashMap<String, Object> LOCK_CACHE = new ConcurrentHashMap<>(200);
+
+	/**
+	 * 线程池
+	 */
+	private static final ScheduledThreadPoolExecutor EXECUTOR = new ScheduledThreadPoolExecutor(
+			1, (r) -> new Thread(r, "resubmit-thread"), new ThreadPoolExecutor.DiscardPolicy());
 
 	private ResubmitLock() {
 	}
@@ -67,6 +71,7 @@ public class ResubmitLock {
 		if (lock) {
 			EXECUTOR.schedule(() -> {
 				LOCK_CACHE.remove(key);
+				logger.info("remove resubmit key {}", key);
 			}, delaySeconds, TimeUnit.SECONDS);
 		}
 	}
