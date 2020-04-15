@@ -169,6 +169,7 @@ public class BkUtil {
 		try {
 			request = restTemplate.postForEntity(url, httpEntity, String.class);
 		} catch (RestClientException e) {
+		    logger.error("bk interface read timed out, request url: {}, request params: {}", url, params);
         	throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT, "蓝鲸接口 Read timed out 请稍后重试");
 		}
         Instant endTime = Instant.now();

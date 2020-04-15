@@ -33,7 +33,7 @@ public class BaseGlobalExceptionHandler {
 	 * 违反约束异常
 	 */
 	protected ServerResponse handleConstraintViolationException(ConstraintViolationException e, HttpServletRequest request) {
-		log.info("Exception occurred, uri: {}, caused by: ", request.getRequestURI(), e);
+		log.error("Exception occurred, uri: {}, caused by: ", request.getRequestURI(), e);
 		Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
 		ConvertUtil.convertCVSetToParameterInvalidItemList(constraintViolations);
 		return ServerResponse.failure(ResponseCode.PARAM_IS_INVALID.code(), e.getMessage());
@@ -43,7 +43,7 @@ public class BaseGlobalExceptionHandler {
 	 * 处理验证参数封装错误时异常
 	 */
 	protected ServerResponse handleConstraintViolationException(HttpMessageNotReadableException e, HttpServletRequest request) {
-		log.info("Exception occurred, uri: {}, caused by: ", request.getRequestURI(), e);
+		log.error("Exception occurred, uri: {}, caused by: ", request.getRequestURI(), e);
 		return ServerResponse.failure(ResponseCode.PARAM_IS_INVALID.code(), e.getMessage());
 	}
 
@@ -51,7 +51,7 @@ public class BaseGlobalExceptionHandler {
 	 * 处理参数绑定时异常（反400错误码）
 	 */
 	protected ServerResponse handleBindException(BindException e, HttpServletRequest request) {
-		log.info("Exception occurred, uri: {}, caused by: ", request.getRequestURI(), e);
+		log.error("Exception occurred, uri: {}, caused by: ", request.getRequestURI(), e);
 		List<ParameterInvalidItem> parameterInvalidItemList = ConvertUtil.convertBindingResultToMapParameterInvalidItemList(e.getBindingResult());
 		return ServerResponse.failure(ResponseCode.PARAM_TYPE_BIND_ERROR.code(), ResponseCode.PARAM_TYPE_BIND_ERROR.message(), parameterInvalidItemList);
 	}
@@ -60,7 +60,7 @@ public class BaseGlobalExceptionHandler {
 	 * 处理使用@Validated注解时，参数验证错误异常（反400错误码）
 	 */
 	protected ServerResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
-		log.info("Exception occurred, uri: {}, caused by: ", request.getRequestURI(), e);
+		log.error("Exception occurred, uri: {}, caused by: ", request.getRequestURI(), e);
 		List<ParameterInvalidItem> parameterInvalidItemList = ConvertUtil.convertBindingResultToMapParameterInvalidItemList(e.getBindingResult());
 		return ServerResponse.failure(ResponseCode.PARAM_IS_INVALID.code(), ResponseCode.PARAM_IS_INVALID.message(), parameterInvalidItemList);
 	}
@@ -69,7 +69,7 @@ public class BaseGlobalExceptionHandler {
 	 * 处理通用自定义业务异常
 	 */
 	protected ServerResponse handleBusinessException(BusinessException e, HttpServletRequest request) {
-		log.info("Exception occurred, uri: {}, exception: {}, caused by: {}", request.getRequestURI(), e.getClass().getSimpleName(), e.getMessage());
+		log.error("Exception occurred, uri: {}, exception: {}, caused by: {}", request.getRequestURI(), e.getClass().getSimpleName(), e.getMessage());
 		return ServerResponse.failure(e.getCode(), e.getMessage());
 	}
 
