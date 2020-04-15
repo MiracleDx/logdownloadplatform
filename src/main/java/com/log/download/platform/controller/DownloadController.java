@@ -1,13 +1,12 @@
 package com.log.download.platform.controller;
 
 
-import com.log.download.platform.context.RequestContext;
 import com.log.download.platform.context.StrategyFactory;
 import com.log.download.platform.dto.DownLoadDTO;
 import com.log.download.platform.exception.InternalServerException;
 import com.log.download.platform.response.ResponseCode;
+import com.log.download.platform.service.DownloadService;
 import com.log.download.platform.service.IBaseService;
-import com.log.download.platform.util.FileUtil;
 import com.log.download.platform.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,10 +27,13 @@ import javax.annotation.Resource;
  */
 @Slf4j
 @RestController
-public class DownloadLogController {
+public class DownloadController {
 
     @Resource
 	private StrategyFactory strategyFactory;
+    
+    @Resource
+    private DownloadService downloadService;
 
     /**
      * 普通微服务
@@ -51,11 +53,11 @@ public class DownloadLogController {
      */
     @RequestMapping("/downloadImage")
     public void downloadImage(@RequestBody DownLoadDTO downLoadDTO) {
-        FileUtil.getInstance().download(downLoadDTO.getIp(), downLoadDTO.getPath(), RequestContext.getResponse());
+        downloadService.download(downLoadDTO);
     }
 
 	@RequestMapping("/download")
-	public void downloadTest(@RequestBody DownLoadDTO downLoadDTO) {
+	public void download(@RequestBody DownLoadDTO downLoadDTO) {
         IBaseService service = null;
         LogUtil.LogEnum logType = LogUtil.getInstance().logType(downLoadDTO.getPath());
         if (logType == LogUtil.LogEnum.server) {
@@ -67,8 +69,6 @@ public class DownloadLogController {
         }
         // 蓝鲸分发
         service.fastPushFile(downLoadDTO);
-        String path = service.processingContainerRealPath(downLoadDTO.getPath());
-        // 下载
-        FileUtil.getInstance().download(downLoadDTO.getIp(), path, RequestContext.getResponse());
+        downloadService.download(downLoadDTO);
 	}
 }

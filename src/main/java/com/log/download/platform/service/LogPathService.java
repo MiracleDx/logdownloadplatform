@@ -5,10 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.log.download.platform.bo.JobStatusBO;
 import com.log.download.platform.bo.LogPathBO;
 import com.log.download.platform.common.BkConstant;
-import com.log.download.platform.dto.FindMirrorDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
-import com.log.download.platform.response.ResponseCode;
-import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.util.BkUtil;
 import com.log.download.platform.util.FileUtil;
 import com.log.download.platform.util.LogUtil;
@@ -17,18 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.log.download.platform.response.ResponseCode.PARTIAL_DATA_NOT_FOUND;
 import static java.util.stream.Collectors.partitioningBy;
-import static java.util.stream.Collectors.toList;
 
 /**
  * @program: platform
@@ -206,7 +199,7 @@ public class LogPathService {
     public boolean findFile(String logPath, String ip) {
         if (!logPath.isEmpty()) {
             String path;
-            logPath = LogUtil.getInstance().processingContainerRealPath(logPath);
+            logPath = LogUtil.getInstance().processingCvmPath(logPath);
             path = "/tmp" + File.separator + "0_" + ip + File.separator + logPath;
             log.info("查找日志镜像路径: {}", path);
             File file = new File(path);
