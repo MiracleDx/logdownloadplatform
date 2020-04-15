@@ -31,7 +31,7 @@ import static java.util.stream.Collectors.partitioningBy;
  **/
 @Slf4j
 @Service
-public class LogPathService {
+public class LogService {
 
     @Value("${fast_execute_scriptid}")
     private int fast_execute_scriptid;
@@ -44,7 +44,7 @@ public class LogPathService {
 
     @Value("${msgw_history_scriptId}")
     private int msgw_history_scriptId;
-    
+
     @Resource
     private RestTemplate restTemplate;
 
