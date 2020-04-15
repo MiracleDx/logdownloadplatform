@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -158,8 +159,10 @@ public class BkUtil {
         headers.add("Content-Type", "application/json; charset=UTF-8");
         HttpEntity<String> httpEntity = new HttpEntity<>(params, headers);
         //发送请求调用接口
+        Instant startTime = Instant.now();
         ResponseEntity<String> request = restTemplate.postForEntity(url, httpEntity, String.class);
-        logger.info("request url: {}, request params: {}, request response: {}", url, httpEntity, request.getBody());
+        Instant endTime = Instant.now();
+        logger.info("request url: {}, request params: {}, request response: {}, spendTime: {}ms", url, params, request.getBody(), Duration.between(startTime, endTime).toMillis());
         return JSONObject.parseObject(request.getBody());
     }
 
@@ -322,7 +325,7 @@ public class BkUtil {
      * @param scriptId
      * @return
      */
-    public String getContainerScriptParams(String bkBizId, String ip, String path, int scriptId) {
+    public String getContainerScriptParams(int bkBizId, String ip, String path, int scriptId) {
         String[] arr = path.split("/");
         path = arr[arr.length - 1];
         String[] paths = path.split("-");

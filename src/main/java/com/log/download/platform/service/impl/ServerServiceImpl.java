@@ -31,9 +31,12 @@ public class ServerServiceImpl implements IBaseService {
 	
 	@Resource
 	private RestTemplate restTemplate;
-	
+
 	@Value("${server_container_scriptId}")
 	private Integer serverContainerScriptId;
+	
+	@Value("${server_containerIp_scriptId}")
+	private Integer serverContainerIpScriptId;
 
 	@Value("${REGEX_IP_ADDR}")
 	private String regexIpAddr;
@@ -46,7 +49,7 @@ public class ServerServiceImpl implements IBaseService {
 		String cvmIp = downLoadDTO.getCvmIp();
 
 		// 获取落盘日志类型
-		LogUtil.LogEnum logType = LogUtil.getInstance().logType(path);
+		LogUtil.LogEnum logType = LogUtil.getInstance().placeWay(path);
 
 		// 蓝鲸工具类实例
 		BkUtil bkUtil = BkUtil.getInstance();
@@ -56,8 +59,9 @@ public class ServerServiceImpl implements IBaseService {
 
 		// 容器日志
 		if (LogUtil.LogEnum.server_container == logType) {
+			
 			// 获取蓝鲸 查询容器IP的参数
-			String queryIpParams = bkUtil.getContainerScriptParams(label, ip ,path, serverContainerScriptId);
+			String queryIpParams = bkUtil.getContainerScriptParams(bkBizId, ip ,path, serverContainerIpScriptId);
 			Integer jobInstanceId = bkUtil.getJobInstanceId(queryIpParams, restTemplate);
 			// 获取脚本执行状态和执行结果
 			JobStatusBO queryIpJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
@@ -74,7 +78,7 @@ public class ServerServiceImpl implements IBaseService {
 				if (Pattern.matches(regexIpAddr, containerIp)) {
 					ip = containerIp;
 					//调用落盘脚本
-					String placeParams = bkUtil.getContainerScriptParams(label, ip, path, serverContainerScriptId);
+					String placeParams = bkUtil.getContainerScriptParams(bkBizId, ip, path, serverContainerScriptId);
 					Integer jobInstanceId1 = bkUtil.getJobInstanceId(placeParams, restTemplate);
 					// 获取脚本执行状态和执行结果
 					JobStatusBO placeJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId1, restTemplate);
@@ -82,14 +86,17 @@ public class ServerServiceImpl implements IBaseService {
 					if (!placeJobStatus.getIsFinished()) {
 						throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT ,"蓝鲸落盘超时");
 					}
+					
+					// 将容器路径修改为CVM落盘路径
+					path = LogUtil.getInstance().processingCvmPath(path);
 				} else {
-					throw new DataNotFoundException(ResponseCode.DATA_IS_WRONG, "蓝鲸获取容器所在ip错误：" + ip);
+					throw new DataNotFoundException(ResponseCode.DATA_IS_WRONG, "蓝鲸获取容器所在ip错误");
 				}
 			} else {
 				throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT, "蓝鲸调用执行查询任务超时");
 			}
 		}
-		
+		 
 		// 容器落盘执行完毕后 和 正常日志处理流程一致
 		// 调用日志分发的脚本
 		String fastPushFileParams = bkUtil.getFastPushFileParams(bkBizId, ip, path, cvmIp);
@@ -112,7 +119,7 @@ public class ServerServiceImpl implements IBaseService {
 				}
 			}
 		} else {
-			throw new DataNotFoundException(ResponseCode.DATA_NOT_FOUND, jobStatus.getResult().getString("message"));
+			throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT, "蓝鲸调用文件下载超时");
 		}
 	}
 }

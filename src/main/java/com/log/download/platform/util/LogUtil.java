@@ -5,7 +5,7 @@ import com.log.download.platform.response.ResponseCode;
 
 /**
  * LogUtil
- * 判断日志类型
+ * 判断日志类型及路径
  * @author Dongx
  * Description:
  * Created in: 2020-04-13 09:39
@@ -66,6 +66,39 @@ public class LogUtil {
 		} else {
 			throw new DataConflictException(ResponseCode.DATA_IS_WRONG);
 		}
+	}
+
+
+	/**
+	 * 处理容器日志路径
+	 *
+	 * @param path tmp[1]=中心名称  c014
+	 *             tmp[2]=应用名称  01014020
+	 *             tmp[3]=分公司编码  3300
+	 *             tmp[4]=部署组id  1
+	 * @return
+	 */
+	public String processingCvmPath(String path) {
+		LogEnum logEnum = placeWay(path);
+		
+		switch (logEnum) {
+			case server_general:
+				break;
+			case server_container:
+				String[] temp = path.split("-");
+				if (!path.contains("sys_log.log")) {
+					path = path.replace("/data/tsf_default/logs", "/log/" + temp[1] + "-" + temp[2] + "-" + temp[3] + "-" + temp[4]);
+				}
+				break;
+			case gateway_general:
+				break;
+			case gateway_container:
+				break;
+			default:
+				break;
+		}
+		
+		return path;
 	}
 	
 	public enum LogEnum {
