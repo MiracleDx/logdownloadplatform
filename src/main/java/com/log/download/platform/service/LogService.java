@@ -79,8 +79,8 @@ public class LogService {
         JobStatusBO jobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
         //如果脚本执行完成，将结果的log信息进行提取
         if (jobStatus.getIsFinished()) {
-            List<LogDetailVO> logpathlist = new ArrayList<>();
-            LogPathBO logPathBO = LogPathBO.builder().list(logpathlist).notFinish("").build();
+            List<LogDetailVO> logPathlist = new ArrayList<>();
+            LogPathBO logPathBO = LogPathBO.builder().list(logPathlist).notFinish("").build();
             JSONObject dataObject = jobStatus.getResult().
                     getJSONArray(BkConstant.DATA).getJSONObject(0);
             JSONArray stepResultArr = dataObject.getJSONArray(BkConstant.STEP_RESULTS);
