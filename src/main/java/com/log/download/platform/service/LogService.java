@@ -33,17 +33,17 @@ import static java.util.stream.Collectors.partitioningBy;
 @Service
 public class LogService {
 
-    @Value("${fast_execute_scriptid}")
-    private int fast_execute_scriptid;
+    @Value("${fast_execute_scriptId}")
+    private int fastExecuteScriptId;
 
     @Value("${fast_execute_history_scriptId}")
-    private int fast_execute_history_scriptId;
+    private int fastExecuteHistoryScriptId;
 
-    @Value("${msgw_scriptId}")
-    private int msgw_scriptId;
+    @Value("${gateway_execute_scriptId}")
+    private int gatewayExecuteScriptId;
 
-    @Value("${msgw_history_scriptId}")
-    private int msgw_history_scriptId;
+    @Value("${gateway_execute_history_scriptId}")
+    private int gatewayExecuteHistoryScriptId;
 
     @Resource
     private RestTemplate restTemplate;
@@ -56,15 +56,15 @@ public class LogService {
         //根据脚本入参的参数，判断是否网关，选择脚本id
         if(queryLogDetailDTO.getBkParam().contains("msgw")) {
             if (queryLogDetailDTO.getIsHistory()) {
-                script_id = msgw_history_scriptId;
+                script_id = gatewayExecuteHistoryScriptId;
             } else {
-                script_id = msgw_scriptId;
+                script_id = gatewayExecuteScriptId;
             }
         } else {
             if (queryLogDetailDTO.getIsHistory()) {
-                script_id = fast_execute_history_scriptId;
+                script_id = fastExecuteHistoryScriptId;
             }  else {
-                script_id = fast_execute_scriptid;
+                script_id = fastExecuteScriptId;
             }
         }
         int bkBizId = bkUtil.getBkBizId(queryLogDetailDTO.getLabel());
@@ -96,7 +96,7 @@ public class LogService {
             logPathBO.getList().parallelStream().forEach(e -> {
                 // 校验日志路径
                 String path = LogUtil.getInstance().processingCvmPath(e.getPath());
-                Boolean fileIsExists = FileUtil.getInstance().getFileIsExists(path, e.getCreateTime());
+                Boolean fileIsExists = fileUtil.getFileIsExists(path, e.getCreateTime());
                 e.setMirror(fileIsExists);
             });
             sortLogs(logPathBO.getList());

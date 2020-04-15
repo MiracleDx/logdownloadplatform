@@ -6,15 +6,18 @@ import com.log.download.platform.common.BkConstant;
 import com.log.download.platform.common.BkEnum;
 import com.log.download.platform.dto.HostDTO;
 import com.log.download.platform.exception.DataNotFoundException;
+import com.log.download.platform.exception.RemoteAccessException;
 import com.log.download.platform.response.ResponseCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -162,7 +165,12 @@ public class BkUtil {
         HttpEntity<String> httpEntity = new HttpEntity<>(params, headers);
         //发送请求调用接口
         Instant startTime = Instant.now();
-        ResponseEntity<String> request = restTemplate.postForEntity(url, httpEntity, String.class);
+		ResponseEntity<String> request;
+		try {
+			request = restTemplate.postForEntity(url, httpEntity, String.class);
+		} catch (RestClientException e) {
+        	throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT, "蓝鲸接口 Read timed out 请稍后重试");
+		}
         Instant endTime = Instant.now();
         logger.info("request url: {}, request params: {}, request response: {}, spendTime: {}ms", url, params, request.getBody(), Duration.between(startTime, endTime).toMillis());
         return JSONObject.parseObject(request.getBody());
