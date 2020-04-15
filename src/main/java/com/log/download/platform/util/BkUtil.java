@@ -5,7 +5,7 @@ import com.log.download.platform.bo.JobStatusBO;
 import com.log.download.platform.common.BkConstant;
 import com.log.download.platform.common.BkEnum;
 import com.log.download.platform.dto.HostDTO;
-import com.log.download.platform.exception.RemoteAccessException;
+import com.log.download.platform.exception.DataNotFoundException;
 import com.log.download.platform.response.ResponseCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +14,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.*;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
 
 /**
  * BkUtil
@@ -118,8 +115,8 @@ public class BkUtil {
      */
     public Integer getJobInstanceId(String params, RestTemplate restTemplate) {
         JSONObject jsonObject = requestFastExecuteScript(params, restTemplate);
-        //todo 获取不到作业id的异常处理
-        return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
+        //获取不到作业id的异常处理
+        return getJobInstanceId(jsonObject);
     }
 
     /**
@@ -128,7 +125,9 @@ public class BkUtil {
      * @return
      */
     public Integer getJobInstanceId(JSONObject jsonObject) {
-        //todo 获取不到作业id的异常处理
+        if (!jsonObject.getJSONObject(BkConstant.DATA).toString().contains("job_instance_id")) {
+            throw new DataNotFoundException(ResponseCode.DATA_NOT_FOUND, jsonObject.getJSONObject(BkConstant.MESSAGE).toString());
+        }
         return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
     }
 
