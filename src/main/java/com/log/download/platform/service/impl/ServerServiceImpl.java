@@ -11,6 +11,7 @@ import com.log.download.platform.response.ResponseCode;
 import com.log.download.platform.service.IBaseService;
 import com.log.download.platform.util.BkUtil;
 import com.log.download.platform.util.LogUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -26,6 +27,7 @@ import java.util.regex.Pattern;
  * Created in: 2020-04-13 10:17
  * Modified by:
  */
+@Slf4j
 @Service("server")
 public class ServerServiceImpl implements IBaseService {
 	
@@ -38,8 +40,11 @@ public class ServerServiceImpl implements IBaseService {
 	@Value("${server_containerIp_scriptId}")
 	private Integer serverContainerIpScriptId;
 
-	@Value("${REGEX_IP_ADDR}")
-	private String regexIpAddr;
+	@Value("${gateway_container_scriptId}")
+	private Integer gatewayContainerScriptId;
+
+	@Value("${gateway_containerIp_scriptId}")
+	private Integer gatewayContainerIpScriptId;
 
 	@Override
 	public void fastPushFile(DownLoadDTO downLoadDTO) {
@@ -50,7 +55,24 @@ public class ServerServiceImpl implements IBaseService {
 
 		// 获取落盘日志类型
 		LogUtil.LogEnum logType = LogUtil.getInstance().placeWay(path);
-
+		// 判断执行脚本Id
+		int containerScriptId = -1;
+		int ContainerIpScriptId = -1;
+		switch (logType) {
+			case server_container:
+				containerScriptId = serverContainerScriptId;
+				ContainerIpScriptId = serverContainerIpScriptId;
+				break;
+			case gateway_container:
+				containerScriptId = gatewayContainerScriptId;
+				ContainerIpScriptId = gatewayContainerIpScriptId;
+				break;
+			default:
+				break;
+		}
+		
+		log.info("begin fast push, execute {} task, containerScriptId = {}, containerIpScriptId = {}", logType, containerScriptId, ContainerIpScriptId);
+		
 		// 蓝鲸工具类实例
 		BkUtil bkUtil = BkUtil.getInstance();
 		
@@ -61,7 +83,7 @@ public class ServerServiceImpl implements IBaseService {
 		if (LogUtil.LogEnum.server_container == logType) {
 			
 			// 获取蓝鲸 查询容器IP的参数
-			String queryIpParams = bkUtil.getContainerScriptParams(bkBizId, ip ,path, serverContainerIpScriptId);
+			String queryIpParams = bkUtil.getContainerScriptParams(bkBizId, ip ,path, ContainerIpScriptId);
 			Integer jobInstanceId = bkUtil.getJobInstanceId(queryIpParams, restTemplate);
 			// 获取脚本执行状态和执行结果
 			JobStatusBO queryIpJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
@@ -75,10 +97,11 @@ public class ServerServiceImpl implements IBaseService {
 						.getJSONArray(BkConstant.IP_LOGS).getJSONObject(0).getString(BkConstant.LOG_CONTENT);
 				containerIp = containerIp.replaceAll("\n", "");
 				// 校验IP
+				String regexIpAddr = "((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}";
 				if (Pattern.matches(regexIpAddr, containerIp)) {
 					ip = containerIp;
 					//调用落盘脚本
-					String placeParams = bkUtil.getContainerScriptParams(bkBizId, ip, path, serverContainerScriptId);
+					String placeParams = bkUtil.getContainerScriptParams(bkBizId, ip, path, containerScriptId);
 					Integer jobInstanceId1 = bkUtil.getJobInstanceId(placeParams, restTemplate);
 					// 获取脚本执行状态和执行结果
 					JobStatusBO placeJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId1, restTemplate);
@@ -121,5 +144,6 @@ public class ServerServiceImpl implements IBaseService {
 		} else {
 			throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT, "蓝鲸调用文件下载超时");
 		}
+		log.info("fast push end");
 	}
 }

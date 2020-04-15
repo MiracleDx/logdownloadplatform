@@ -30,21 +30,10 @@ import javax.annotation.Resource;
 public class DownloadController {
 
     @Resource
-	private StrategyFactory strategyFactory;
+	private IBaseService iBaseService;
     
     @Resource
     private DownloadService downloadService;
-
-    /**
-     * 普通微服务
-     */
-    private static final String SERVER = "server";
-
-    /**
-     * 微服务网关
-     */
-    private static final String gateway = "gateway";
-
 
     /**
      * 从本地获取镜像日志
@@ -58,17 +47,8 @@ public class DownloadController {
 
 	@RequestMapping("/download")
 	public void download(@RequestBody DownLoadDTO downLoadDTO) {
-        IBaseService service = null;
-        LogUtil.LogEnum logType = LogUtil.getInstance().logType(downLoadDTO.getPath());
-        if (logType == LogUtil.LogEnum.server) {
-            service = strategyFactory.getStrategy(SERVER);
-        } else if (logType == LogUtil.LogEnum.gateway){
-            service = strategyFactory.getStrategy(gateway);
-        } else {
-            throw new InternalServerException(ResponseCode.SPECIFIED_QUESTIONED_USER_NOT_EXIST);
-        }
         // 蓝鲸分发
-        service.fastPushFile(downLoadDTO);
+		iBaseService.fastPushFile(downLoadDTO);
         downloadService.download(downLoadDTO);
 	}
 }

@@ -20,14 +20,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class StrategyFactory {
 
-	@Resource
-	Map<String, IBaseService> map = new ConcurrentHashMap<>(2);
-
-	public IBaseService getStrategy(String component) {
-		IBaseService service = map.get(component);
-		if(service == null) {
-			throw new InternalServerException(ResponseCode.SERVICE_NOT_DEFINED);
-		}
-		return service;
-	}
+	//@Resource
+	//Map<String, IBaseService> map = new ConcurrentHashMap<>(2);
+	//
+	//public IBaseService getStrategy(String component) {
+	//	IBaseService service = map.get(component);
+	//	if(service == null) {
+	//		throw new InternalServerException(ResponseCode.SERVICE_NOT_DEFINED);
+	//	}
+	//	return service;
+	//}
 }
