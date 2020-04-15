@@ -34,7 +34,7 @@ public class LogUtil {
 	}
 
 	/**
-	 * 判断日志类型  
+	 * 判断日志类型
 	 * @param path
 	 * @return
 	 */

@@ -3,9 +3,8 @@ package com.log.download.platform.controller;
 import com.log.download.platform.bo.LogPathBO;
 import com.log.download.platform.dto.FindMirrorDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
-import com.log.download.platform.response.ResponseCode;
 import com.log.download.platform.response.ServerResponse;
-import com.log.download.platform.service.LogPathService;
+import com.log.download.platform.service.LogService;
 import com.log.download.platform.vo.LogDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.io.File;
 import java.util.List;
 
 import static com.log.download.platform.response.ResponseCode.PARTIAL_DATA_NOT_FOUND;
@@ -32,7 +30,7 @@ import static com.log.download.platform.response.ResponseCode.PARTIAL_DATA_NOT_F
 public class LogController {
 
     @Resource
-    private LogPathService logPathService;
+    private LogService logService;
 
     /**
      * 查询对应部署组下的日志清单
@@ -41,7 +39,7 @@ public class LogController {
      */
     @PostMapping("/queryLogDetails")
     public ServerResponse<List<LogDetailVO>> queryLogDetails(@RequestBody QueryLogDetailDTO queryLogDetailDTO) {
-        LogPathBO logPathBO = logPathService.queryLogDetails(queryLogDetailDTO);
+        LogPathBO logPathBO = logService.queryLogDetails(queryLogDetailDTO);
         if (logPathBO.getNotFinish().isEmpty() && logPathBO.getList().size() != 0) {
             return ServerResponse.success(logPathBO.getList());
         } else if (logPathBO.getList().size() == 0) {
@@ -59,7 +57,7 @@ public class LogController {
      */
     @PostMapping("/findMirror")
     public ServerResponse<List<LogDetailVO>> findMirror(@RequestBody FindMirrorDTO findMirrorDTO) {
-        if (logPathService.findFile(findMirrorDTO.getPath(), findMirrorDTO.getIp())) {
+        if (logService.findFile(findMirrorDTO.getPath(), findMirrorDTO.getIp())) {
             return ServerResponse.success();
         }
         return ServerResponse.failure("传送路径失败");
