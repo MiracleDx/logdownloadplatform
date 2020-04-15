@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -128,7 +129,7 @@ public class BkUtil {
      * @return
      */
     public Integer getJobInstanceId(JSONObject jsonObject) {
-        if (!jsonObject.getJSONObject(BkConstant.DATA).toString().contains("job_instance_id")) {
+        if (!jsonObject.getJSONObject(BkConstant.DATA).toString().contains(BkConstant.JOB_INSTANCE_ID)) {
             throw new DataNotFoundException(ResponseCode.DATA_NOT_FOUND, jsonObject.getJSONObject(BkConstant.MESSAGE).toString());
         }
         return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
