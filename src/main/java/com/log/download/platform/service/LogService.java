@@ -67,6 +67,7 @@ public class LogService {
                 script_id = fastExecuteScriptId;
             }
         }
+        log.info("执行脚本id：{}", script_id);
         int bkBizId = bkUtil.getBkBizId(queryLogDetailDTO.getLabel());
         String fastExecuteParam = bkUtil.getFastExecuteScriptParams(bkBizId,
                 queryLogDetailDTO.getIps(),
@@ -140,7 +141,11 @@ public class LogService {
                     logDetail.setPath(logPath);
                     logDetail.setIp(ip);
                     logDetail.setCreateTime(arr[arr.length - 1]);
-                    logDetail.setSize(Math.round(Double.parseDouble(arr[arr.length - 2]) * 100 / (1024 * 1024)) / 100.0);
+                    try {
+                        logDetail.setSize(Math.round(Double.parseDouble(arr[arr.length - 2]) * 100 / (1024 * 1024)) / 100.0);
+                    } catch (Exception e) {
+                        log.error("日志路径数据异常：{}", paths[z - 1]);
+                    }
                     logDetail.setUnit("M");
                     logDetail.setLabel(label);
                     // 日志名称

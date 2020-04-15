@@ -60,6 +60,7 @@ public class LogController {
         if (logService.findFile(findMirrorDTO.getPath(), findMirrorDTO.getIp())) {
             return ServerResponse.success();
         }
+        log.error("通过路径获取文件失败，请检查文件是否存在");
         return ServerResponse.failure("传送路径失败");
     }
 }

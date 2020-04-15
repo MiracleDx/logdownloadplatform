@@ -75,7 +75,8 @@ public class FileUtil {
     /**
      * 获取文件是否合理存在于文件服务器
      *
-     * @param list
+     * @param path
+     * @param createTime
      * @return
      */
     public Boolean getFileIsExists(String path, String createTime) {
