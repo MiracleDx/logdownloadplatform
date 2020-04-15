@@ -77,7 +77,7 @@ public class LogService {
         Integer jobInstanceId = bkUtil.getJobInstanceId(fastExecuteParam, restTemplate);
         //查询作业执行状态
         JobStatusBO jobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
-        //如果脚本执行完成，将结果的json进行提取
+        //如果脚本执行完成，将结果的log信息进行提取
         if (jobStatus.getIsFinished()) {
             List<LogDetailVO> logpathlist = new ArrayList<>();
             LogPathBO logPathBO = LogPathBO.builder().list(logpathlist).notFinish("").build();
