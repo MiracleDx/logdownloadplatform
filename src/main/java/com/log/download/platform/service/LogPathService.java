@@ -11,6 +11,7 @@ import com.log.download.platform.response.ResponseCode;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.util.BkUtil;
 import com.log.download.platform.util.FileUtil;
+import com.log.download.platform.util.LogUtil;
 import com.log.download.platform.vo.LogDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -202,7 +203,7 @@ public class LogPathService {
     public boolean findFile(String logPath, String ip) {
         if (!logPath.isEmpty()) {
             String path;
-            logPath = FileUtil.getInstance().processingContainerRealPath(logPath);
+            logPath = LogUtil.getInstance().processingContainerRealPath(logPath);
             path = "/tmp" + File.separator + "0_" + ip + File.separator + logPath;
             log.info("查找日志镜像路径: {}", path);
             File file = new File(path);
