@@ -329,7 +329,7 @@ public class BkUtil {
     }
 
     /**
-     * 获取查询容器入参
+     * 获取查询微服务容器入参
      *
      * @param bkBizId
      * @param ip
@@ -337,7 +337,7 @@ public class BkUtil {
      * @param scriptId
      * @return
      */
-    public String getContainerScriptParams(int bkBizId, String ip, String path, int scriptId) {
+    public String getServerContainerScriptParams(int bkBizId, String ip, String path, int scriptId) {
         String[] arr = path.split("/");
         path = arr[arr.length - 1];
         String[] paths = path.split("-");
@@ -347,6 +347,31 @@ public class BkUtil {
         String param = namespace + " " + group + " " + flag + " " + path;
         byte[] content = param.getBytes();
         String script_param = Base64.getEncoder().encodeToString(content);
+        return getContainerScriptParams(bkBizId, ip, script_param, scriptId);
+    }
+
+    /**
+     * 获取查询微服务网关容器入参
+     *
+     * @param bkBizId
+     * @param ip
+     * @param path
+     * @param scriptId
+     * @return
+     */
+    public String getGetewayContainerScriptParams(int bkBizId, String ip, String path, String flag, int scriptId) {
+        String[] arr = path.split("/");
+        String logName = arr[arr.length - 1];
+        String[] paths = flag.split("-");
+        String namespace = paths[0] + "" + paths[1] + "-" + paths[2] + "-" + paths[3];
+        String group = namespace;
+        String param = namespace + " " + group + " " + flag + " " + logName;
+        byte[] content = param.getBytes();
+        String script_param = Base64.getEncoder().encodeToString(content);
+        return getContainerScriptParams(bkBizId, ip, script_param, scriptId);
+    }
+
+    public String getContainerScriptParams(int bkBizId, String ip, String script_param, int scriptId) {
         String params = "{\n" +
                 "\t\"bk_app_code\": \"" + BK_APP_CODE + "\",\n" +
                 "\t\"bk_app_secret\": \"" + BK_APP_SECRET + "\",\n" +

@@ -117,7 +117,7 @@ public class ServerServiceImpl implements IBaseService {
 	public String queryPlaceContainerLog(int bkBizId, String ip, String path, int containerIpScriptId, int containerScriptId) {
 		BkUtil bkUtil = BkUtil.getInstance();
 		// 获取蓝鲸 查询容器IP的参数
-		String queryIpParams = bkUtil.getContainerScriptParams(bkBizId, ip ,path, containerIpScriptId);
+		String queryIpParams = bkUtil.getServerContainerScriptParams(bkBizId, ip ,path, containerIpScriptId);
 		Integer jobInstanceId = bkUtil.getJobInstanceId(queryIpParams, restTemplate);
 		// 获取脚本执行状态和执行结果
 		JobStatusBO queryIpJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
@@ -135,7 +135,7 @@ public class ServerServiceImpl implements IBaseService {
 			if (Pattern.matches(regexIpAddr, containerIp)) {
 				ip = containerIp;
 				//调用落盘脚本
-				String placeParams = bkUtil.getContainerScriptParams(bkBizId, ip, path, containerScriptId);
+				String placeParams = bkUtil.getServerContainerScriptParams(bkBizId, ip, path, containerScriptId);
 				Integer jobInstanceId1 = bkUtil.getJobInstanceId(placeParams, restTemplate);
 				// 获取脚本执行状态和执行结果
 				JobStatusBO placeJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId1, restTemplate);
