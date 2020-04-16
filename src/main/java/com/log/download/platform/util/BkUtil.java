@@ -332,7 +332,7 @@ public class BkUtil {
     }
 
     /**
-     * 获取查询微服务容器入参
+     * 获取/查询微服务容器入参
      *
      * @param bkBizId
      * @param ip
@@ -354,7 +354,7 @@ public class BkUtil {
     }
 
     /**
-     * 获取查询微服务网关容器入参
+     * 获取/查询微服务网关容器入参
      *
      * @param bkBizId
      * @param ip
@@ -362,6 +362,7 @@ public class BkUtil {
      * @param scriptId
      * @return
      */
+    //todo 微服务网关会出现同ip下多个微服务网关日志，还需要增加条件，路径中增加部署组
     public String getGetewayContainerScriptParams(int bkBizId, String ip, String path, String flag, int scriptId) {
         String[] arr = path.split("/");
         String logName = arr[arr.length - 1];
