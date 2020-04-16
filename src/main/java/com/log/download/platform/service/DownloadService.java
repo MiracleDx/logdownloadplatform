@@ -22,6 +22,7 @@ public class DownloadService {
 	 * @param downLoadDTO
 	 */
 	public void download(DownLoadDTO downLoadDTO) {
+		// todo 微服务网关下载路径变更
 		String path = LogUtil.getInstance().processingCvmPath(downLoadDTO.getPath());
 		// 下载
 		FileUtil.getInstance().download(downLoadDTO.getIp(), path, RequestContext.getResponse());

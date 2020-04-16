@@ -312,6 +312,7 @@ public class BkUtil {
                 "\t\"bk_biz_id\": " + bkBizId + ",\n" +
                 "\t\"file_target_path\": \"/tmp/0_" + cvmIp + "/" + path.substring(0, end) + "\",\n" +
                 "\t\"account\": \"root\",\n" +
+                // todo 获取当前机器IP
                 "\t\"ip_list\": [{\"bk_cloud_id\": 0,\"ip\": \"" + SHARED_SERVER + "\"}],\n" +
                 "\t\"file_source\": [{\n" +
                 "\t\t\"files\":[\"" + path + "\"],\n" +
