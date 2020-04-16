@@ -17,7 +17,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -71,6 +73,8 @@ public class BkUtil {
      * 调用蓝鲸快速分发url
      */
     private final String FAST_PUSH_FILE_URL = "http://paas.aio.zb.zbyy.piccnet/api/c/compapi/v2/job/fast_push_file/";
+    
+    private final String IP = getLocalIp();
 
     private BkUtil() {
 
@@ -312,18 +316,17 @@ public class BkUtil {
                 "\t\"bk_biz_id\": " + bkBizId + ",\n" +
                 "\t\"file_target_path\": \"/tmp/0_" + cvmIp + "/" + path.substring(0, end) + "\",\n" +
                 "\t\"account\": \"root\",\n" +
-                // todo 获取当前机器IP
-                "\t\"ip_list\": [{\"bk_cloud_id\": 0,\"ip\": \"" + SHARED_SERVER + "\"}],\n" +
+                "\t\"ip_list\": [{\"bk_cloud_id\": 0,\"ip\": \"" + IP + "\"}],\n" +
                 "\t\"file_source\": [{\n" +
                 "\t\t\"files\":[\"" + path + "\"],\n" +
                 "\t\t\"account\": \"ubuntu\",\n" +
                 "\t\t\"ip_list\": [\n";
-        String iplist = "\t\t{\n" +
+        String ipList = "\t\t{\n" +
                 "\t\t\t\"bk_cloud_id\": 0,\n" +
                 "\t\t\t\"ip\": \"" + ip + "\"\n" +
                 "\t\t}\n";
 
-        params += iplist;
+        params += ipList;
         params += "\t\t]\n\t}\n]}";
         return params;
     }
@@ -365,5 +368,23 @@ public class BkUtil {
                 "\t]\n" +
                 "}";
         return params;
+    }
+
+    /**
+     * 获取本机IP，获取不到的话返回共享服务器
+     * @return
+     */
+    private String getLocalIp() {
+        InetAddress ia = null;
+        try {
+            ia = InetAddress.getLocalHost();
+            String localName = ia.getHostName();
+            String localIp = ia.getHostAddress();
+            logger.info("hostname: {}, hostAddress: {}", localName, localIp);
+            return localIp;
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return SHARED_SERVER;
     }
 }
