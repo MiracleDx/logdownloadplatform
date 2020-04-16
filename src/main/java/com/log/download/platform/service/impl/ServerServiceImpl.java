@@ -53,73 +53,115 @@ public class ServerServiceImpl implements IBaseService {
 		String path = downLoadDTO.getPath();
 		String cvmIp = downLoadDTO.getCvmIp();
 
-		// 获取落盘日志类型
-		LogUtil.LogEnum logType = LogUtil.getInstance().placeWay(path);
-		// 判断执行脚本Id
-		int containerScriptId = -1;
-		int ContainerIpScriptId = -1;
+		// 获取落盘日志类型 
+		LogUtil.LogEnum logType = LogUtil.getInstance().logType(path);
+		log.info("begin fast push, execute {} task", logType);
+		// 获取蓝鲸业务ID
+		int bkBizId = BkUtil.getInstance().getBkBizId(label);
 		switch (logType) {
-			case server_container:
-				containerScriptId = serverContainerScriptId;
-				ContainerIpScriptId = serverContainerIpScriptId;
+			case server:
+				server(label, ip, path, cvmIp, bkBizId);
 				break;
-			case gateway_container:
-				containerScriptId = gatewayContainerScriptId;
-				ContainerIpScriptId = gatewayContainerIpScriptId;
+			case gateway:
+				gateway(label, ip, path, cvmIp, bkBizId);
 				break;
 			default:
 				break;
 		}
-		
-		log.info("begin fast push, execute {} task, containerScriptId = {}, containerIpScriptId = {}", logType, containerScriptId, ContainerIpScriptId);
-		
-		// 蓝鲸工具类实例
+		log.info("fast push end");
+	}
+
+	/**
+	 * 拉取微服务日志
+	 * @param label
+	 * @param ip
+	 * @param path
+	 * @param cvmIp
+	 * @param bkBizId
+	 */
+	public void server(String label, String ip, String path, String cvmIp, int bkBizId) {
+		if (LogUtil.getInstance().placeWay(path) == LogUtil.LogEnum.server_container) {
+			ip = queryPlaceContainerLog(bkBizId, ip, path, serverContainerIpScriptId, serverContainerScriptId);
+			path = LogUtil.getInstance().processingCvmPath(path);
+		}
+		requestFastPush(label, ip, path, cvmIp, bkBizId);
+	}
+
+	/**
+	 * 拉取网关日志
+	 * @param label
+	 * @param ip
+	 * @param path
+	 * @param cvmIp
+	 * @param bkBizId
+	 */
+	public void gateway(String label, String ip, String path, String cvmIp, int bkBizId) {
+		if (LogUtil.getInstance().placeWay(path) == LogUtil.LogEnum.gateway_container) {
+			ip = queryPlaceContainerLog(bkBizId, ip, path, gatewayContainerIpScriptId, gatewayContainerScriptId);
+			// todo 处理 网关路径
+		}
+		requestFastPush(label, ip, path, cvmIp, bkBizId);
+	}
+	
+	
+
+
+	/**
+	 * 请求落盘容器日志
+	 * @param bkBizId
+	 * @param ip
+	 * @param path
+	 * @param containerIpScriptId
+	 * @param containerScriptId
+	 */
+	public String queryPlaceContainerLog(int bkBizId, String ip, String path, int containerIpScriptId, int containerScriptId) {
 		BkUtil bkUtil = BkUtil.getInstance();
-		
-		// 获取蓝鲸业务ID
-		int bkBizId = bkUtil.getBkBizId(label);
+		// 获取蓝鲸 查询容器IP的参数
+		String queryIpParams = bkUtil.getContainerScriptParams(bkBizId, ip ,path, containerIpScriptId);
+		Integer jobInstanceId = bkUtil.getJobInstanceId(queryIpParams, restTemplate);
+		// 获取脚本执行状态和执行结果
+		JobStatusBO queryIpJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
 
-		// 容器日志
-		if (LogUtil.LogEnum.server_container == logType) {
-			
-			// 获取蓝鲸 查询容器IP的参数
-			String queryIpParams = bkUtil.getContainerScriptParams(bkBizId, ip ,path, ContainerIpScriptId);
-			Integer jobInstanceId = bkUtil.getJobInstanceId(queryIpParams, restTemplate);
-			// 获取脚本执行状态和执行结果
-			JobStatusBO queryIpJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
-
-			// 脚本执行完毕
-			if (queryIpJobStatus.getIsFinished()) {
-				// 获取容器IP
-				JSONObject result = queryIpJobStatus.getResult();
-				String containerIp = result.getJSONArray(BkConstant.DATA).getJSONObject(0)
-						.getJSONArray(BkConstant.STEP_RESULTS).getJSONObject(0)
-						.getJSONArray(BkConstant.IP_LOGS).getJSONObject(0).getString(BkConstant.LOG_CONTENT);
-				containerIp = containerIp.replaceAll("\n", "");
-				// 校验IP
-				String regexIpAddr = "((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}";
-				if (Pattern.matches(regexIpAddr, containerIp)) {
-					ip = containerIp;
-					//调用落盘脚本
-					String placeParams = bkUtil.getContainerScriptParams(bkBizId, ip, path, containerScriptId);
-					Integer jobInstanceId1 = bkUtil.getJobInstanceId(placeParams, restTemplate);
-					// 获取脚本执行状态和执行结果
-					JobStatusBO placeJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId1, restTemplate);
-					//确定日志是否落盘
-					if (!placeJobStatus.getIsFinished()) {
-						throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT ,"蓝鲸落盘超时");
-					}
-					
-					// 将容器路径修改为CVM落盘路径
-					path = LogUtil.getInstance().processingCvmPath(path);
-				} else {
-					throw new DataNotFoundException(ResponseCode.DATA_IS_WRONG, "蓝鲸获取容器所在ip错误");
+		// 脚本执行完毕
+		if (queryIpJobStatus.getIsFinished()) {
+			// 获取容器IP
+			JSONObject result = queryIpJobStatus.getResult();
+			String containerIp = result.getJSONArray(BkConstant.DATA).getJSONObject(0)
+					.getJSONArray(BkConstant.STEP_RESULTS).getJSONObject(0)
+					.getJSONArray(BkConstant.IP_LOGS).getJSONObject(0).getString(BkConstant.LOG_CONTENT);
+			containerIp = containerIp.replaceAll("\n", "");
+			// 校验IP
+			String regexIpAddr = "((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}";
+			if (Pattern.matches(regexIpAddr, containerIp)) {
+				ip = containerIp;
+				//调用落盘脚本
+				String placeParams = bkUtil.getContainerScriptParams(bkBizId, ip, path, containerScriptId);
+				Integer jobInstanceId1 = bkUtil.getJobInstanceId(placeParams, restTemplate);
+				// 获取脚本执行状态和执行结果
+				JobStatusBO placeJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId1, restTemplate);
+				//确定日志是否落盘
+				if (!placeJobStatus.getIsFinished()) {
+					throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT ,"蓝鲸落盘超时");
 				}
 			} else {
-				throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT, "蓝鲸调用执行查询任务超时");
+				throw new DataNotFoundException(ResponseCode.DATA_IS_WRONG, "蓝鲸获取容器所在ip错误");
 			}
+		} else {
+			throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT, "蓝鲸调用执行查询任务超时");
 		}
-		 
+		return ip;
+	}
+
+	/**
+	 * 调用蓝鲸分发脚本
+	 * @param label
+	 * @param ip
+	 * @param path
+	 * @param cvmIp
+	 * @param bkBizId
+	 */
+	public void requestFastPush(String label, String ip, String path, String cvmIp, int bkBizId) {
+		BkUtil bkUtil = BkUtil.getInstance();
 		// 容器落盘执行完毕后 和 正常日志处理流程一致
 		// 调用日志分发的脚本
 		String fastPushFileParams = bkUtil.getFastPushFileParams(bkBizId, ip, path, cvmIp);
@@ -127,7 +169,7 @@ public class ServerServiceImpl implements IBaseService {
 		Integer jobInstanceId = bkUtil.getJobInstanceId(jsonObject);
 		// 查询作业脚本的执行状态
 		JobStatusBO jobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
-		
+
 		// 如果执行完毕
 		if (jobStatus.getIsFinished()) {
 			JSONObject result = jobStatus.getResult();
@@ -138,12 +180,11 @@ public class ServerServiceImpl implements IBaseService {
 				// 判断是否找到文件
 				String notExist = "is not exist";
 				if (logContent.contains(notExist)) {
-					throw new DataNotFoundException(ResponseCode.DATA_NOT_FOUND, "蓝鲸能够未查询到该文件");			
+					throw new DataNotFoundException(ResponseCode.DATA_NOT_FOUND, "蓝鲸能够未查询到该文件");
 				}
 			}
 		} else {
 			throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT, "蓝鲸调用文件下载超时");
 		}
-		log.info("fast push end");
 	}
 }

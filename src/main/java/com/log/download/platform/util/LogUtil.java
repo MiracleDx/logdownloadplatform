@@ -15,8 +15,6 @@ public class LogUtil {
 	
 	private static final String TSF_DEFAULT = "tsf_default";
 	
-	private static final String GATE_GATEWAY = "gate_default";
-
 	private static final String TSF_GATEWAY = "tsf-gateway";
 	
 	private static final String MSGW = "msgw";
@@ -52,13 +50,14 @@ public class LogUtil {
 	 * @return
 	 */
 	public LogEnum placeWay(String path) {
-		if (logType(path) == LogEnum.gateway) {
-			if (path.contains(GATE_GATEWAY)) {
+		LogEnum logEnum = logType(path);
+		if (logEnum == LogEnum.gateway) {
+			if (path.contains(TSF_GATEWAY)) {
 				return LogEnum.gateway_container;
 			} else {
 				return LogEnum.gateway_general;
 			}
-		} else if (logType(path) == LogEnum.server) {
+		} else if (logEnum == LogEnum.server) {
 			if (path.contains(TSF_DEFAULT)) {
 				return LogEnum.server_container;
 			} else {
