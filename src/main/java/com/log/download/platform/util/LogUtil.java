@@ -17,6 +17,8 @@ public class LogUtil {
 	private static final String TSF_GATEWAY = "tsf-gateway";
 	
 	private static final String MSGW = "msgw";
+
+	private static final String SERVER = "/log/";
 	
 	private LogUtil() {
 		
@@ -36,10 +38,12 @@ public class LogUtil {
 	 * @return
 	 */
 	public LogEnum logType(String path) {
-		if (path.contains(TSF_GATEWAY)) {
+		if (path.contains(TSF_GATEWAY) || path.contains(MSGW)) {
 			return LogEnum.gateway;
-		} else {
+		} else if (path.contains(TSF_DEFAULT) || path.contains(SERVER)) {
 			return LogEnum.server;
+		} else {
+			return LogEnum.path_null;
 		}
 	}
 
@@ -126,7 +130,11 @@ public class LogUtil {
 		/**
 		 * 微服务 已落盘
 		 */
-		server_general
+		server_general,
+		/**
+		 * 为空
+		 */
+		path_null
 	}
 
 	/**
@@ -142,6 +150,7 @@ public class LogUtil {
 	 * @return
 	 */
 	public String praseGatewayLogDetail(String[] logArr) {
+		System.out.println(logArr[0]);
 		return logArr[1];
 	}
 }

@@ -130,7 +130,7 @@ public class LogService {
         if (ipStatus == 9 && errorCode == 0 && !logContent.contains("Can not find Agent by ip")) {
             path = logContent;
             String[] paths = path.split("\\n");
-            // 已存在的logName
+            // 已存在的logNamePath
             Map<String, List<LogDetailVO>> map = new HashMap<>(16);
             for (int z = 1; z <= paths.length; z++) {
                 LogDetailVO logDetail = new LogDetailVO();
@@ -139,8 +139,13 @@ public class LogService {
                 // 这里区分出微服务和微服务容器
                 // 日志路径
                 String logPath ="";
-                if (!logArr[0].isEmpty()){
-                    logPath = logArr.length == 4 ? logUtil.praseGatewayLogDetail(logArr) : logUtil.praseServerLogDetail(logArr);
+                LogUtil.LogEnum logEnum = LogUtil.getInstance().logType(paths[z - 1]);
+                if (logEnum == LogUtil.LogEnum.gateway && logArr.length == 4) {
+                    logPath = logUtil.praseGatewayLogDetail(logArr);
+                } else if (logEnum == LogUtil.LogEnum.server && logArr.length == 3) {
+                    logPath = logUtil.praseServerLogDetail(logArr);
+                } else {
+                    continue;
                 }
                 if (FileUtil.getInstance().pathLegal(logPath)) {
                     logDetail.setFlag(logArr[0]);
