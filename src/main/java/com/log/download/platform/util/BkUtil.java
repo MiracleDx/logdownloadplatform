@@ -131,7 +131,7 @@ public class BkUtil {
      * @return
      */
     public Integer getJobInstanceId(JSONObject jsonObject) {
-        if (!jsonObject.getJSONObject(BkConstant.DATA).toString().contains(BkConstant.JOB_INSTANCE_ID)) {
+        if (jsonObject.getJSONObject(BkConstant.DATA) != null && !jsonObject.getJSONObject(BkConstant.DATA).toString().contains(BkConstant.JOB_INSTANCE_ID)) {
             throw new DataNotFoundException(jsonObject.getJSONObject(BkConstant.MESSAGE).toString());
         }
         return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
