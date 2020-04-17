@@ -69,7 +69,8 @@ public class BaseGlobalExceptionHandler {
 	 * 处理通用自定义业务异常
 	 */
 	protected ServerResponse handleBusinessException(BusinessException e, HttpServletRequest request) {
-		log.error("Exception occurred, uri: {}, exception: {}, caused by: {}", request.getRequestURI(), e.getClass().getSimpleName(), e.getMessage());
+		StackTraceElement stackTraceElement = e.getStackTrace()[0];
+		log.error("Exception occurred, uri: {}, exception: {}, stackTrace: {}.{}:{}, caused by: {} ", request.getRequestURI(), e.getClass().getSimpleName(), stackTraceElement.getClassName(), stackTraceElement.getMethodName(), stackTraceElement.getLineNumber(), e.getMessage());
 		return ServerResponse.failure(Optional.ofNullable(e.getCode()).orElse(HttpStatus.INTERNAL_SERVER_ERROR.value()), e.getMessage());
 	}
 
