@@ -28,5 +28,7 @@ public class LogDetailVO {
 	private String unit;
 
 	private Boolean mirror;
+
+	private String flag;
 	
 }

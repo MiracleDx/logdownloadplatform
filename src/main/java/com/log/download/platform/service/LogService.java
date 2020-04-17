@@ -120,6 +120,7 @@ public class LogService {
      * @return
      */
     public LogPathBO logJsonToList(LogPathBO logPathBO, JSONObject jsonObject, int ipStatus, String label){
+        LogUtil logUtil = LogUtil.getInstance();
         String logContent = jsonObject.getString(BkConstant.LOG_CONTENT);
         String ip = jsonObject.getString(BkConstant.IP);
         int errorCode = jsonObject.getInteger(BkConstant.ERROR_CODE);
@@ -134,15 +135,20 @@ public class LogService {
             for (int z = 1; z <= paths.length; z++) {
                 LogDetailVO logDetail = new LogDetailVO();
                 logDetail.setId(z);
-                String[] arr = paths[z - 1].split("\t");
+                String[] logArr = paths[z - 1].split("\t");
+                // 这里区分出微服务和微服务容器
                 // 日志路径
-                String logPath = StringUtils.isEmpty(arr[0]) ? arr[1] : arr[0];
+                String logPath ="";
+                if (!logArr[0].isEmpty()){
+                    logPath = logArr.length == 4 ? logUtil.praseGatewayLogDetail(logArr) : logUtil.praseServerLogDetail(logArr);
+                }
                 if (FileUtil.getInstance().pathLegal(logPath)) {
+                    logDetail.setFlag(logArr[0]);
                     logDetail.setPath(logPath);
                     logDetail.setIp(ip);
-                    logDetail.setCreateTime(arr[arr.length - 1]);
+                    logDetail.setCreateTime(logArr[logArr.length - 1]);
                     try {
-                        logDetail.setSize(Math.round(Double.parseDouble(arr[arr.length - 2]) * 100 / (1024 * 1024)) / 100.0);
+                        logDetail.setSize(Math.round(Double.parseDouble(logArr[logArr.length - 2]) * 100 / (1024 * 1024)) / 100.0);
                     } catch (Exception e) {
                         log.error("日志路径数据异常：{}", paths[z - 1]);
                     }

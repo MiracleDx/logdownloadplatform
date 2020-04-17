@@ -128,4 +128,20 @@ public class LogUtil {
 		 */
 		server_general
 	}
+
+	/**
+	 * 解析微服务日志
+	 * @return
+	 */
+	public String praseServerLogDetail(String[] logArr) {
+		return logArr[0];
+	}
+
+	/**
+	 * 解析微服务网关日志
+	 * @return
+	 */
+	public String praseGatewayLogDetail(String[] logArr) {
+		return logArr[1];
+	}
 }
