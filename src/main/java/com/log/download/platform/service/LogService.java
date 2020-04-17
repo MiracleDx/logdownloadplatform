@@ -130,7 +130,7 @@ public class LogService {
         if (ipStatus == 9 && errorCode == 0 && !logContent.contains("Can not find Agent by ip")) {
             path = logContent;
             String[] paths = path.split("\\n");
-            // 已存在的logNamePath
+            // 已存在的logName
             Map<String, List<LogDetailVO>> map = new HashMap<>(16);
             for (int z = 1; z <= paths.length; z++) {
                 LogDetailVO logDetail = new LogDetailVO();
