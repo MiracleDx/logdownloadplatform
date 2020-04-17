@@ -23,6 +23,9 @@ import javax.validation.ConstraintViolationException;
 @RestControllerAdvice
 public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 
+	/**
+	 * 违反约束异常
+	 */
 	@Override
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(ConstraintViolationException.class)
@@ -30,13 +33,19 @@ public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 		return super.handleConstraintViolationException(e, request);
 	}
 
+	/**
+	 * 处理验证参数封装错误时异常
+	 */
 	@Override
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ServerResponse handleConstraintViolationException(HttpMessageNotReadableException e, HttpServletRequest request) {
-		return super.handleConstraintViolationException(e, request);
+	public ServerResponse handleHttpMessageNotReadableException(HttpMessageNotReadableException e, HttpServletRequest request) {
+		return super.handleHttpMessageNotReadableException(e, request);
 	}
 
+	/**
+	 * 处理参数绑定时异常（反400错误码）
+	 */
 	@Override
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(BindException.class)
@@ -44,11 +53,78 @@ public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 		return super.handleBindException(e, request);
 	}
 
+	/**
+	 * 处理使用@Validated注解时，参数验证错误异常（反400错误码）
+	 */
 	@Override
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ServerResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
 		return super.handleMethodArgumentNotValidException(e, request);
+	}
+
+	/**
+	 * 处理数据查找不到异常
+	 * @param e
+	 * @param request
+	 * @return
+	 */
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	@ExceptionHandler(DataNotFoundException.class)
+	public ServerResponse handleDataNotFoundException(DataNotFoundException e, HttpServletRequest request) {
+		e.setCode(HttpStatus.NOT_FOUND.value());
+		return super.handleBusinessException(e, request);
+	}
+
+	/**
+	 * 处理数据冲突异常
+	 * @param e
+	 * @param request
+	 * @return
+	 */
+	@ResponseStatus(HttpStatus.CONFLICT)
+	@ExceptionHandler(DataConflictException.class)
+	public ServerResponse handleDataConflictException(DataConflictException e, HttpServletRequest request) {
+		e.setCode(HttpStatus.CONFLICT.value());
+		return super.handleBusinessException(e, request);
+	}
+
+	/**
+	 * 处理权限错误
+	 * @param e
+	 * @param request
+	 * @return
+	 */
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	@ExceptionHandler(PermissionForbiddenException.class)
+	public ServerResponse handlePermissionForbiddenException(DataConflictException e, HttpServletRequest request) {
+		e.setCode(HttpStatus.FORBIDDEN.value());
+		return super.handleBusinessException(e, request);
+	}
+
+	/**
+	 * 处理远程调用异常
+	 * @param e
+	 * @param request
+	 * @return
+	 */
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ExceptionHandler(RemoteAccessException.class)
+	public ServerResponse handleRemoteAccessException(DataConflictException e, HttpServletRequest request) {
+		return super.handleBusinessException(e, request);
+	}
+
+	/**
+	 * 处理请求超时异常
+	 * @param e
+	 * @param request
+	 * @return
+	 */
+	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
+	@ExceptionHandler(RequestTimeoutException.class)
+	public ServerResponse handleRequestTimeoutException(RequestTimeoutException e, HttpServletRequest request) {
+		e.setCode(HttpStatus.REQUEST_TIMEOUT.value());
+		return super.handleBusinessException(e, request);
 	}
 
 	@Override

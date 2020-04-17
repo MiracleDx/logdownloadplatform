@@ -1,7 +1,5 @@
 package com.log.download.platform.exception;
 
-import com.log.download.platform.response.ResponseCode;
-
 /**
  * DataNotFoundException
  * 数据未找到异常
@@ -11,16 +9,8 @@ import com.log.download.platform.response.ResponseCode;
  * Modified by:
  */
 public class DataNotFoundException extends BusinessException {
-	
-	public DataNotFoundException(ResponseCode responseCode) {
-		super(responseCode);
-	}
 
-	public DataNotFoundException(Integer code, String msg) {
-		super(code, msg);
-	}
-
-	public DataNotFoundException(ResponseCode responseCode, String msg) {
-		super(responseCode, msg);
+	public DataNotFoundException(String msg) {
+		super(msg);
 	}
 }

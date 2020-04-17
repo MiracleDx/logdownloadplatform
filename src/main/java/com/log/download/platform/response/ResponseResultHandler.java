@@ -1,5 +1,6 @@
 package com.log.download.platform.response;
 
+import com.log.download.platform.exception.DataNotFoundException;
 import com.log.download.platform.util.JsonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
@@ -75,7 +76,7 @@ public class ResponseResultHandler implements ResponseBodyAdvice<Object> {
 		}
 		
 		if (body == null) {
-			return ServerResponse.failure(ResponseCode.DATA_NOT_FOUND.code(), ResponseCode.DATA_NOT_FOUND.message());
+			throw new DataNotFoundException("数据未找到");
 		}
 		return ServerResponse.success(body);
 	}

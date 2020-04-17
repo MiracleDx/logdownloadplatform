@@ -1,7 +1,5 @@
 package com.log.download.platform.exception;
 
-import com.log.download.platform.response.ResponseCode;
-
 /**
  * DataConflictException
  * 数据已存在异常
@@ -12,15 +10,8 @@ import com.log.download.platform.response.ResponseCode;
  */
 public class DataConflictException extends BusinessException {
 	
-	public DataConflictException(ResponseCode responseCode) {
-		super(responseCode);
+	public DataConflictException(String msg) {
+		super(msg);
 	}
 
-	public DataConflictException(Integer code, String msg) {
-		super(code, msg);
-	}
-
-	public DataConflictException(ResponseCode responseCode, String msg) {
-		super(responseCode, msg);
-	}
 }

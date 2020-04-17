@@ -1,8 +1,5 @@
 package com.log.download.platform.exception;
 
-
-import com.log.download.platform.response.ResponseCode;
-
 /**
  * ParamValidException
  * 参数校验异常
@@ -13,15 +10,8 @@ import com.log.download.platform.response.ResponseCode;
  */
 public class ParamValidException extends BusinessException {
 
-    public ParamValidException(ResponseCode responseCode) {
-        super(responseCode);
+    public ParamValidException(String msg) {
+        super(msg);
     }
 
-    public ParamValidException(Integer code, String msg) {
-        super(code, msg);
-    }
-
-    public ParamValidException(ResponseCode responseCode, String msg) {
-        super(responseCode, msg);
-    }
 }

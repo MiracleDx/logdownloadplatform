@@ -1,7 +1,6 @@
 package com.log.download.platform.config;
 
 import com.log.download.platform.exception.PermissionForbiddenException;
-import com.log.download.platform.response.ResponseCode;
 import com.log.download.platform.support.Resubmit;
 import com.log.download.platform.support.ResubmitLock;
 import com.log.download.platform.util.IpUtil;
@@ -68,7 +67,7 @@ public class LogAspectConfig {
                     return joinPoint.proceed();
                 } else {
                     // 响应重复提交异常
-                    throw new PermissionForbiddenException(ResponseCode.REPEAT_SUBMIT_OPERATION_EXCEPTION);
+                    throw new PermissionForbiddenException("重复请求");
                 }
             } finally {
                 //设置解锁key和解锁时间

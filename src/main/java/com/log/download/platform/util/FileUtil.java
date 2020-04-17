@@ -1,8 +1,6 @@
 package com.log.download.platform.util;
 
 import com.log.download.platform.exception.DataNotFoundException;
-import com.log.download.platform.response.ResponseCode;
-import com.log.download.platform.vo.LogDetailVO;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
@@ -46,7 +44,7 @@ public class FileUtil {
         // path是指欲下载的文件的路径。
         File file = new File(path);
         if (!file.exists()) {
-            throw new DataNotFoundException(ResponseCode.DATA_NOT_FOUND, "日志文件" + path.substring(path.lastIndexOf("/")) + "不存在");
+            throw new DataNotFoundException("日志文件" + path.substring(path.lastIndexOf("/")) + "不存在");
         }
         // 取得文件名。
         String filename = file.getName();

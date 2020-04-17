@@ -7,7 +7,6 @@ import com.log.download.platform.common.StatusEnum;
 import com.log.download.platform.dto.DownLoadDTO;
 import com.log.download.platform.exception.DataNotFoundException;
 import com.log.download.platform.exception.RemoteAccessException;
-import com.log.download.platform.response.ResponseCode;
 import com.log.download.platform.service.IBaseService;
 import com.log.download.platform.util.BkUtil;
 import com.log.download.platform.util.LogUtil;
@@ -141,13 +140,13 @@ public class ServerServiceImpl implements IBaseService {
 				JobStatusBO placeJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId1, restTemplate);
 				//确定日志是否落盘
 				if (!placeJobStatus.getIsFinished()) {
-					throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT ,"蓝鲸落盘超时");
+					throw new RemoteAccessException("蓝鲸落盘超时");
 				}
 			} else {
-				throw new DataNotFoundException(ResponseCode.DATA_IS_WRONG, "蓝鲸获取容器所在ip错误");
+				throw new DataNotFoundException("蓝鲸获取容器所在ip错误");
 			}
 		} else {
-			throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT, "蓝鲸调用执行查询任务超时");
+			throw new RemoteAccessException("蓝鲸调用执行查询任务超时");
 		}
 		return ip;
 	}
@@ -180,11 +179,11 @@ public class ServerServiceImpl implements IBaseService {
 				// 判断是否找到文件
 				String notExist = "is not exist";
 				if (logContent.contains(notExist)) {
-					throw new DataNotFoundException(ResponseCode.DATA_NOT_FOUND, "蓝鲸能够未查询到该文件");
+					throw new DataNotFoundException("蓝鲸能够未查询到该文件");
 				}
 			}
 		} else {
-			throw new RemoteAccessException(ResponseCode.REQUEST_TIMEOUT, "蓝鲸调用文件下载超时");
+			throw new RemoteAccessException("蓝鲸调用文件下载超时");
 		}
 	}
 }

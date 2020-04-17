@@ -1,13 +1,6 @@
 package com.log.download.platform.context;
 
-import com.log.download.platform.exception.InternalServerException;
-import com.log.download.platform.response.ResponseCode;
-import com.log.download.platform.service.IBaseService;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * StrategyFactory

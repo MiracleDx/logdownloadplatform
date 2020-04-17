@@ -1,7 +1,6 @@
 package com.log.download.platform.util;
 
 import com.log.download.platform.exception.DataConflictException;
-import com.log.download.platform.response.ResponseCode;
 
 /**
  * LogUtil
@@ -64,7 +63,7 @@ public class LogUtil {
 				return LogEnum.server_general;
 			}
 		} else {
-			throw new DataConflictException(ResponseCode.DATA_IS_WRONG);
+			throw new DataConflictException("落盘方式未找到, 落盘路径为：" + path);
 		}
 	}
 

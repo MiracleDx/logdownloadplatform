@@ -1,13 +1,9 @@
 package com.log.download.platform.controller;
 
 
-import com.log.download.platform.context.StrategyFactory;
 import com.log.download.platform.dto.DownLoadDTO;
-import com.log.download.platform.exception.InternalServerException;
-import com.log.download.platform.response.ResponseCode;
 import com.log.download.platform.service.DownloadService;
 import com.log.download.platform.service.IBaseService;
-import com.log.download.platform.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

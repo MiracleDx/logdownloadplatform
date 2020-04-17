@@ -1,8 +1,6 @@
 package com.log.download.platform.exception;
 
 
-import com.log.download.platform.response.ResponseCode;
-
 /**
  * PermissionForbiddenException
  * 无访问权限异常
@@ -13,15 +11,8 @@ import com.log.download.platform.response.ResponseCode;
  */
 public class PermissionForbiddenException extends BusinessException {
 	
-	public PermissionForbiddenException(ResponseCode responseCode) {
-		super(responseCode);
-	}
-	
-	public PermissionForbiddenException(Integer code, String msg) {
-		super(code, msg);
+	public PermissionForbiddenException(String msg) {
+		super(msg);
 	}
 
-	public PermissionForbiddenException(ResponseCode responseCode, String msg) {
-		super(responseCode, msg);
-	}
 }

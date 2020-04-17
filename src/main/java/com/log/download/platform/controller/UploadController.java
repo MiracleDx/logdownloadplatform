@@ -1,6 +1,7 @@
 package com.log.download.platform.controller;
 
 import com.log.download.platform.entity.DeploymentGroup;
+import com.log.download.platform.exception.InternalServerException;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.service.MenuService;
 import lombok.extern.slf4j.Slf4j;
@@ -42,12 +43,12 @@ public class UploadController {
 	public ServerResponse<DeploymentGroup> upload(MultipartFile file) throws IOException {
 		if (file.isEmpty()) {
 			log.error("文件上传失败, 上传文件为空");
-			return ServerResponse.failure("上传失败");
+			throw new InternalServerException("上传失败");
 		}
 		
 		if (!StringUtils.equals(file.getOriginalFilename(), excelName)) {
 			log.error("文件上传失败, 上传文件不正确, {}", file.getOriginalFilename());
-			return ServerResponse.failure("上传失败, 请上传正确的文件");
+			throw new InternalServerException("上传失败, 请上传正确的文件");
 		}
 
 		try (OutputStream outputStream = new FileOutputStream(excelLocation + excelName)) {

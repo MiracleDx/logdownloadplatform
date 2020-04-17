@@ -1,7 +1,6 @@
 package com.log.download.platform.controller;
 
 import com.log.download.platform.exception.DataNotFoundException;
-import com.log.download.platform.response.ResponseCode;
 import com.log.download.platform.response.ResponseResult;
 import com.log.download.platform.service.MenuService;
 import com.log.download.platform.vo.MenuVO;
@@ -31,7 +30,7 @@ public class MenuController {
 	@GetMapping("/getMenu")
 	public List<MenuVO> getMenu() {
 		if (menuService.menu == null || menuService.menu.size() == 0) {
-			throw new DataNotFoundException(ResponseCode.MENU_EXCEL_NOT_FOUND);
+			throw new DataNotFoundException("菜单加载失败，请联系部署组，上传正确的日志清单文件");
 		}
 		return menuService.menu;
 	}
