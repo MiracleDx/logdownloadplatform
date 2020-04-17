@@ -89,7 +89,7 @@ public class LogUtil {
 				break;
 			case server_container:
 				String[] temp = path.split("-");
-				if (!path.contains("sys_log.log")) {
+				if (!path.contains("sys_log.log") && temp.length == 9) {
 					path = path.replace("/data/tsf_default/logs", "/log/" + temp[1] + "-" + temp[2] + "-" + temp[3] + "-" + temp[4]);
 				}
 				break;
@@ -150,7 +150,6 @@ public class LogUtil {
 	 * @return
 	 */
 	public String praseGatewayLogDetail(String[] logArr) {
-		System.out.println(logArr[0]);
 		return logArr[1];
 	}
 }
