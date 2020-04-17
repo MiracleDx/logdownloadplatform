@@ -116,6 +116,7 @@ public class ServerServiceImpl implements IBaseService {
 	public String queryPlaceContainerLog(int bkBizId, String ip, String path, int containerIpScriptId, int containerScriptId) {
 		BkUtil bkUtil = BkUtil.getInstance();
 		// 获取蓝鲸 查询容器IP的参数
+		// TODO 修改脚本入参
 		String queryIpParams = bkUtil.getServerContainerScriptParams(bkBizId, ip ,path, containerIpScriptId);
 		Integer jobInstanceId = bkUtil.getJobInstanceId(queryIpParams, restTemplate);
 		// 获取脚本执行状态和执行结果
