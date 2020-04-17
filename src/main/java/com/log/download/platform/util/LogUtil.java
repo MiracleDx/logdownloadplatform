@@ -2,6 +2,7 @@ package com.log.download.platform.util;
 
 import com.log.download.platform.exception.DataConflictException;
 import com.log.download.platform.response.ResponseCode;
+import com.log.download.platform.vo.LogDetailVO;
 
 /**
  * LogUtil
@@ -128,5 +129,21 @@ public class LogUtil {
 		 * 微服务 已落盘
 		 */
 		server_general
+	}
+
+	/**
+	 * 解析微服务日志
+	 * @return
+	 */
+	public String praseServerLogDetail(String[] logArr) {
+		return logArr[0];
+	}
+
+	/**
+	 * 解析微服务网关日志
+	 * @return
+	 */
+	public String praseGatewayLogDetail(String[] logArr) {
+		return logArr[1];
 	}
 }
