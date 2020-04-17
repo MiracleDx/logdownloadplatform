@@ -97,7 +97,7 @@ public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 	 */
 	@ResponseStatus(HttpStatus.FORBIDDEN)
 	@ExceptionHandler(PermissionForbiddenException.class)
-	public ServerResponse handlePermissionForbiddenException(DataConflictException e, HttpServletRequest request) {
+	public ServerResponse handlePermissionForbiddenException(PermissionForbiddenException e, HttpServletRequest request) {
 		e.setCode(HttpStatus.FORBIDDEN.value());
 		return super.handleBusinessException(e, request);
 	}
@@ -110,7 +110,7 @@ public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 	 */
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(RemoteAccessException.class)
-	public ServerResponse handleRemoteAccessException(DataConflictException e, HttpServletRequest request) {
+	public ServerResponse handleRemoteAccessException(RemoteAccessException e, HttpServletRequest request) {
 		return super.handleBusinessException(e, request);
 	}
 

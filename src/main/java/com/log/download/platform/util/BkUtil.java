@@ -131,8 +131,9 @@ public class BkUtil {
      * @return
      */
     public Integer getJobInstanceId(JSONObject jsonObject) {
-        if (jsonObject.getJSONObject(BkConstant.DATA) != null && !jsonObject.getJSONObject(BkConstant.DATA).toString().contains(BkConstant.JOB_INSTANCE_ID)) {
-            throw new DataNotFoundException(jsonObject.getJSONObject(BkConstant.MESSAGE).toString());
+        if (jsonObject.getJSONObject(BkConstant.DATA) != null &&
+                !jsonObject.getJSONObject(BkConstant.DATA).toString().contains(BkConstant.JOB_INSTANCE_ID)) {
+            throw new DataNotFoundException("蓝鲸接口 " + jsonObject.getJSONObject(BkConstant.MESSAGE).toString());
         }
         return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
     }
@@ -336,6 +337,7 @@ public class BkUtil {
      * @return
      */
     public String getServerContainerScriptParams(int bkBizId, String ip, String path, int scriptId) {
+        //todo 不规则文件名无法解析为脚本参数，参数需要第一次调用脚本时返回
         String[] arr = path.split("/");
         path = arr[arr.length - 1];
         String[] paths = path.split("-");
