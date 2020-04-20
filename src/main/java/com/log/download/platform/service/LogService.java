@@ -8,6 +8,7 @@ import com.log.download.platform.bo.LogPathBO;
 import com.log.download.platform.common.BkConstant;
 import com.log.download.platform.dto.QueryLogDetailDTO;
 import com.log.download.platform.support.FileCheckExecutors;
+import com.log.download.platform.util.BkUtil;
 import com.log.download.platform.util.FileUtil;
 import com.log.download.platform.util.LogUtil;
 import com.log.download.platform.vo.LogDetailVO;
@@ -51,39 +52,33 @@ public class LogService {
 
     public LogPathBO queryLogDetails(QueryLogDetailDTO queryLogDetailDTO) {
         //获取日志路径的接口参数
-        //BkUtil bkUtil = BkUtil.getInstance();
+        BkUtil bkUtil = BkUtil.getInstance();
         FileUtil fileUtil = FileUtil.getInstance();
-        //int script_id = 0;
-        ////根据脚本入参的参数，判断是否网关，选择脚本id
-        //if(queryLogDetailDTO.getBkParam().contains("msgw")) {
-        //    if (queryLogDetailDTO.getIsHistory()) {
-        //        script_id = gatewayExecuteHistoryScriptId;
-        //    } else {
-        //        script_id = gatewayExecuteScriptId;
-        //    }
-        //} else {
-        //    if (queryLogDetailDTO.getIsHistory()) {
-        //        script_id = fastExecuteHistoryScriptId;
-        //    }  else {
-        //        script_id = fastExecuteScriptId;
-        //    }
-        //}
-        //log.info("执行脚本id：{}", script_id);
-        //int bkBizId = bkUtil.getBkBizId(queryLogDetailDTO.getLabel());
-        //String fastExecuteParam = bkUtil.getFastExecuteScriptParams(bkBizId,
-        //        queryLogDetailDTO.getIps(),
-        //        queryLogDetailDTO.getBkParam(),
-        //        script_id);
-        ////快速执行脚本，结果中获取作业id，用于查询结果
-        //Integer jobInstanceId = bkUtil.getJobInstanceId(fastExecuteParam, restTemplate);
-        ////查询作业执行状态
-        //JobStatusBO jobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
-        
-        JobStatusBO jobStatus = new JobStatusBO();
-        
-        jobStatus.setIsFinished(true);
-        jobStatus.setResult(JSONObject.parseObject(Data.data));
-        
+        int script_id = 0;
+        //根据脚本入参的参数，判断是否网关，选择脚本id
+        if(queryLogDetailDTO.getBkParam().contains("msgw")) {
+            if (queryLogDetailDTO.getIsHistory()) {
+                script_id = gatewayExecuteHistoryScriptId;
+            } else {
+                script_id = gatewayExecuteScriptId;
+            }
+        } else {
+            if (queryLogDetailDTO.getIsHistory()) {
+                script_id = fastExecuteHistoryScriptId;
+            }  else {
+                script_id = fastExecuteScriptId;
+            }
+        }
+        log.info("执行脚本id：{}", script_id);
+        int bkBizId = bkUtil.getBkBizId(queryLogDetailDTO.getLabel());
+        String fastExecuteParam = bkUtil.getFastExecuteScriptParams(bkBizId,
+                queryLogDetailDTO.getIps(),
+                queryLogDetailDTO.getBkParam(),
+                script_id);
+        //快速执行脚本，结果中获取作业id，用于查询结果
+        Integer jobInstanceId = bkUtil.getJobInstanceId(fastExecuteParam, restTemplate);
+        //查询作业执行状态
+        JobStatusBO jobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
         
         //如果脚本执行完成，将结果的log信息进行提取
         if (jobStatus.getIsFinished()) {
