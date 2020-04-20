@@ -9,6 +9,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
@@ -68,17 +69,17 @@ public class BaseGlobalExceptionHandler {
 	/**
 	 * 处理通用自定义业务异常
 	 */
-	protected ServerResponse handleBusinessException(BusinessException e, HttpServletRequest request) {
+	protected ServerResponse handleBusinessException(BusinessException e, HandlerMethod method, HttpServletRequest request) {
 		StackTraceElement stackTraceElement = e.getStackTrace()[0];
-		log.error("Exception occurred, uri: {}, exception: {}, stackTrace: {}.{}:{}, caused by: {} ", request.getRequestURI(), e.getClass().getSimpleName(), stackTraceElement.getClassName(), stackTraceElement.getMethodName(), stackTraceElement.getLineNumber(), e.getMessage());
+		log.error("Exception occurred, uri: {}, exception: {}, stackTrace: :{}, caused by: {} ", request.getRequestURI(), method.toString(), stackTraceElement.getLineNumber(), e.getMessage());
 		return ServerResponse.failure(Optional.ofNullable(e.getCode()).orElse(HttpStatus.INTERNAL_SERVER_ERROR.value()), e.getMessage());
 	}
 
 	/**
 	 * 处理运行时系统异常（反500错误码）
 	 */
-	protected ServerResponse handleRuntimeException(RuntimeException e, HttpServletRequest request) {
-		log.error("Exception occurred, uri: {}, caused by: {}", request.getRequestURI(), e.getMessage(), e);
+	protected ServerResponse handleRuntimeException(RuntimeException e, HandlerMethod method,  HttpServletRequest request) {
+		log.error("Exception occurred, uri: {}, caused by: {}", request.getRequestURI(), method.toString(), e);
 		//TODO 可通过邮件、微信公众号等方式发送信息至开发人员、记录存档等操作
 		return ServerResponse.failure(HttpStatus.INTERNAL_SERVER_ERROR.value(), "系统繁忙，请稍后重试");
 	}

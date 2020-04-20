@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.HandlerMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
@@ -71,9 +72,9 @@ public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 	 */
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	@ExceptionHandler(DataNotFoundException.class)
-	public ServerResponse handleDataNotFoundException(DataNotFoundException e, HttpServletRequest request) {
+	public ServerResponse handleDataNotFoundException(DataNotFoundException e, HandlerMethod method, HttpServletRequest request) {
 		e.setCode(HttpStatus.NOT_FOUND.value());
-		return super.handleBusinessException(e, request);
+		return super.handleBusinessException(e, method, request);
 	}
 
 	/**
@@ -84,9 +85,9 @@ public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 	 */
 	@ResponseStatus(HttpStatus.CONFLICT)
 	@ExceptionHandler(DataConflictException.class)
-	public ServerResponse handleDataConflictException(DataConflictException e, HttpServletRequest request) {
+	public ServerResponse handleDataConflictException(DataConflictException e, HandlerMethod method, HttpServletRequest request) {
 		e.setCode(HttpStatus.CONFLICT.value());
-		return super.handleBusinessException(e, request);
+		return super.handleBusinessException(e, method, request);
 	}
 
 	/**
@@ -97,9 +98,9 @@ public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 	 */
 	@ResponseStatus(HttpStatus.FORBIDDEN)
 	@ExceptionHandler(PermissionForbiddenException.class)
-	public ServerResponse handlePermissionForbiddenException(PermissionForbiddenException e, HttpServletRequest request) {
+	public ServerResponse handlePermissionForbiddenException(PermissionForbiddenException e, HandlerMethod method, HttpServletRequest request) {
 		e.setCode(HttpStatus.FORBIDDEN.value());
-		return super.handleBusinessException(e, request);
+		return super.handleBusinessException(e, method, request);
 	}
 
 	/**
@@ -110,8 +111,8 @@ public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 	 */
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(RemoteAccessException.class)
-	public ServerResponse handleRemoteAccessException(RemoteAccessException e, HttpServletRequest request) {
-		return super.handleBusinessException(e, request);
+	public ServerResponse handleRemoteAccessException(RemoteAccessException e, HandlerMethod method, HttpServletRequest request) {
+		return super.handleBusinessException(e, method, request);
 	}
 
 	/**
@@ -122,22 +123,22 @@ public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 	 */
 	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
 	@ExceptionHandler(RequestTimeoutException.class)
-	public ServerResponse handleRequestTimeoutException(RequestTimeoutException e, HttpServletRequest request) {
+	public ServerResponse handleRequestTimeoutException(RequestTimeoutException e, HandlerMethod method, HttpServletRequest request) {
 		e.setCode(HttpStatus.REQUEST_TIMEOUT.value());
-		return super.handleBusinessException(e, request);
+		return super.handleBusinessException(e, method, request);
 	}
 
 	@Override
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(BusinessException.class)
-	public ServerResponse handleBusinessException(BusinessException e, HttpServletRequest request) {
-		return super.handleBusinessException(e, request);
+	public ServerResponse handleBusinessException(BusinessException e, HandlerMethod method, HttpServletRequest request) {
+		return super.handleBusinessException(e, method, request);
 	}
 
 	@Override
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(RuntimeException.class)
-	public ServerResponse handleRuntimeException(RuntimeException e, HttpServletRequest request) {
-		return super.handleRuntimeException(e, request);
+	public ServerResponse handleRuntimeException(RuntimeException e, HandlerMethod method, HttpServletRequest request) {
+		return super.handleRuntimeException(e, method, request);
 	}
 }
