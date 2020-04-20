@@ -33,6 +33,17 @@
 </style>
 <body>
 <div id="app" v-cloak style="margin-top: 25px">
+    <!-- 公告栏 -->
+    <el-alert
+            title="公告"
+            type="success"
+            effect="dark"
+            close-text="知道了">
+        <slot>
+            <div v-html="message"></div>
+        </slot>
+    </el-alert>
+    
     <el-container style="border: 1px solid #eee; display: flex" ref="container">
         
         <!-- 侧边栏 -->
@@ -50,19 +61,6 @@
             <el-header style="text-align: center; justify-content: center; line-height: 24px">
                 <h1 @click="centerDialogVisible = true">日志下载平台</h1>
             </el-header>
-
-            <el-dialog
-                    title="公告"
-                    :visible.sync="centerDialogVisible"
-                    width="30%"
-                    center>
-                <span v-html="message"></span>
-                <span slot="footer" class="dialog-footer">
-                    <el-button @click="centerDialogVisible = false">取 消</el-button>
-                    <el-button type="primary" @click="centerDialogVisible = false">确 定</el-button>
-                  </span>
-            </el-dialog>
-
 
             <!-- 主体 -->
             <el-main style="height: 100%" ref="main">
@@ -198,7 +196,7 @@
                 // 临时数据
                 tmpDetails: [],
                 centerDialogVisible: false,
-                message: ""
+                message: "暂无公告内容"
             }
         },
         methods: {
@@ -560,7 +558,9 @@
                         console.log(data)
                         if (data.code === 200) {
                             // 更新数组中指定索引的值
-                           this.message = data.data[0];
+                            if (data.data[0]) {
+                                this.message = data.data[0];
+                            }
                         }
                     })
                     .catch(err => {
@@ -599,7 +599,8 @@
                 title: '提示',
                 dangerouslyUseHTMLString: true,
                 message: '点击<strong>标题栏</strong>可以查看当前版本公告<br>当前页面查询结果为<strong>当天日志</strong><br>如需查询<strong>历史日志</strong><br>请点击表格下方的<strong>查询历史</strong>按钮',
-                duration: 0
+                duration: 0,
+                offset: 100
             });
         }
     })
