@@ -1,5 +1,6 @@
 package com.log.download.platform.service;
 
+import cn.hutool.core.io.FileUtil;
 import com.log.download.platform.dto.NoticeDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,19 +35,7 @@ public class NoticeService {
 		synchronized (NOTICE) {
 			NOTICE.clear();
 			NOTICE.addAll(noticeDTO.getMessage());
-			File file = new File(noticeLocation);
-			String content = noticeDTO.getMessage().get(0);
-			try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-				try {
-					fileOutputStream.write(content.getBytes());
-				} catch (IOException e) {
-					log.error("write notice file error", e);
-				}
-			} catch (FileNotFoundException e) {
-				log.error("notice file not found", e);
-			} catch (IOException e) {
-				log.error("write notice file error", e);
-			}
+			FileUtil.writeString(noticeDTO.getMessage().get(0), noticeLocation, "utf-8");
 		}
 	}
 
@@ -61,21 +50,8 @@ public class NoticeService {
 		synchronized (NOTICE) {
 			if (NOTICE.size() == 0) {
 				synchronized (NOTICE) {
-					try {
-						try (FileInputStream fileInputStream = new FileInputStream(noticeLocation);
-							 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream))) {
-							String line = "";
-							List<String> str = new ArrayList();
-							while ((line = bufferedReader.readLine()) != null) {
-								str.add(line);
-							}
-							NOTICE.add(String.join("", str));
-						} catch (FileNotFoundException e) {
-							log.error("read notice file not found", e);
-						}
-					} catch (IOException e) {
-						log.error("read notice file error", e);
-					}
+					List<String> strings = FileUtil.readLines(noticeLocation, "utf-8");
+					NOTICE.add(String.join("", strings));
 				}
 			}
 		}
