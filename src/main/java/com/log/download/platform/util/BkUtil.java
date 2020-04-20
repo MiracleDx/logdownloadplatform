@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * BkUtil
@@ -82,6 +83,8 @@ public class BkUtil {
     public static BkUtil getInstance() {
         return SingletonInstance.INSTANCE;
     }
+    
+    private ThreadLocal<AtomicInteger> retry_count = ThreadLocal.withInitial(() -> new AtomicInteger(0));
 
     /**
      * 调用蓝鲸文件分发接口
@@ -165,12 +168,20 @@ public class BkUtil {
         HttpEntity<String> httpEntity = new HttpEntity<>(params, headers);
         //发送请求调用接口
         Instant startTime = Instant.now();
-		ResponseEntity<String> request;
+		ResponseEntity<String> request = null;
 		try {
 			request = restTemplate.postForEntity(url, httpEntity, String.class);
 		} catch (RestClientException e) {
-		    logger.error("bk interface read timed out, request url: {}, request params: {}", url, params);
-        	throw new RemoteAccessException("蓝鲸接口 Read timed out 请稍后重试");
+            // 重试次数+1
+            retry_count.get().getAndIncrement();
+            // 重试
+            requestBkInterface(url, params, restTemplate);
+            logger.info("bk interface begin request retry, retry count {} times", retry_count);
+            // 大于重试次数 退出
+            if (retry_count.get().intValue() >= 3) {
+                logger.error("bk interface read timed out, request url: {}, request params: {}", url, params);
+                throw new RemoteAccessException("蓝鲸接口 Read timed out 请稍后重试");
+            }
 		}
         Instant endTime = Instant.now();
         logger.info("request url: {}, request params: {}, request response: {}, spendTime: {}ms", url, params, request.getBody(), Duration.between(startTime, endTime).toMillis());
