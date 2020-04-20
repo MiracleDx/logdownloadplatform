@@ -109,6 +109,7 @@ public class LogService {
                     // 校验日志路径
                     String path = LogUtil.getInstance().processingCvmPath(e.getPath());
                     Boolean fileIsExists = fileUtil.getFileIsExists(path, e.getCreateTime());
+                    log.info("check file path: {}, exists: {}", path, fileIsExists);
                     e.setMirror(fileIsExists);
                 });
             });
