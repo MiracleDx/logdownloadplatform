@@ -30,5 +30,10 @@ public class LogDetailVO {
 	private Boolean mirror;
 
 	private String flag;
+
+	/**
+	 * 日志分发脚本入参
+	 */
+	private String param;
 	
 }

@@ -83,7 +83,7 @@ public class LogUtil {
 	 */
 	public String processingCvmPath(String path) {
 		LogEnum logEnum = placeWay(path);
-		
+		//todo 对于不规范的需要做特殊处理
 		switch (logEnum) {
 			case server_general:
 				break;

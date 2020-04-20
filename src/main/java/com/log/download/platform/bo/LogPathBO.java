@@ -16,6 +16,8 @@ import java.util.List;
 @Builder
 public class LogPathBO {
 
+    //todo 增加接收脚本参数
+
     /**
      * 日志路径集合
      */

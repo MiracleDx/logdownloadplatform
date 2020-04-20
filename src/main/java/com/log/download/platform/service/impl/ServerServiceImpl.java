@@ -51,6 +51,8 @@ public class ServerServiceImpl implements IBaseService {
 		String ip = downLoadDTO.getIp();
 		String path = downLoadDTO.getPath();
 		String cvmIp = downLoadDTO.getCvmIp();
+		//脚本入参
+		String params = downLoadDTO.getParams();
 
 		// 获取落盘日志类型 
 		LogUtil.LogEnum logType = LogUtil.getInstance().logType(path);
@@ -59,10 +61,10 @@ public class ServerServiceImpl implements IBaseService {
 		int bkBizId = BkUtil.getInstance().getBkBizId(label);
 		switch (logType) {
 			case server:
-				server(label, ip, path, cvmIp, bkBizId);
+				server(label, ip, path, cvmIp, bkBizId, params);
 				break;
 			case gateway:
-				gateway(label, ip, path, cvmIp, bkBizId);
+				gateway(label, ip, path, cvmIp, bkBizId, params);
 				break;
 			default:
 				break;
@@ -78,12 +80,12 @@ public class ServerServiceImpl implements IBaseService {
 	 * @param cvmIp
 	 * @param bkBizId
 	 */
-	public void server(String label, String ip, String path, String cvmIp, int bkBizId) {
+	public void server(String label, String ip, String path, String cvmIp, int bkBizId, String params) {
 		if (LogUtil.getInstance().placeWay(path) == LogUtil.LogEnum.server_container) {
 			ip = queryPlaceContainerLog(bkBizId, ip, path, serverContainerIpScriptId, serverContainerScriptId);
 			path = LogUtil.getInstance().processingCvmPath(path);
 		}
-		requestFastPush(label, ip, path, cvmIp, bkBizId);
+		requestFastPush(label, ip, path, cvmIp, bkBizId, params);
 	}
 
 	/**
@@ -94,12 +96,12 @@ public class ServerServiceImpl implements IBaseService {
 	 * @param cvmIp
 	 * @param bkBizId
 	 */
-	public void gateway(String label, String ip, String path, String cvmIp, int bkBizId) {
+	public void gateway(String label, String ip, String path, String cvmIp, int bkBizId, String params) {
 		if (LogUtil.getInstance().placeWay(path) == LogUtil.LogEnum.gateway_container) {
 			ip = queryPlaceContainerLog(bkBizId, ip, path, gatewayContainerIpScriptId, gatewayContainerScriptId);
 			// todo 处理 网关路径
 		}
-		requestFastPush(label, ip, path, cvmIp, bkBizId);
+		requestFastPush(label, ip, path, cvmIp, bkBizId, params);
 	}
 	
 	
@@ -160,7 +162,7 @@ public class ServerServiceImpl implements IBaseService {
 	 * @param cvmIp
 	 * @param bkBizId
 	 */
-	public void requestFastPush(String label, String ip, String path, String cvmIp, int bkBizId) {
+	public void requestFastPush(String label, String ip, String path, String cvmIp, int bkBizId, String params) {
 		BkUtil bkUtil = BkUtil.getInstance();
 		// 容器落盘执行完毕后 和 正常日志处理流程一致
 		// 调用日志分发的脚本

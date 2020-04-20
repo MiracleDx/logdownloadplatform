@@ -12,6 +12,7 @@ import lombok.Data;
  */
 @Data 
 public class QueryLogDetailDTO {
+	//todo 增加接收脚本参数
 
 	/**
 	 * 服务编号
@@ -32,4 +33,9 @@ public class QueryLogDetailDTO {
 	 * 是否是历史查询
 	 */
 	private Boolean isHistory;
+
+	/**
+	 * 日志分发脚本入参
+	 */
+	String flag;
 }
