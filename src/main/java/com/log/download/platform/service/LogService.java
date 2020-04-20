@@ -2,16 +2,16 @@ package com.log.download.platform.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.log.download.platform.bo.Data;
 import com.log.download.platform.bo.JobStatusBO;
 import com.log.download.platform.bo.LogPathBO;
 import com.log.download.platform.common.BkConstant;
 import com.log.download.platform.dto.QueryLogDetailDTO;
-import com.log.download.platform.util.BkUtil;
+import com.log.download.platform.support.FileCheckExecutors;
 import com.log.download.platform.util.FileUtil;
 import com.log.download.platform.util.LogUtil;
 import com.log.download.platform.vo.LogDetailVO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.partitioningBy;
@@ -50,33 +51,40 @@ public class LogService {
 
     public LogPathBO queryLogDetails(QueryLogDetailDTO queryLogDetailDTO) {
         //获取日志路径的接口参数
-        BkUtil bkUtil = BkUtil.getInstance();
+        //BkUtil bkUtil = BkUtil.getInstance();
         FileUtil fileUtil = FileUtil.getInstance();
-        int script_id = 0;
-        //根据脚本入参的参数，判断是否网关，选择脚本id
-        if(queryLogDetailDTO.getBkParam().contains("msgw")) {
-            if (queryLogDetailDTO.getIsHistory()) {
-                script_id = gatewayExecuteHistoryScriptId;
-            } else {
-                script_id = gatewayExecuteScriptId;
-            }
-        } else {
-            if (queryLogDetailDTO.getIsHistory()) {
-                script_id = fastExecuteHistoryScriptId;
-            }  else {
-                script_id = fastExecuteScriptId;
-            }
-        }
-        log.info("执行脚本id：{}", script_id);
-        int bkBizId = bkUtil.getBkBizId(queryLogDetailDTO.getLabel());
-        String fastExecuteParam = bkUtil.getFastExecuteScriptParams(bkBizId,
-                queryLogDetailDTO.getIps(),
-                queryLogDetailDTO.getBkParam(),
-                script_id);
-        //快速执行脚本，结果中获取作业id，用于查询结果
-        Integer jobInstanceId = bkUtil.getJobInstanceId(fastExecuteParam, restTemplate);
-        //查询作业执行状态
-        JobStatusBO jobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
+        //int script_id = 0;
+        ////根据脚本入参的参数，判断是否网关，选择脚本id
+        //if(queryLogDetailDTO.getBkParam().contains("msgw")) {
+        //    if (queryLogDetailDTO.getIsHistory()) {
+        //        script_id = gatewayExecuteHistoryScriptId;
+        //    } else {
+        //        script_id = gatewayExecuteScriptId;
+        //    }
+        //} else {
+        //    if (queryLogDetailDTO.getIsHistory()) {
+        //        script_id = fastExecuteHistoryScriptId;
+        //    }  else {
+        //        script_id = fastExecuteScriptId;
+        //    }
+        //}
+        //log.info("执行脚本id：{}", script_id);
+        //int bkBizId = bkUtil.getBkBizId(queryLogDetailDTO.getLabel());
+        //String fastExecuteParam = bkUtil.getFastExecuteScriptParams(bkBizId,
+        //        queryLogDetailDTO.getIps(),
+        //        queryLogDetailDTO.getBkParam(),
+        //        script_id);
+        ////快速执行脚本，结果中获取作业id，用于查询结果
+        //Integer jobInstanceId = bkUtil.getJobInstanceId(fastExecuteParam, restTemplate);
+        ////查询作业执行状态
+        //JobStatusBO jobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
+        
+        JobStatusBO jobStatus = new JobStatusBO();
+        
+        jobStatus.setIsFinished(true);
+        jobStatus.setResult(JSONObject.parseObject(Data.data));
+        
+        
         //如果脚本执行完成，将结果的log信息进行提取
         if (jobStatus.getIsFinished()) {
             List<LogDetailVO> logPathlist = new ArrayList<>();
@@ -93,12 +101,16 @@ public class LogService {
                     logPathBO = logJsonToList(logPathBO, ipLogsObject, ipStatus, queryLogDetailDTO.getLabel());
                 }
             }
+            
             //判断文件是否已经存在于文件服务器上
-            logPathBO.getList().parallelStream().forEach(e -> {
-                // 校验日志路径
-                String path = LogUtil.getInstance().processingCvmPath(e.getPath());
-                Boolean fileIsExists = fileUtil.getFileIsExists(path, e.getCreateTime());
-                e.setMirror(fileIsExists);
+            ThreadPoolExecutor executor = FileCheckExecutors.getInstance().getExecutor();
+            logPathBO.getList().forEach(e -> {
+                executor.execute(() -> {
+                    // 校验日志路径
+                    String path = LogUtil.getInstance().processingCvmPath(e.getPath());
+                    Boolean fileIsExists = fileUtil.getFileIsExists(path, e.getCreateTime());
+                    e.setMirror(fileIsExists);
+                });
             });
             sortLogs(logPathBO.getList());
             String notFinishedIp = "";
@@ -160,29 +172,34 @@ public class LogService {
                     logDetail.setUnit("M");
                     logDetail.setLabel(label);
                     // 日志名称
-                    String logName = logPath.substring(logPath.lastIndexOf("/"));
+                    //String logName = logPath.substring(logPath.lastIndexOf("/"));
                     // 如果key不存在，就新增key和value，否则获取value
-                    map.compute(logName, (k, v) -> {
-                        List<LogDetailVO> voList = new ArrayList<>();
-                        voList.add(logDetail);
-                        return voList;
-                    }).add(logDetail);
+                    //map.compute(logName, (k, v) -> {
+                    //    List<LogDetailVO> voList = new ArrayList<>();
+                    //    voList.add(logDetail);
+                    //    return voList;
+                    //}).add(logDetail);
+                    // 显示全部日志
+                    list.add(logDetail);
                 }
             }
-            map.forEach((k, v) -> {
-                // 多个同名日志
-                if (v.size() > 1) {
-                    // 如果包含落盘日志
-                    if (v.stream().anyMatch(e -> e.getPath().contains("/log/"))) {
-                        // 存入落盘日志和sys_log
-                        list.addAll(v.stream().filter(e -> !e.getPath().contains("tsf_default") || e.getPath().contains("sys_log")).distinct().collect(Collectors.toList()));
-                    } else {
-                        list.addAll(v.stream().distinct().collect(Collectors.toList()));
-                    }
-                } else {
-                    list.addAll(v);
-                }
-            });
+            //map.forEach((k, v) -> {
+            //    // 多个同名日志
+            //    if (v.size() > 1) {
+            //        // 如果包含落盘日志
+            //        if (v.stream().anyMatch(e -> e.getPath().contains("/log/"))) {
+            //            // 存入落盘日志和sys_log
+            //            list.addAll(v.stream().filter(e -> !e.getPath().contains("tsf_default") || e.getPath().contains("sys_log")).distinct().collect(Collectors.toList()));
+            //        } else {
+            //            list.addAll(v.stream().distinct().collect(Collectors.toList()));
+            //        }
+            //    } else {
+            //        list.addAll(v);
+            //    }
+            //});
+            
+            // 显示全部日志
+            list = list.parallelStream().distinct().collect(Collectors.toList());
         } else {
             if (!notFinished.toString().contains(ip)) {
                 notFinished.append(ip).append(",");
