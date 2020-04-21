@@ -18,8 +18,12 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.partitioningBy;
@@ -97,18 +101,36 @@ public class LogService {
                     logPathBO = logJsonToList(logPathBO, ipLogsObject, ipStatus, queryLogDetailDTO.getLabel(), fastPushFileParams);
                 }
             }
+
+            ArrayList arrayList = new ArrayList(logPathBO.getList());
+            logPathBO.getList().addAll(arrayList);
             
+            Instant start = Instant.now();
+
+            CountDownLatch latch = new CountDownLatch(logPathBO.getList().size());
             //判断文件是否已经存在于文件服务器上
-            ThreadPoolExecutor executor = FileCheckExecutors.getInstance().getExecutor();
+            FileCheckExecutors fileChecker = FileCheckExecutors.getInstance();
             logPathBO.getList().forEach(e -> {
-                executor.execute(() -> {
+                fileChecker.execute(() -> {
                     // 校验日志路径
                     String path = LogUtil.getInstance().processingCvmPath(e.getPath());
                     Boolean fileIsExists = fileUtil.getFileIsExists(path, e.getCreateTime());
-                    log.info("check file path: {}, exists: {}", path, fileIsExists);
+                    log.debug("check file path: {}, exists: {}", path, fileIsExists);
                     e.setMirror(fileIsExists);
+                    latch.countDown();
                 });
             });
+            
+            try {
+                latch.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                log.error("CountDownLatch occurred exception: ", e);
+            }
+
+            Instant end = Instant.now();
+
+            long l = Duration.between(start, end).toMillis();
+
             sortLogs(logPathBO.getList());
             String notFinishedIp = "";
             if (!"".equals(logPathBO.getNotFinish()) && logPathBO.getNotFinish().length() > 0){

@@ -19,7 +19,20 @@ public class FileCheckExecutors {
 	private static final Logger logger = LoggerFactory.getLogger(FileCheckExecutors.class);
 	
 	private FileCheckExecutors() {
-		
+		executor = new ThreadPoolExecutor(3,
+				3, 10,
+				TimeUnit.SECONDS,
+				new ArrayBlockingQueue<>(10000),
+				new ThreadFactoryBuilder()
+						.setNameFormat("FileThread-%d")
+						.setUncaughtExceptionHandler((thread, throwable) -> logger.error("ThreadPool {} got exception", thread, throwable))
+						.build(),
+				new ThreadPoolExecutor.AbortPolicy()
+		);
+		// 启动所有核心线程
+		executor.prestartAllCoreThreads();
+		// 打印监控数据
+		printStats(executor);
 	}
 	
 	private static class SingletonInstance {
@@ -29,26 +42,20 @@ public class FileCheckExecutors {
 	public static FileCheckExecutors getInstance() {
 		return FileCheckExecutors.SingletonInstance.INSTANCE;
 	}
+
+	private static ThreadPoolExecutor executor;
 	
-	public ThreadPoolExecutor getExecutor() {
-		printStats(executor);
-		return executor;
+	public void execute(Runnable command) {
+		executor.execute(command);
 	}
-	
-	private ThreadPoolExecutor executor = new ThreadPoolExecutor(3,
-			3, 60,
-			TimeUnit.SECONDS,
-			new ArrayBlockingQueue<>(1000),
-			new ThreadFactoryBuilder()
-			.setNameFormat("FileThread-%d")
-			.setUncaughtExceptionHandler((thread, throwable) -> logger.error("ThreadPool {} got exception", thread, throwable))
-			.build(),
-			new ThreadPoolExecutor.AbortPolicy()
-			);
+
+	public Future<?> submit(Runnable command) {
+		return executor.submit(command); 
+	}
 	
 	private void printStats(ThreadPoolExecutor threadPool) {
 		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-			logger.info("Pool Size: {}, Active Threads: {}, Number of Tasks Completed: {}, Number of Tasks in Queue: {}", 
+			logger.debug("Pool Size: {}, Active Threads: {}, Number of Tasks Completed: {}, Number of Tasks in Queue: {}", 
 					threadPool.getPoolSize(),
 					threadPool.getActiveCount(),
 					threadPool.getCompletedTaskCount(),
