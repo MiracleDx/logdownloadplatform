@@ -36,4 +36,6 @@ public class LogDetailVO {
 	 */
 	private String param;
 	
+	private String hostname;
+	
 }
