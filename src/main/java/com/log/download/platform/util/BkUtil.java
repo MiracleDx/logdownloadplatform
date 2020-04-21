@@ -175,16 +175,18 @@ public class BkUtil {
             // 重试次数+1
             retry_count.get().getAndIncrement();
             // 重试
-            requestBkInterface(url, params, restTemplate);
-            logger.info("bk interface begin request retry, retry count {} times", retry_count);
+            logger.info("bk interface begin request retry, retry count {} times", retry_count.get());
             // 大于重试次数 退出
             if (retry_count.get().intValue() >= 3) {
                 logger.error("bk interface read timed out, request url: {}, request params: {}", url, params);
+                retry_count.remove();
                 throw new RemoteAccessException("蓝鲸接口 Read timed out 请稍后重试");
             }
+            return requestBkInterface(url, params, restTemplate);
 		}
         Instant endTime = Instant.now();
         logger.info("request url: {}, request params: {}, request response: {}, spendTime: {}ms", url, params, request.getBody(), Duration.between(startTime, endTime).toMillis());
+        retry_count.remove();
         return JSONObject.parseObject(request.getBody());
     }
 
@@ -216,7 +218,7 @@ public class BkUtil {
             logger.info("request fast_execute_script {} times", count);
             count ++;
             try {
-                TimeUnit.SECONDS.sleep(3);
+                TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
