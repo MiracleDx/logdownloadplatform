@@ -159,12 +159,19 @@ public class LogService {
                 if (!FileUtil.getInstance().pathLegal(paths[z - 1])) {
                     continue;
                 }
-                LogUtil.LogEnum logEnum = LogUtil.getInstance().logType(paths[z - 1]);
-                if (logEnum == LogUtil.LogEnum.gateway && logArr.length == 5) {
+                LogUtil.LogEnum logEnum = LogUtil.getInstance().placeWay(paths[z - 1]);
+                //todo 区分落盘和为落盘日志
+                if (logEnum == LogUtil.LogEnum.gateway_container && logArr.length == 5) {
+                    //容器网关日志
                     logPath = logUtil.praseGatewayLogDetail(logArr);
-                } else if (logEnum == LogUtil.LogEnum.server && logArr.length == 4) {
+                } else if (logEnum == LogUtil.LogEnum.gateway_general) {
+                    //网关日志
+                } else if (logEnum == LogUtil.LogEnum.server_container && logArr.length == 4) {
+                    //容器微服务日志
                     logPath = logUtil.praseServerLogDetail(logArr);
-                } else {
+                } else if(logEnum == LogUtil.LogEnum.server_general) {
+                    //微服务日志
+                }else {
                     continue;
                 }
                 if (FileUtil.getInstance().pathLegal(logPath)) {
