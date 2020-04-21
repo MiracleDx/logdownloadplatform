@@ -79,12 +79,10 @@ public class LogService {
         Integer jobInstanceId = bkUtil.getJobInstanceId(fastExecuteParam, restTemplate);
         //查询作业执行状态
         JobStatusBO jobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
-        
+
         //如果脚本执行完成，将结果的log信息进行提取
         if (jobStatus.getIsFinished()) {
             List<LogDetailVO> logPathList = new ArrayList<>();
-            //TODO 将第一次返回的参数处理为快速分发脚本的脚本参数
-            String fastPushFileParams = queryLogDetailDTO.getFlag();
             LogPathBO logPathBO = LogPathBO.builder().list(logPathList).notFinish("").build();
             JSONObject dataObject = jobStatus.getResult().
                     getJSONArray(BkConstant.DATA).getJSONObject(0);
@@ -95,14 +93,14 @@ public class LogService {
                 int ipStatus = stepResultsObject.getInteger(BkConstant.IP_STATUS);
                 for (int j = 0; j < ipLogs.size(); j++) {
                     JSONObject ipLogsObject = ipLogs.getJSONObject(j);
-                    logPathBO = logJsonToList(logPathBO, ipLogsObject, ipStatus, queryLogDetailDTO.getLabel(), fastPushFileParams);
+                    logPathBO = logJsonToList(logPathBO, ipLogsObject, ipStatus, queryLogDetailDTO.getLabel());
                 }
             }
 
             CountDownLatch latch = new CountDownLatch(logPathBO.getList().size());
             //判断文件是否已经存在于文件服务器上
             FileCheckExecutors fileChecker = FileCheckExecutors.getInstance();
-            logPathBO.getList().forEach(e -> 
+            logPathBO.getList().forEach(e ->
                 fileChecker.execute(() -> {
                     // 校验日志路径
                     String path = LogUtil.getInstance().processingCvmPath(e.getPath());
@@ -112,7 +110,7 @@ public class LogService {
                     latch.countDown();
                 })
             );
-            
+
             try {
                 latch.await(10, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
@@ -138,7 +136,7 @@ public class LogService {
      * @param label
      * @return
      */
-    public LogPathBO logJsonToList(LogPathBO logPathBO, JSONObject jsonObject, int ipStatus, String label, String fastPushFileParams){
+    public LogPathBO logJsonToList(LogPathBO logPathBO, JSONObject jsonObject, int ipStatus, String label){
         LogUtil logUtil = LogUtil.getInstance();
         String logContent = jsonObject.getString(BkConstant.LOG_CONTENT);
         String ip = jsonObject.getString(BkConstant.IP);
@@ -158,22 +156,23 @@ public class LogService {
                 // 这里区分出微服务和微服务容器
                 // 日志路径
                 String logPath ="";
+                if (!FileUtil.getInstance().pathLegal(paths[z - 1])) {
+                    continue;
+                }
                 LogUtil.LogEnum logEnum = LogUtil.getInstance().logType(paths[z - 1]);
-                if (logEnum == LogUtil.LogEnum.gateway && logArr.length == 4) {
+                if (logEnum == LogUtil.LogEnum.gateway && logArr.length == 5) {
                     logPath = logUtil.praseGatewayLogDetail(logArr);
-                } else if (logEnum == LogUtil.LogEnum.server && logArr.length == 3) {
+                } else if (logEnum == LogUtil.LogEnum.server && logArr.length == 4) {
                     logPath = logUtil.praseServerLogDetail(logArr);
                 } else {
                     continue;
                 }
                 if (FileUtil.getInstance().pathLegal(logPath)) {
                     // todo 增加LogPathBO中脚本入参的属性
-                    logDetail.setFlag(logArr[0]);
+                    logDetail.setHostname(logArr[0]);
                     logDetail.setPath(logPath);
                     logDetail.setIp(ip);
                     logDetail.setCreateTime(logArr[logArr.length - 1]);
-                    //注入脚本参数
-                    logDetail.setFlag(fastPushFileParams);
                     try {
                         logDetail.setSize(Math.round(Double.parseDouble(logArr[logArr.length - 2]) * 100 / (1024 * 1024)) / 100.0);
                     } catch (Exception e) {
@@ -207,7 +206,7 @@ public class LogService {
             //        list.addAll(v);
             //    }
             //});
-            
+
             // 显示全部日志
             list = list.parallelStream().distinct().collect(Collectors.toList());
         } else {

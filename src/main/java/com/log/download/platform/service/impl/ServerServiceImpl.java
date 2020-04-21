@@ -52,7 +52,7 @@ public class ServerServiceImpl implements IBaseService {
 		String path = downLoadDTO.getPath();
 		String cvmIp = downLoadDTO.getCvmIp();
 		//脚本入参
-		String params = downLoadDTO.getParams();
+		String params = "";
 
 		// 获取落盘日志类型 
 		LogUtil.LogEnum logType = LogUtil.getInstance().logType(path);

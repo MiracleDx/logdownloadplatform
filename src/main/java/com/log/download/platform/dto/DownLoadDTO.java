@@ -34,8 +34,8 @@ public class DownLoadDTO {
     private String cvmIp;
 
     /**
-     * 日志分发params
+     * 容器名称
      */
-    private String params;
+    private String hostname;
 
 }

@@ -142,7 +142,7 @@ public class LogUtil {
 	 * @return
 	 */
 	public String praseServerLogDetail(String[] logArr) {
-		return logArr[0];
+		return logArr[1];
 	}
 
 	/**
