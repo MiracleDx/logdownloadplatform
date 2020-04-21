@@ -55,13 +55,13 @@ public class FileCheckExecutors {
 	
 	private void printStats(ThreadPoolExecutor threadPool) {
 		if (logger.isDebugEnabled()) {
-			Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+			Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> 
 				logger.debug("Pool Size: {}, Active Threads: {}, Number of Tasks Completed: {}, Number of Tasks in Queue: {}",
 						threadPool.getPoolSize(),
 						threadPool.getActiveCount(),
 						threadPool.getCompletedTaskCount(),
-						threadPool.getQueue().size());
-			}, 0, 1, TimeUnit.SECONDS);
+						threadPool.getQueue().size())
+			, 0, 1, TimeUnit.SECONDS);
 		}
 	}
 }
