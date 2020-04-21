@@ -102,15 +102,10 @@ public class LogService {
                 }
             }
 
-            ArrayList arrayList = new ArrayList(logPathBO.getList());
-            logPathBO.getList().addAll(arrayList);
-            
-            Instant start = Instant.now();
-
             CountDownLatch latch = new CountDownLatch(logPathBO.getList().size());
             //判断文件是否已经存在于文件服务器上
             FileCheckExecutors fileChecker = FileCheckExecutors.getInstance();
-            logPathBO.getList().forEach(e -> {
+            logPathBO.getList().forEach(e -> 
                 fileChecker.execute(() -> {
                     // 校验日志路径
                     String path = LogUtil.getInstance().processingCvmPath(e.getPath());
@@ -118,18 +113,14 @@ public class LogService {
                     log.debug("check file path: {}, exists: {}", path, fileIsExists);
                     e.setMirror(fileIsExists);
                     latch.countDown();
-                });
-            });
+                })
+            );
             
             try {
                 latch.await(10, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 log.error("CountDownLatch occurred exception: ", e);
             }
-
-            Instant end = Instant.now();
-
-            long l = Duration.between(start, end).toMillis();
 
             sortLogs(logPathBO.getList());
             String notFinishedIp = "";
