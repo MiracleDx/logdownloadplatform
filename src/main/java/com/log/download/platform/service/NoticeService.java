@@ -50,8 +50,10 @@ public class NoticeService {
 		synchronized (NOTICE) {
 			if (NOTICE.size() == 0) {
 				synchronized (NOTICE) {
-					List<String> strings = FileUtil.readLines(noticeLocation, "utf-8");
-					NOTICE.add(String.join("", strings));
+					if (NOTICE.size() == 0) {
+						List<String> strings = FileUtil.readLines(noticeLocation, "utf-8");
+						NOTICE.add(String.join("", strings));
+					}
 				}
 			}
 		}
