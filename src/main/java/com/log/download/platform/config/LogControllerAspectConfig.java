@@ -1,5 +1,6 @@
 package com.log.download.platform.config;
 
+import com.log.download.platform.exception.InternalServerException;
 import com.log.download.platform.exception.PermissionForbiddenException;
 import com.log.download.platform.support.Resubmit;
 import com.log.download.platform.support.ResubmitLock;
@@ -19,6 +20,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.springframework.boot.context.properties.source.ConfigurationPropertyState.PRESENT;
 
@@ -28,16 +30,11 @@ import static org.springframework.boot.context.properties.source.ConfigurationPr
 @Slf4j
 @Aspect
 @Component
-public class LogAspectConfig {
+public class LogControllerAspectConfig {
     
-    private final String LOCATION = "service";
-
     @Pointcut("execution(public * com.log..controller..*.*(..))")
     public void webLog() {}
 
-    @Pointcut("execution(public * com.log..service..*.*(..))")
-    public void serviceLog() {}
-    
     @Order(1)
     @Around(value = "webLog()")
     public Object reSubmit(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -79,28 +76,19 @@ public class LogAspectConfig {
     }
 
     @Order(2)
-    @Around(value = "webLog() || serviceLog()")
+    @Around(value = "webLog()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         Object target = joinPoint.getTarget();
         String name = target.getClass().getSimpleName().toUpperCase();
-        
-        // 切点位置标志位
-        boolean flag = false;
-        if (name.contains(LOCATION.toUpperCase())) {
-            flag = true;
-        }
         
         long startTime = System.nanoTime();
         Object result = null;
         
         // 接收到请求，记录请求内容
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = null;
-        if (attributes != null) {
-            request = attributes.getRequest();
-        }
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = Optional.ofNullable(requestAttributes).orElseThrow(() -> {throw new InternalServerException("");}).getRequest();
 
-        // 记录下请求内容
+                // 记录下请求内容
         String requestMethod = joinPoint.getSignature().getDeclaringTypeName()+  "." + joinPoint.getSignature().getName();
         String requestArgs = Arrays.toString(joinPoint.getArgs());
 
@@ -113,16 +101,9 @@ public class LogAspectConfig {
 
         long endTime = System.nanoTime();
         
-        // 如果不是http请求进入，则没有对应的http属性
-        if (request == null) {
-            log.info("AOP_TYPE: [{}], URL: [{}], HTTP_METHOD: [{}], REQUEST_IP: [{}], REQUEST_METHOD: [{}], REQUEST_ARGS: [{}], RESPONSE_ARGS: [{}], RESPONSE_TIME: [{}]",
-                    flag ? "service" : "controller", "-", "-", "-", requestMethod, requestArgs, result,
-                    (endTime - startTime) / 1000_000);
-        } else {
-            log.info("AOP_TYPE: [{}], URL: [{}], HTTP_METHOD: [{}], REQUEST_IP: [{}], REQUEST_METHOD: [{}], REQUEST_ARGS: [{}], RESPONSE_ARGS: [{}], RESPONSE_TIME: [{}]",
-                    flag ? "service" : "controller", request.getRequestURI(), request.getMethod(), IpUtil.getRealIp(request), requestMethod, requestArgs, result,
-                    (endTime - startTime) / 1000_000);
-        }
+        log.info("AOP_TYPE: [{}], URL: [{}], HTTP_METHOD: [{}], REQUEST_IP: [{}], REQUEST_METHOD: [{}], REQUEST_ARGS: [{}], RESPONSE_ARGS: [{}], RESPONSE_TIME: [{}]",
+                 "controller", request.getRequestURI(), request.getMethod(), IpUtil.getRealIp(request), requestMethod, requestArgs, result,
+                (endTime - startTime) / 1000_000);
        
         return result;
     }

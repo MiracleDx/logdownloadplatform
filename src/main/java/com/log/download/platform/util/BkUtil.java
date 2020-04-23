@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class BkUtil {
 
-    Logger logger = LoggerFactory.getLogger(BkUtil.class);
+    private Logger logger = LoggerFactory.getLogger(BkUtil.class);
 
     /**
      * 应用ID
