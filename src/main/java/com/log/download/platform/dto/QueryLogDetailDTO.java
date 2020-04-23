@@ -37,5 +37,10 @@ public class QueryLogDetailDTO {
 	/**
 	 * 日志分发脚本入参
 	 */
-	String flag;
+	private String flag;
+
+	/**
+	 * 容器名
+	 */
+	private String hostname;
 }

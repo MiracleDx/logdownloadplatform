@@ -103,7 +103,7 @@ public class LogService {
             logPathBO.getList().forEach(e ->
                 fileChecker.execute(() -> {
                     // 校验日志路径
-                    String path = LogUtil.getInstance().processingCvmPath(e.getPath());
+                    String path = LogUtil.getInstance().processingCvmPath(e.getPath(), queryLogDetailDTO.getHostname());
                     Boolean fileIsExists = fileUtil.getFileIsExists(path, e.getCreateTime());
                     log.debug("check file path: {}, exists: {}", path, fileIsExists);
                     e.setMirror(fileIsExists);
@@ -162,16 +162,18 @@ public class LogService {
                 }
                 LogUtil.LogEnum logEnum = LogUtil.getInstance().placeWay(paths[z - 1]);
                 //todo 区分落盘和为落盘日志
-                if (logEnum == LogUtil.LogEnum.gateway_container && logArr.length == 5) {
+                if (logEnum == LogUtil.LogEnum.gateway_container && logArr.length == 4) {
                     //容器网关日志
-                    logPath = logUtil.praseGatewayLogDetail(logArr);
+                    logPath = logUtil.praseGatewayContainerLogDetail(logArr);
                 } else if (logEnum == LogUtil.LogEnum.gateway_general) {
                     //网关日志
+                    logPath = logUtil.praseGatewayLogDetail(logArr);
                 } else if (logEnum == LogUtil.LogEnum.server_container && logArr.length == 4) {
                     //容器微服务日志
-                    logPath = logUtil.praseServerLogDetail(logArr);
+                    logPath = logUtil.praseServerContainerLogDetail(logArr);
                 } else if(logEnum == LogUtil.LogEnum.server_general) {
                     //微服务日志
+                    logPath = logUtil.praseServerLogDetail(logArr);
                 }else {
                     continue;
                 }
@@ -246,10 +248,10 @@ public class LogService {
         return logs;
     }
 
-    public boolean findFile(String logPath, String ip) {
+    public boolean findFile(String logPath, String ip, String hostname) {
         if (!logPath.isEmpty()) {
             String path;
-            logPath = LogUtil.getInstance().processingCvmPath(logPath);
+            logPath = LogUtil.getInstance().processingCvmPath(logPath, hostname);
             path = "/tmp" + File.separator + "0_" + ip + File.separator + logPath;
             log.info("查找日志镜像路径: {}", path);
             File file = new File(path);

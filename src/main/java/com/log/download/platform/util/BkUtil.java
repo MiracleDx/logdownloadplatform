@@ -7,6 +7,7 @@ import com.log.download.platform.common.BkEnum;
 import com.log.download.platform.dto.HostDTO;
 import com.log.download.platform.exception.DataNotFoundException;
 import com.log.download.platform.exception.RemoteAccessException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -134,9 +135,9 @@ public class BkUtil {
      * @return
      */
     public Integer getJobInstanceId(JSONObject jsonObject) {
-        if (jsonObject.getJSONObject(BkConstant.DATA) != null &&
-                !jsonObject.getJSONObject(BkConstant.DATA).toString().contains(BkConstant.JOB_INSTANCE_ID)) {
-            throw new DataNotFoundException("蓝鲸接口 " + jsonObject.getJSONObject(BkConstant.MESSAGE).toString());
+        String data = jsonObject.getString(BkConstant.DATA);
+        if (StringUtils.isEmpty(data) || !jsonObject.getString(BkConstant.DATA).contains(BkConstant.JOB_INSTANCE_ID)) {
+            throw new DataNotFoundException("蓝鲸接口 " + jsonObject.getString(BkConstant.MESSAGE));
         }
         return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
     }
@@ -223,7 +224,7 @@ public class BkUtil {
                 e.printStackTrace();
             }
             long t2 = System.currentTimeMillis();
-            if (t2 - t1 > 30 * 1000) {
+            if (t2 - t1 > 60 * 1000) {
                 break;
             }
         }
@@ -349,15 +350,25 @@ public class BkUtil {
      * @param scriptId
      * @return
      */
-    public String getServerContainerScriptParams(int bkBizId, String ip, String path, int scriptId) {
-        //todo 不规则文件名无法解析为脚本参数，参数需要第一次调用脚本时返回
+    public String getServerContainerScriptParams(int bkBizId, String ip, String path, int scriptId, String hostname) {
         String[] arr = path.split("/");
-        path = arr[arr.length - 1];
+        String logName = arr[arr.length - 1];
         String[] paths = path.split("-");
-        String namespace = paths[1] + "-" + paths[3];
-        String group = paths[1] + "-" + paths[2] + "-" + paths[3] + "-" + paths[4];
-        String flag = group + "-" + paths[5] + "-" + paths[6];
-        String param = namespace + " " + group + " " + flag + " " + path;
+        String param = "";
+        if (paths.length == 9) {
+            String namespace = paths[1] + "-" + paths[3];
+            String group = paths[1] + "-" + paths[2] + "-" + paths[3] + "-" + paths[4];
+            String flag = group + "-" + paths[5] + "-" + paths[6];
+            param = namespace + " " + group + " " + hostname + " " + logName;
+        } else if(path.contains("msgw") || path.contains("tsf_gateway")) {
+
+        } else {
+            paths = hostname.split("-");
+            String namespace = paths[0] + "-" + paths[2];
+            String group = paths[0] + "-" + paths[1] + "-" + paths[2] + "-" + paths[3];
+            param = namespace + " " + group + " " + hostname + " " + logName;
+
+        }
         byte[] content = param.getBytes();
         String script_param = Base64.getEncoder().encodeToString(content);
         return getContainerScriptParams(bkBizId, ip, script_param, scriptId);
@@ -422,5 +433,10 @@ public class BkUtil {
             e.printStackTrace();
         }
         return SHARED_SERVER;
+    }
+
+    public String getScriptParam() {
+        String scriptParam = "";
+        return scriptParam;
     }
 }

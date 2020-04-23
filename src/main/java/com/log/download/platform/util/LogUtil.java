@@ -1,6 +1,7 @@
 package com.log.download.platform.util;
 
 import com.log.download.platform.exception.DataConflictException;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * LogUtil
@@ -82,7 +83,7 @@ public class LogUtil {
 	 *             tmp[4]=部署组id  1
 	 * @return
 	 */
-	public String processingCvmPath(String path) {
+	public String processingCvmPath(String path, String hostname) {
 		LogEnum logEnum = placeWay(path);
 		//todo 对于不规范的需要做特殊处理
 		switch (logEnum) {
@@ -92,6 +93,9 @@ public class LogUtil {
 				String[] temp = path.split("-");
 				if (!path.contains("sys_log.log") && path.length() == 9) {
 					path = path.replace("/data/tsf_default/logs", "/log/" + temp[1] + "-" + temp[2] + "-" + temp[3] + "-" + temp[4]);
+				} else if (!StringUtils.isEmpty(hostname)){
+					temp = hostname.split("-");
+					path = path.replace("/data/tsf_default/logs", "/log/" + temp[0] + "-" + temp[1] + "-" + temp[2] + "-" + temp[3]);
 				}
 				break;
 			case gateway_general:
@@ -147,6 +151,14 @@ public class LogUtil {
 	 * @return
 	 */
 	public String praseServerLogDetail(String[] logArr) {
+		return logArr[0];
+	}
+
+	/**
+	 * 解析容器微服务日志
+	 * @return
+	 */
+	public String praseServerContainerLogDetail(String[] logArr) {
 		return logArr[1];
 	}
 
@@ -155,6 +167,14 @@ public class LogUtil {
 	 * @return
 	 */
 	public String praseGatewayLogDetail(String[] logArr) {
+		return logArr[0];
+	}
+
+	/**
+	 * 解析容器微服务网关日志
+	 * @return
+	 */
+	public String praseGatewayContainerLogDetail(String[] logArr) {
 		return logArr[1];
 	}
 }

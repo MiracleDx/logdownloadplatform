@@ -14,4 +14,6 @@ public class FindMirrorDTO {
     private String ip;
     //镜像所在路径
     private String path;
+    //容器名
+    private String hostname;
 }

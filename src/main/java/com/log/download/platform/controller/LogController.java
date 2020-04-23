@@ -58,7 +58,7 @@ public class LogController {
      */
     @PostMapping("/findMirror")
     public ServerResponse<List<LogDetailVO>> findMirror(@RequestBody FindMirrorDTO findMirrorDTO) {
-        if (logService.findFile(findMirrorDTO.getPath(), findMirrorDTO.getIp())) {
+        if (logService.findFile(findMirrorDTO.getPath(), findMirrorDTO.getIp(), findMirrorDTO.getHostname())) {
             return ServerResponse.success();
         }
         log.error("通过路径获取文件失败，请检查文件是否存在");
