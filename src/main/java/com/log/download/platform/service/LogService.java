@@ -117,7 +117,8 @@ public class LogService {
                 log.error("CountDownLatch occurred exception: ", e);
             }
 
-            sortLogs(logPathBO.getList());
+            // 赋值排序后的引用
+            logPathBO.setList(sortLogs(logPathBO.getList()));
             String notFinishedIp = "";
             if (!"".equals(logPathBO.getNotFinish()) && logPathBO.getNotFinish().length() > 0){
                 notFinishedIp = logPathBO.getNotFinish().substring(0, logPathBO.getNotFinish().length() - 1);
