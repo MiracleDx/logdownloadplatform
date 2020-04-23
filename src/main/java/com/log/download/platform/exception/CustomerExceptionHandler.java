@@ -128,12 +128,21 @@ public class CustomerExceptionHandler extends BaseGlobalExceptionHandler {
 		return super.handleBusinessException(e, method, request);
 	}
 
+	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+	@ExceptionHandler(NotImplementedException.class)
+	public ServerResponse handleNotImplementedException(NotImplementedException e, HandlerMethod method, HttpServletRequest request) {
+		e.setCode(HttpStatus.NOT_IMPLEMENTED.value());
+		return super.handleBusinessException(e, method, request);
+	}
+
 	@Override
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(BusinessException.class)
 	public ServerResponse handleBusinessException(BusinessException e, HandlerMethod method, HttpServletRequest request) {
 		return super.handleBusinessException(e, method, request);
 	}
+
+
 
 	@Override
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
