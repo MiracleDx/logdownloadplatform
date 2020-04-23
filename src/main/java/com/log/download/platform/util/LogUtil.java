@@ -67,7 +67,8 @@ public class LogUtil {
 				return LogEnum.server_general;
 			}
 		} else {
-			throw new DataConflictException("落盘方式未找到, 落盘路径为：" + path);
+			return LogEnum.path_error;
+			//throw new DataConflictException("落盘方式未找到, 落盘路径为：" + path);
 		}
 	}
 
@@ -134,7 +135,11 @@ public class LogUtil {
 		/**
 		 * 为空
 		 */
-		path_null
+		path_null,
+		/**
+		 * 落盘路径不正常
+		 */
+		path_error
 	}
 
 	/**

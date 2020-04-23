@@ -4,6 +4,7 @@ import com.log.download.platform.bo.LogPathBO;
 import com.log.download.platform.dto.FindMirrorDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
 import com.log.download.platform.exception.DataNotFoundException;
+import com.log.download.platform.exception.NotImplementedException;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.service.LogService;
 import com.log.download.platform.vo.LogDetailVO;
@@ -43,7 +44,7 @@ public class LogController {
         if (logPathBO.getNotFinish().isEmpty() && logPathBO.getList().size() != 0) {
             return ServerResponse.success(logPathBO.getList());
         } else if (logPathBO.getList().size() == 0) {
-            throw new DataNotFoundException("蓝鲸查询无日志文件列表返回");
+            throw new NotImplementedException("蓝鲸查询无日志文件列表返回");
         } else {
             return ServerResponse.failure(HttpStatus.SC_NOT_FOUND, logPathBO.getNotFinish(), logPathBO.getList());
         }
