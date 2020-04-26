@@ -353,22 +353,23 @@ public class BkUtil {
     public String getServerContainerScriptParams(int bkBizId, String ip, String path, int scriptId, String hostname) {
         String[] arr = path.split("/");
         String logName = arr[arr.length - 1];
-        String[] paths = path.split("-");
+        String[] paths = logName.split("-");
         String param = "";
+        String namespace = "";
+        String group = "";
         if (paths.length == 9) {
-            String namespace = paths[1] + "-" + paths[3];
-            String group = paths[1] + "-" + paths[2] + "-" + paths[3] + "-" + paths[4];
-            String flag = group + "-" + paths[5] + "-" + paths[6];
-            param = namespace + " " + group + " " + hostname + " " + logName;
-        } else if(path.contains("msgw") || path.contains("tsf_gateway")) {
-
+            namespace = paths[1] + "-" + paths[3];
+            group = paths[1] + "-" + paths[2] + "-" + paths[3] + "-" + paths[4];
+        } else if(path.contains("tsf_gateway")) {
+            paths = hostname.split("-");
+            namespace = paths[0] + "-" + paths[1] + "-" + paths[2];
+            group = namespace;
         } else {
             paths = hostname.split("-");
-            String namespace = paths[0] + "-" + paths[2];
-            String group = paths[0] + "-" + paths[1] + "-" + paths[2] + "-" + paths[3];
-            param = namespace + " " + group + " " + hostname + " " + logName;
-
+            namespace = paths[0] + "-" + paths[2];
+            group = paths[0] + "-" + paths[1] + "-" + paths[2] + "-" + paths[3];
         }
+        param = namespace + " " + group + " " + hostname + " " + logName;
         byte[] content = param.getBytes();
         String script_param = Base64.getEncoder().encodeToString(content);
         return getContainerScriptParams(bkBizId, ip, script_param, scriptId);
