@@ -1,28 +1,29 @@
 package com.log.download.platform.service;
 
+import cn.hutool.core.text.csv.CsvData;
+import cn.hutool.core.text.csv.CsvUtil;
+import cn.hutool.core.util.CharsetUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.log.download.platform.bo.DeploymentGroupBO;
-import com.log.download.platform.bo.GatewayGroupBO;
 import com.log.download.platform.entity.DeploymentGroup;
-import com.log.download.platform.entity.GatewayGroup;
 import com.log.download.platform.support.UploadDeploymentGroupListener;
-import com.log.download.platform.support.UploadGatewayGroupListener;
-import com.log.download.platform.vo.LogDetailVO;
 import com.log.download.platform.vo.MenuVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -186,6 +187,83 @@ public class MenuService {
 		}).join();
 		
 		return menu;
+	}
+	
+	
+	public List<MenuVO> readCSV() {
+		// 读取CSV数据
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start("csv读取");
+		CsvData csvData = CsvUtil.getReader().read(Paths.get("D:/项目基本信息情况.csv"), CharsetUtil.CHARSET_GBK);
+		stopWatch.stop();
+
+		stopWatch.start("csv转换");
+		Map<Boolean, List<DeploymentGroup>> collect = csvData.getRows().stream().skip(1).map(e -> {
+			DeploymentGroup deploymentGroup = new DeploymentGroup();
+			Class<? extends DeploymentGroup> clazz = deploymentGroup.getClass();
+			Field[] fields = clazz.getDeclaredFields();
+			for (int i = 0; i < fields.length; i++) {
+				fields[i].setAccessible(true);
+				try {
+					fields[i].set(deploymentGroup, e.get(i));
+				} catch (IllegalAccessException ex) {
+					log.error("Reflect error: ", ex);
+				}
+			}
+			return deploymentGroup;
+		}).collect(Collectors.partitioningBy(data -> data.getApplicationName().contains("msgw")));
+		
+		stopWatch.stop();
+		
+		stopWatch.start("转换菜单树");
+		// 获取aop代理对象
+		MenuService o = (MenuService) AopContext.currentProxy();
+
+		// 转换菜单树
+		CompletableFuture.supplyAsync(() -> {
+			// 转换BO
+			List<DeploymentGroupBO> list = collect.get(false).stream().map(e -> {
+				DeploymentGroupBO bo = new DeploymentGroupBO();
+				BeanUtils.copyProperties(e, bo);
+				return bo;
+			}).collect(Collectors.toList());
+			// 获得微服务菜单
+			return convert2Tree(list);
+		}).thenAcceptBoth(CompletableFuture.supplyAsync(() -> {
+			// 转换BO
+			List<DeploymentGroupBO> list = collect.get(true).stream().map(e -> {
+				DeploymentGroupBO bo = new DeploymentGroupBO();
+				BeanUtils.copyProperties(e, bo);
+				return bo;
+			}).collect(Collectors.toList());
+			// 获得微服务网关菜单
+			return convert2Tree(list);
+		}), (d, g) -> {
+			log.info("微服务菜单树转换成功");
+
+			if (o.menu == null || o.menu.size() == 0) {
+				o.menu = new ArrayList<>();
+			}
+
+			// 清空缓存数据
+			if (o.menu.size() >= 2) {
+				o.menu.clear();
+			}
+
+			MenuVO server = new MenuVO();
+			server.setLabel("微服务");
+			server.setChildren(d);
+			o.menu.add(server);
+
+			MenuVO gateway = new MenuVO();
+			gateway.setLabel("微服务网关");
+			gateway.setChildren(g);
+			o.menu.add(gateway);
+		}).join();
+		stopWatch.stop();
+		
+		log.info(stopWatch.prettyPrint());
+		return o.menu;
 	}
 	
 
