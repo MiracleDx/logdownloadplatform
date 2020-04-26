@@ -360,7 +360,7 @@ public class BkUtil {
         if (paths.length == 9) {
             namespace = paths[1] + "-" + paths[3];
             group = paths[1] + "-" + paths[2] + "-" + paths[3] + "-" + paths[4];
-        } else if(path.contains("tsf_gateway")) {
+        } else if(path.contains("tsf-gateway") || path.contains("msgw")) {
             paths = hostname.split("-");
             namespace = paths[0] + "-" + paths[1] + "-" + paths[2];
             group = namespace;
