@@ -99,6 +99,7 @@ public class ServerServiceImpl implements IBaseService {
 		if (LogUtil.getInstance().placeWay(path) == LogUtil.LogEnum.gateway_container) {
 			ip = queryPlaceContainerLog(bkBizId, ip, path, gatewayContainerIpScriptId, gatewayContainerScriptId, hostname);
 			// todo 处理 网关路径
+			path = LogUtil.getInstance().processingCvmPath(path, hostname);;
 		}
 		requestFastPush(label, ip, path, cvmIp, bkBizId);
 	}
