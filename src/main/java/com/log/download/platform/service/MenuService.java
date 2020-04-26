@@ -199,19 +199,21 @@ public class MenuService {
 
 		stopWatch.start("csv转换");
 		Map<Boolean, List<DeploymentGroup>> collect = csvData.getRows().stream().skip(1).map(e -> {
+			// 读取到的数据是List<String>, 可以利用反射遍历赋值
 			DeploymentGroup deploymentGroup = new DeploymentGroup();
 			Class<? extends DeploymentGroup> clazz = deploymentGroup.getClass();
 			Field[] fields = clazz.getDeclaredFields();
 			for (int i = 0; i < fields.length; i++) {
 				fields[i].setAccessible(true);
 				try {
-					fields[i].set(deploymentGroup, e.get(i));
+					// 去除字段空格
+					fields[i].set(deploymentGroup, e.get(i).replace("\"", ""));
 				} catch (IllegalAccessException ex) {
 					log.error("Reflect error: ", ex);
 				}
 			}
 			return deploymentGroup;
-		}).collect(Collectors.partitioningBy(data -> data.getApplicationName().contains("msgw")));
+		}).collect(Collectors.partitioningBy(data -> data.getNameSpace().contains("msgw")));
 		
 		stopWatch.stop();
 		
