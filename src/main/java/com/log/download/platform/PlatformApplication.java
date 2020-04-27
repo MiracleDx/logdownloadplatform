@@ -8,6 +8,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.Resource;
 import java.io.*;
@@ -15,13 +16,14 @@ import java.io.*;
 @Slf4j
 @EnableAspectJAutoProxy(exposeProxy = true)
 @SpringBootApplication
+@EnableScheduling
 public class PlatformApplication implements ApplicationRunner {
 
-	@Value("${excel.location}")
-	private String excelLocation;
-	
-	@Value("${excel.name}")
-	private String excelName;
+	//@Value("${excel.location}")
+	//private String excelLocation;
+
+	//@Value("${excel.name}")
+	//private String excelName;
 	
 	@Resource
 	private MenuService menuService;
@@ -34,17 +36,18 @@ public class PlatformApplication implements ApplicationRunner {
 	public void run(ApplicationArguments args) throws IOException {
 		// 没有初始化菜单时，加载指定位置模版
 		if (menuService.menu == null || menuService.menu.size() == 0) {
-			InputStream in = null;
-			File file = new File(excelLocation + File.separator + excelName);
-			if (file.exists()) {
-				try {
-					in = new FileInputStream(file);
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				}
-				menuService.getMenu(in);
-				log.info("默认模版文件读取成功");
-			}
+			//InputStream in = null;
+			//File file = new File(excelLocation + File.separator + excelName);
+			//if (file.exists()) {
+			//	try {
+			//		in = new FileInputStream(file);
+			//	} catch (FileNotFoundException e) {
+			//		e.printStackTrace();
+			//	}
+			//	menuService.getMenu(in);
+			//}
+			menuService.readCSV();
+			log.info("默认模版文件读取成功");
 		} else {
 			log.error("未读取到默认模版文件");
 		}

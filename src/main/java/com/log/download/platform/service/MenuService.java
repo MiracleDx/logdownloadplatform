@@ -14,9 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -43,6 +45,12 @@ public class MenuService {
 	 * 菜单树
 	 */
 	public List<MenuVO> menu = new ArrayList<>();
+	
+	@Value("${csv.location}")
+	private String csvLocation;
+	
+	@Value("${csv.name}")
+	private String csvName;
 	
 	/**
 	 * 获取菜单树
@@ -192,12 +200,8 @@ public class MenuService {
 	
 	public List<MenuVO> readCSV() {
 		// 读取CSV数据
-		StopWatch stopWatch = new StopWatch();
-		stopWatch.start("csv读取");
-		CsvData csvData = CsvUtil.getReader().read(Paths.get("D:/项目基本信息情况.csv"), CharsetUtil.CHARSET_GBK);
-		stopWatch.stop();
+		CsvData csvData = CsvUtil.getReader().read(Paths.get(csvLocation + File.separator + csvName), CharsetUtil.CHARSET_GBK);
 
-		stopWatch.start("csv转换");
 		Map<Boolean, List<DeploymentGroup>> collect = csvData.getRows().stream().skip(1).map(e -> {
 			// 读取到的数据是List<String>, 可以利用反射遍历赋值
 			DeploymentGroup deploymentGroup = new DeploymentGroup();
@@ -215,9 +219,6 @@ public class MenuService {
 			return deploymentGroup;
 		}).collect(Collectors.partitioningBy(data -> data.getNameSpace().contains("msgw")));
 		
-		stopWatch.stop();
-		
-		stopWatch.start("转换菜单树");
 		// 获取aop代理对象
 		MenuService o = (MenuService) AopContext.currentProxy();
 
@@ -262,9 +263,7 @@ public class MenuService {
 			gateway.setChildren(g);
 			o.menu.add(gateway);
 		}).join();
-		stopWatch.stop();
 		
-		log.info(stopWatch.prettyPrint());
 		return o.menu;
 	}
 	
