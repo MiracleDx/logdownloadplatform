@@ -172,11 +172,10 @@
     </rollingPolicy>
   </appender>
 
-
   <!--CONTROLLER-->
   <!--指定包或者类的日志配置（这里是局部配置，它能覆盖全局配置）-->
   <!-- 自定义配置__配置业务日志输出至单独的日志文件中 -->
-  <logger name="com.log.download.platform.config.LogControllerAspectConfig" additivity="false" level="debug">
+  <logger name="com.log.download.platform.config.LogControllerAspectConfig" additivity="true" level="debug">
     <!-- 引用自定义的appender -->
     <appender-ref ref="CONTROLLER-LOG"/>
     <!-- 这里也引用控制台appender，才能在控制台中看到我们的日志 -->
@@ -186,7 +185,7 @@
   <!--SERVICE-->
   <!--指定包或者类的日志配置（这里是局部配置，它能覆盖全局配置）-->
   <!-- 自定义配置__配置业务日志输出至单独的日志文件中 -->
-  <logger name="com.log.download.platform.config.LogServiceAspectConfig" additivity="false" level="debug">
+  <logger name="com.log.download.platform.config.LogServiceAspectConfig" additivity="true" level="debug">
     <!-- 引用自定义的appender -->
     <appender-ref ref="SERVICE-LOG"/>
     <!-- 这里也引用控制台appender，才能在控制台中看到我们的日志 -->
@@ -196,7 +195,7 @@
   <!--SCHEDULE-->
   <!--指定包或者类的日志配置（这里是局部配置，它能覆盖全局配置）-->
   <!-- 自定义配置__配置业务日志输出至单独的日志文件中 -->
-  <logger name="com.log.download.platform.schedule" additivity="false" level="debug">
+  <logger name="com.log.download.platform.schedule" additivity="true" level="debug">
     <!-- 引用自定义的appender -->
     <appender-ref ref="SCHEDULE-LOG"/>
     <!-- 这里也引用控制台appender，才能在控制台中看到我们的日志 -->
