@@ -48,10 +48,10 @@
         
         <!-- 侧边栏 -->
         <el-aside width="350px">
-            <el-input
+            <el-inputF
                     placeholder="输入关键字进行过滤"
                     v-model="filterText">
-            </el-input>
+            </el-inputF>
             <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick" :filter-node-method="filterNode" ref="tree" v-if="showTree"></el-tree>
         </el-aside>
         
@@ -299,12 +299,12 @@
             async downloadLog(val) {
                 console.log(val)
 
-                if (val.path.includes("/data/tsf_default/logs/sys_log")) {
-                    this.$alert('容器内syslog日志暂无法下载，请联系部署组提取', "下载日志出错", {
-                        confirmButtonText: '确定'
-                    });
-                    return;
-                }
+                // if (val.path.includes("/data/tsf_default/logs/sys_log")) {
+                //     this.$alert('容器内syslog日志暂无法下载，请联系部署组提取', "下载日志出错", {
+                //         confirmButtonText: '确定'
+                //     });
+                //     return;
+                // }
 
                 const loading = this.$loading({
                     lock: true,

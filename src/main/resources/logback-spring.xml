@@ -144,7 +144,7 @@
     </rollingPolicy>
   </appender>
 
-  <!--SCHEDULE-->
+  <!--定时任务-->
   <!--获取比info级别高(包括info级别)但除error级别的日志-->
   <appender name="SCHEDULE-LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <filter class="ch.qos.logback.classic.filter.LevelFilter">
