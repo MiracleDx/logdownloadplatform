@@ -32,6 +32,6 @@ public class MenuController {
 		if (menuService.menu == null || menuService.menu.size() == 0) {
 			throw new DataNotFoundException("菜单加载失败，请联系部署组，上传正确的日志清单文件");
 		}
-		return menuService.readCSV();
+		return menuService.menu;
 	}
 }
