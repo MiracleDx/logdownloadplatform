@@ -42,6 +42,8 @@ public class FileUtil {
      */
     public void download(String ip, String path, HttpServletResponse response) {
         // path是指欲下载的文件的路径。
+        path = "/tmp/0_" + ip + "/" + path;
+        System.out.println(path);
         File file = new File(path);
         if (!file.exists()) {
             throw new DataNotFoundException("日志文件" + path.substring(path.lastIndexOf("/")) + "不存在");

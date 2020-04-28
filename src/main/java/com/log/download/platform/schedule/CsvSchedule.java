@@ -26,7 +26,7 @@ public class CsvSchedule {
 	/**
 	 * 每40分钟执行一次
 	 */
-	@Scheduled(cron = "0 0/40 * * * ? ")
+	@Scheduled(cron = "0 10,40 * * * ? ")
 	private void csvSchedule() {
 		log.info("begin csv schedule at: {}", LocalDateTime::now);
 		menuService.readCSV();

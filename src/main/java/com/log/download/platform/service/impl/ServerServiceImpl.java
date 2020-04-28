@@ -47,11 +47,12 @@ public class ServerServiceImpl implements IBaseService {
 
 	@Override
 	public void fastPushFile(DownLoadDTO downLoadDTO) {
-		String label = downLoadDTO.getLabel();
+ 		String label = downLoadDTO.getLabel();
 		String ip = downLoadDTO.getIp();
 		String path = downLoadDTO.getPath();
 		String cvmIp = downLoadDTO.getCvmIp();
 		String hostname = downLoadDTO.getHostname();
+		String bkParam = downLoadDTO.getBkParam();
 
 		// 获取落盘日志类型 
 		LogUtil.LogEnum logType = LogUtil.getInstance().logType(path);
@@ -60,10 +61,10 @@ public class ServerServiceImpl implements IBaseService {
 		int bkBizId = BkUtil.getInstance().getBkBizId(label);
 		switch (logType) {
 			case server:
-				server(label, ip, path, cvmIp, bkBizId, hostname);
+				server(label, ip, path, cvmIp, bkBizId, hostname, bkParam);
 				break;
 			case gateway:
-				gateway(label, ip, path, cvmIp, bkBizId, hostname);
+				gateway(label, ip, path, cvmIp, bkBizId, hostname, bkParam);
 				break;
 			default:
 				break;
@@ -79,9 +80,9 @@ public class ServerServiceImpl implements IBaseService {
 	 * @param cvmIp
 	 * @param bkBizId
 	 */
-	public void server(String label, String ip, String path, String cvmIp, int bkBizId, String hostname) {
+	public void server(String label, String ip, String path, String cvmIp, int bkBizId, String hostname, String bkParam) {
 		if (LogUtil.getInstance().placeWay(path) == LogUtil.LogEnum.server_container) {
-			ip = queryPlaceContainerLog(bkBizId, ip, path, serverContainerIpScriptId, serverContainerScriptId, hostname);
+			ip = queryPlaceContainerLog(bkBizId, ip, path, serverContainerIpScriptId, serverContainerScriptId, hostname, bkParam);
 			path = LogUtil.getInstance().processingCvmPath(path, hostname);
 		}
 		requestFastPush(label, ip, path, cvmIp, bkBizId);
@@ -95,9 +96,9 @@ public class ServerServiceImpl implements IBaseService {
 	 * @param cvmIp
 	 * @param bkBizId
 	 */
-	public void gateway(String label, String ip, String path, String cvmIp, int bkBizId, String hostname) {
+	public void gateway(String label, String ip, String path, String cvmIp, int bkBizId, String hostname, String bkParam) {
 		if (LogUtil.getInstance().placeWay(path) == LogUtil.LogEnum.gateway_container) {
-			ip = queryPlaceContainerLog(bkBizId, ip, path, gatewayContainerIpScriptId, gatewayContainerScriptId, hostname);
+			ip = queryPlaceContainerLog(bkBizId, ip, path, gatewayContainerIpScriptId, gatewayContainerScriptId, hostname, bkParam);
 			// todo 处理 网关路径
 			path = LogUtil.getInstance().processingCvmPath(path, hostname);;
 		}
@@ -115,11 +116,11 @@ public class ServerServiceImpl implements IBaseService {
 	 * @param containerIpScriptId
 	 * @param containerScriptId
 	 */
-	public String queryPlaceContainerLog(int bkBizId, String ip, String path, int containerIpScriptId, int containerScriptId, String hostname) {
+	public String queryPlaceContainerLog(int bkBizId, String ip, String path, int containerIpScriptId, int containerScriptId, String hostname, String bkParam) {
 		BkUtil bkUtil = BkUtil.getInstance();
 		// 获取蓝鲸 查询容器IP的参数
 		// TODO 修改脚本入参
-		String queryIpParams = bkUtil.getServerContainerScriptParams(bkBizId, ip ,path, containerIpScriptId, hostname);
+		String queryIpParams = bkUtil.getServerContainerScriptParams(bkBizId, ip ,path, containerIpScriptId, hostname, bkParam);
 		Integer jobInstanceId = bkUtil.getJobInstanceId(queryIpParams, restTemplate);
 		// 获取脚本执行状态和执行结果
 		JobStatusBO queryIpJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
@@ -137,19 +138,19 @@ public class ServerServiceImpl implements IBaseService {
 			if (Pattern.matches(regexIpAddr, containerIp)) {
 				ip = containerIp;
 				//调用落盘脚本
-				String placeParams = bkUtil.getServerContainerScriptParams(bkBizId, ip, path, containerScriptId, hostname);
+				String placeParams = bkUtil.getServerContainerScriptParams(bkBizId, ip, path, containerScriptId, hostname, bkParam);
 				Integer jobInstanceId1 = bkUtil.getJobInstanceId(placeParams, restTemplate);
 				// 获取脚本执行状态和执行结果
 				JobStatusBO placeJobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId1, restTemplate);
 				//确定日志是否落盘
 				if (!placeJobStatus.getIsFinished()) {
-					throw new RemoteAccessException("蓝鲸落盘超时");
+					throw new RemoteAccessException("蓝鲸接口返回错误：落盘超时");
 				}
 			} else {
-				throw new DataNotFoundException("蓝鲸获取容器所在ip错误");
+				throw new DataNotFoundException("蓝鲸接口返回错误：获取容器所在ip错误");
 			}
 		} else {
-			throw new RemoteAccessException("蓝鲸调用执行查询任务超时");
+			throw new RemoteAccessException("蓝鲸接口返回错误：调用执行查询任务超时");
 		}
 		return ip;
 	}
@@ -171,7 +172,9 @@ public class ServerServiceImpl implements IBaseService {
 		Integer jobInstanceId = bkUtil.getJobInstanceId(jsonObject);
 		// 查询作业脚本的执行状态
 		JobStatusBO jobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
-
+		if (jobStatus.getResult().getString(BkConstant.DATA).isEmpty() || jobStatus.getResult().getString(BkConstant.DATA).contains("is not exist")) {
+			throw new DataNotFoundException("蓝鲸接口返回错误：从容器落盘失败");
+		}
 		// 如果执行完毕
 		if (jobStatus.getIsFinished()) {
 			JSONObject result = jobStatus.getResult();
@@ -182,7 +185,7 @@ public class ServerServiceImpl implements IBaseService {
 				// 判断是否找到文件
 				String notExist = "is not exist";
 				if (logContent.contains(notExist)) {
-					throw new DataNotFoundException("蓝鲸能够未查询到该文件");
+					throw new DataNotFoundException("蓝鲸未能够查询到该文件");
 				}
 			}
 		} else {

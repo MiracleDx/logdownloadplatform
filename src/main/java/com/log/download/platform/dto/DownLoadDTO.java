@@ -38,4 +38,9 @@ public class DownLoadDTO {
      */
     private String hostname;
 
+    /**
+     * 蓝鲸需要的参数
+     */
+    private String bkParam;
+
 }

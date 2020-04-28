@@ -5,7 +5,7 @@ import com.log.download.platform.bo.JobStatusBO;
 import com.log.download.platform.common.BkConstant;
 import com.log.download.platform.common.BkEnum;
 import com.log.download.platform.dto.HostDTO;
-import com.log.download.platform.exception.DataNotFoundException;
+import com.log.download.platform.exception.NotImplementedException;
 import com.log.download.platform.exception.RemoteAccessException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -137,7 +137,7 @@ public class BkUtil {
     public Integer getJobInstanceId(JSONObject jsonObject) {
         String data = jsonObject.getString(BkConstant.DATA);
         if (StringUtils.isEmpty(data) || !jsonObject.getString(BkConstant.DATA).contains(BkConstant.JOB_INSTANCE_ID)) {
-            throw new DataNotFoundException("蓝鲸接口 " + jsonObject.getString(BkConstant.MESSAGE));
+            throw new NotImplementedException("蓝鲸接口返回错误：" + jsonObject.getString(BkConstant.MESSAGE));
         }
         return jsonObject.getJSONObject(BkConstant.DATA).getInteger(BkConstant.JOB_INSTANCE_ID);
     }
@@ -181,7 +181,7 @@ public class BkUtil {
             if (retry_count.get().intValue() >= 3) {
                 logger.error("bk interface read timed out, request url: {}, request params: {}", url, params);
                 retry_count.remove();
-                throw new RemoteAccessException("蓝鲸接口 Read timed out 请稍后重试");
+                throw new RemoteAccessException("蓝鲸接口返回错误：Read timed out 请稍后重试");
             }
             return requestBkInterface(url, params, restTemplate);
 		}
@@ -350,26 +350,11 @@ public class BkUtil {
      * @param scriptId
      * @return
      */
-    public String getServerContainerScriptParams(int bkBizId, String ip, String path, int scriptId, String hostname) {
+    public String getServerContainerScriptParams(int bkBizId, String ip, String path, int scriptId, String hostname, String bkParam) {
         String[] arr = path.split("/");
         String logName = arr[arr.length - 1];
-        String[] paths = logName.split("-");
         String param = "";
-        String namespace = "";
-        String group = "";
-        if (paths.length == 9) {
-            namespace = paths[1] + "-" + paths[3];
-            group = paths[1] + "-" + paths[2] + "-" + paths[3] + "-" + paths[4];
-        } else if(path.contains("tsf-gateway") || path.contains("msgw")) {
-            paths = hostname.split("-");
-            namespace = paths[0] + "-" + paths[1] + "-" + paths[2];
-            group = namespace;
-        } else {
-            paths = hostname.split("-");
-            namespace = paths[0] + "-" + paths[2];
-            group = paths[0] + "-" + paths[1] + "-" + paths[2] + "-" + paths[3];
-        }
-        param = namespace + " " + group + " " + hostname + " " + logName;
+        param = bkParam + " " + hostname + " " + logName;
         byte[] content = param.getBytes();
         String script_param = Base64.getEncoder().encodeToString(content);
         return getContainerScriptParams(bkBizId, ip, script_param, scriptId);
@@ -427,8 +412,8 @@ public class BkUtil {
         try {
             ia = InetAddress.getLocalHost();
             String localName = ia.getHostName();
-            String localIp = ia.getHostAddress();
-            logger.info("hostname: {}, hostAddress: {}", localName, localIp);
+            String localIp = IpUtil.getServiceIp();
+            logger.info("hostname: {}, hostAddress: {}", localName, IpUtil.getServiceIp());
             return localIp;
         } catch (UnknownHostException e) {
             e.printStackTrace();

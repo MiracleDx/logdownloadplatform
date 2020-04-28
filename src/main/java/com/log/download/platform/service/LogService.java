@@ -103,7 +103,7 @@ public class LogService {
             logPathBO.getList().forEach(e ->
                 fileChecker.execute(() -> {
                     // 校验日志路径
-                    String path = LogUtil.getInstance().processingCvmPath(e.getPath(), queryLogDetailDTO.getHostname());
+                    String path = LogUtil.getInstance().processingCvmPath(e.getPath(), e.getHostname());
                     Boolean fileIsExists = fileUtil.getFileIsExists(path, e.getCreateTime());
                     log.debug("check file path: {}, exists: {}", path, fileIsExists);
                     e.setMirror(fileIsExists);
@@ -251,6 +251,7 @@ public class LogService {
     public boolean findFile(String logPath, String ip, String hostname) {
         if (!logPath.isEmpty()) {
             String path;
+            System.out.println(hostname);
             logPath = LogUtil.getInstance().processingCvmPath(logPath, hostname);
             path = "/tmp" + File.separator + "0_" + ip + File.separator + logPath;
             log.info("查找日志镜像路径: {}", path);

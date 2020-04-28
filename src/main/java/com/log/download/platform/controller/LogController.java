@@ -44,7 +44,7 @@ public class LogController {
         if (logPathBO.getNotFinish().isEmpty() && logPathBO.getList().size() != 0) {
             return ServerResponse.success(logPathBO.getList());
         } else if (logPathBO.getList().size() == 0) {
-            throw new NotImplementedException("蓝鲸查询无日志文件列表返回");
+            throw new NotImplementedException("蓝鲸接口返回错误：查询无日志文件列表返回");
         } else {
             return ServerResponse.failure(HttpStatus.SC_NOT_FOUND, logPathBO.getNotFinish(), logPathBO.getList());
         }
@@ -58,6 +58,7 @@ public class LogController {
      */
     @PostMapping("/findMirror")
     public ServerResponse<List<LogDetailVO>> findMirror(@RequestBody FindMirrorDTO findMirrorDTO) {
+        //TODO 镜像不需要调用findFile，直接返回
         if (logService.findFile(findMirrorDTO.getPath(), findMirrorDTO.getIp(), findMirrorDTO.getHostname())) {
             return ServerResponse.success();
         }

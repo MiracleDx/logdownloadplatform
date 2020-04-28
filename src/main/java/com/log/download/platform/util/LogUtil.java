@@ -104,7 +104,11 @@ public class LogUtil {
                 break;
             case gateway_container:
                 temp = hostname.split("-");
-                path = path.replace("/data/tsf_default/logs", "/log/" + temp[0] + "-" + temp[1] + "-" + temp[2]);
+                if (temp.length == 6) {
+                    path = path.replace("/var/log/tsf-gateway/logs", "/log/" + temp[0] + "-" + temp[1] + "-" + temp[2] + "-" + temp[3]);
+                } else {
+                    path = path.replace("/var/log/tsf-gateway/logs", "/log/" + temp[0] + "-" + temp[1] + "-" + temp[2]);
+                }
                 break;
             default:
                 break;

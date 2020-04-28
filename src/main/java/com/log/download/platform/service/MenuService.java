@@ -342,7 +342,7 @@ public class MenuService {
 									.map(DeploymentGroupBO::getIp).filter(StringUtils::isNoneBlank)
 									.collect(Collectors.toList()));
 
-							third.setBkParam(thirdBO.getNameSpace() + " " + thirdBO.getGroup());
+							third.setBkParam(thirdBO.getNameSpace().replaceAll(" ", "") + " " + thirdBO.getGroup().replaceAll(" ", ""));
 
 							// 判断总/分公司
 							String[] split = group.split("-");
