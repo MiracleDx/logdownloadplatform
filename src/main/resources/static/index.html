@@ -306,51 +306,56 @@
                 //     return;
                 // }
 
-                const loading = this.$loading({
-                    lock: true,
-                    text: '获取' + val.ip + ':' + val.path + '的下载资源中...下载文件过大，可能会造成下载超时',
-                    spinner: 'el-icon-loading',
-                    background: 'rgba(0, 0, 0, 0.7)'
-                });
-                // 使用fetch发送请求并拿到返回值
-                const response = await fetch(router.download, {
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        'label': val.label,
-                        'ip': val.ip,
-                        'path': val.path,
-                        'cvmIp': val.ip,
-                        'hostname': val.hostname
-                    })
-                });
-                
-                if (response.headers.get('Content-Disposition')) {
-                    // 将文件流转为blob对象，并获取本地文件链接
-                    response.blob().then((blob) => {
-                        console.log(blob)
-                        const a = window.document.createElement('a');
-                        // 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
-                        const downUrl = window.URL.createObjectURL(blob);
-                        const filename = response.headers.get('Content-Disposition').split('filename=')[1];
-                        a.href = downUrl;
-                        a.download = `${decodeURI(filename)}`;
-                        loading.close();
-                        a.click();
-                        window.URL.revokeObjectURL(downUrl);
-
-                        // 下载后回调刷新当前行
-                        setTimeout(() => {
-                            this.callBackForDownload(val)
-                        }, 500)
+                // 获取当前选中节点
+                let node =  this.$refs.tree.getCurrentNode();
+                if (node && node.ips) {
+                    const loading = this.$loading({
+                        lock: true,
+                        text: '获取' + val.ip + ':' + val.path + '的下载资源中...下载文件过大，可能会造成下载超时',
+                        spinner: 'el-icon-loading',
+                        background: 'rgba(0, 0, 0, 0.7)'
                     });
-                } else {
-                    response.json().then((data) => {
-                        this.$message.error(data.message)
-                        loading.close();
-                    }).catch(e => console.log(e));
+                    // 使用fetch发送请求并拿到返回值
+                    const response = await fetch(router.download, {
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            'label': val.label,
+                            'ip': val.ip,
+                            'path': val.path,
+                            'cvmIp': val.ip,
+                            'hostname': val.hostname,
+                            "bkParam": node.bkParam
+                        })
+                    });
+
+                    if (response.headers.get('Content-Disposition')) {
+                        // 将文件流转为blob对象，并获取本地文件链接
+                        response.blob().then((blob) => {
+                            console.log(blob)
+                            const a = window.document.createElement('a');
+                            // 获取 blob 本地文件连接 (blob 为纯二进制对象，不能够直接保存到磁盘上)
+                            const downUrl = window.URL.createObjectURL(blob);
+                            const filename = response.headers.get('Content-Disposition').split('filename=')[1];
+                            a.href = downUrl;
+                            a.download = `${decodeURI(filename)}`;
+                            loading.close();
+                            a.click();
+                            window.URL.revokeObjectURL(downUrl);
+
+                            // 下载后回调刷新当前行
+                            setTimeout(() => {
+                                this.callBackForDownload(val)
+                            }, 500)
+                        });
+                    } else {
+                        response.json().then((data) => {
+                            this.$message.error(data.message)
+                            loading.close();
+                        }).catch(e => console.log(e));
+                    }
                 }
             },
             // 抓取历史日志
