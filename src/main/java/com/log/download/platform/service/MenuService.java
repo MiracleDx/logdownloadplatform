@@ -211,7 +211,7 @@ public class MenuService {
 				fields[i].setAccessible(true);
 				try {
 					// 去除字段空格
-					fields[i].set(deploymentGroup, e.get(i).replace("\"", ""));
+					fields[i].set(deploymentGroup, e.get(i).replace(" ", "").replace("\"", ""));
 				} catch (IllegalAccessException ex) {
 					log.error("Reflect error: ", ex);
 				}
@@ -342,7 +342,7 @@ public class MenuService {
 									.map(DeploymentGroupBO::getIp).filter(StringUtils::isNoneBlank)
 									.collect(Collectors.toList()));
 
-							third.setBkParam(thirdBO.getNameSpace().replaceAll(" ", "") + " " + thirdBO.getGroup().replaceAll(" ", ""));
+							third.setBkParam(thirdBO.getNameSpace() + " " + thirdBO.getGroup());
 
 							// 判断总/分公司
 							String[] split = group.split("-");
