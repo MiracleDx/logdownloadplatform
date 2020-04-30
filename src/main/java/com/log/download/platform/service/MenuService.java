@@ -200,7 +200,7 @@ public class MenuService {
 	
 	public List<MenuVO> readCSV() {
 		// 读取CSV数据
-		CsvData csvData = CsvUtil.getReader().read(Paths.get(csvLocation + File.separator + csvName), CharsetUtil.CHARSET_GBK);
+		CsvData csvData = CsvUtil.getReader().read(Paths.get(csvLocation + File.separator + csvName), CharsetUtil.CHARSET_UTF_8);
 
 		Map<Boolean, List<DeploymentGroup>> collect = csvData.getRows().stream().skip(1).map(e -> {
 			// 读取到的数据是List<String>, 可以利用反射遍历赋值

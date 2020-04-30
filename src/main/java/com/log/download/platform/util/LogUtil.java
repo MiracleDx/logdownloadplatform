@@ -104,10 +104,11 @@ public class LogUtil {
                 break;
             case gateway_container:
                 temp = hostname.split("-");
+                String filename = path.substring(path.lastIndexOf("/"));
                 if (temp.length == 6) {
-                    path = path.replace("/var/log/tsf-gateway/logs", "/log/" + temp[0] + "-" + temp[1] + "-" + temp[2] + "-" + temp[3]);
+                    path = "/log/" + temp[0] + "-" + temp[1] + "-" + temp[2] + "-" + temp[3] + "/" + filename;
                 } else {
-                    path = path.replace("/var/log/tsf-gateway/logs", "/log/" + temp[0] + "-" + temp[1] + "-" + temp[2]);
+                    path = "/log/" + temp[0] + "-" + temp[1] + "-" + temp[2] + "/" + filename;
                 }
                 break;
             default:

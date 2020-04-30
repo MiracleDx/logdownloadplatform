@@ -173,7 +173,7 @@ public class ServerServiceImpl implements IBaseService {
 		// 查询作业脚本的执行状态
 		JobStatusBO jobStatus = bkUtil.getJobStatus(bkBizId, jobInstanceId, restTemplate);
 		if (jobStatus.getResult().getString(BkConstant.DATA).isEmpty() || jobStatus.getResult().getString(BkConstant.DATA).contains("is not exist")) {
-			throw new DataNotFoundException("蓝鲸接口返回错误：从容器落盘失败");
+			throw new DataNotFoundException("蓝鲸接口返回错误：从容器落盘失败，请联系蓝鲸工作人员");
 		}
 		// 如果执行完毕
 		if (jobStatus.getIsFinished()) {

@@ -20,9 +20,9 @@ public class FileCheckExecutors {
 	
 	private FileCheckExecutors() {
 		executor = new ThreadPoolExecutor(3,
-				3, 10,
+				6, 10,
 				TimeUnit.SECONDS,
-				new ArrayBlockingQueue<>(10000),
+				new ArrayBlockingQueue<>(15000),
 				new ThreadFactoryBuilder()
 						.setNameFormat("FileThread-%d")
 						.setUncaughtExceptionHandler((thread, throwable) -> logger.error("ThreadPool {} got exception", thread, throwable))
