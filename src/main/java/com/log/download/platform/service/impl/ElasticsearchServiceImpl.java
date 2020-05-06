@@ -4,6 +4,8 @@ import com.log.download.platform.service.ElasticsearchService;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -14,6 +16,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * @program: platform
@@ -119,5 +122,23 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         //4、返回结果
         return searchResponse.getHits();
+    }
+
+    /**
+     * 部分更新es索引内容
+     *
+     * @param indexName
+     * @param indexID
+     * @param jsonMap   更新的内容
+     * @param client
+     */
+    @Override
+    public void updateTage(String indexName, String indexID, Map<String, Object> jsonMap, RestHighLevelClient client) {
+        UpdateRequest updateRequest = new UpdateRequest(indexName, indexID).doc(jsonMap);
+        try {
+            UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

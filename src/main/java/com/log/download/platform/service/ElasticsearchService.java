@@ -6,6 +6,7 @@ import org.elasticsearch.search.SearchHits;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Map;
 
 @Service
 public interface ElasticsearchService {
@@ -60,4 +61,14 @@ public interface ElasticsearchService {
                                      String[] excludes, String orderName,
                                      Boolean orderRule, BoolQueryBuilder boolBuilder,
                                      RestHighLevelClient client) throws IOException;
+
+    /**
+     * 部分更新es索引内容
+     *
+     * @param indexName
+     * @param indexID
+     * @param jsonMap   更新的内容
+     * @param client
+     */
+    void updateTage (String indexName, String indexID, Map<String, Object> jsonMap, RestHighLevelClient client);
 }
