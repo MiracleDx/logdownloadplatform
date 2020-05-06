@@ -14,8 +14,8 @@ import java.util.Arrays;
  * @author Dongx
  */
 @Slf4j
-@Aspect
-@Component
+//@Aspect
+//@Component
 public class LogServiceAspectConfig {
     
     @Pointcut("execution(public * com.log..service..*.*(..))")

@@ -28,8 +28,8 @@ import static org.springframework.boot.context.properties.source.ConfigurationPr
  * @author Dongx
  */
 @Slf4j
-@Aspect
-@Component
+//@Aspect
+//@Component
 public class LogControllerAspectConfig {
     
     @Pointcut("execution(public * com.log..controller..*.*(..))")
