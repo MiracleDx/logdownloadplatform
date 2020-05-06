@@ -73,13 +73,13 @@ public class MetricsAspect {
 	public Object metrics(ProceedingJoinPoint pjp) throws Throwable {
 		//通过连接点获取方法签名和方法上Metrics注解，并根据方法签名生成日志中要输出的方法定义描述
 		MethodSignature signature = (MethodSignature) pjp.getSignature();
-
+		
+		String name = String.format("[%s][%s]", signature.getDeclaringType().toString(), signature.toLongString());
+		
 		Metrics metrics = signature.getMethod().getAnnotation(Metrics.class);
 		if (metrics == null) {
 			metrics = signature.getMethod().getDeclaringClass().getAnnotation(Metrics.class);
 		}
-		
-		String name = String.format("[%s][%s]", signature.getDeclaringType().toString(), signature.toLongString());
 		
 		//因为需要默认对所有@RestController标记的Web控制器实现@Metrics注解的功能，在这种情况下方法上必然是没有@Metrics注解的，我们需要获取一个默认注解。
 		// 虽然可以手动实例化一个@Metrics注解的实例出来，但为了节省代码行数，我们通过在一个内部类上定义@Metrics注解方式，然后通过反射获取注解的小技巧，来获得一个默认的@Metrics注解的实例
