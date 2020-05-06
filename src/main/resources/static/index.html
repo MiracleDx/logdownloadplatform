@@ -48,10 +48,10 @@
         
         <!-- 侧边栏 -->
         <el-aside width="350px">
-            <el-inputF
+            <el-input
                     placeholder="输入关键字进行过滤"
                     v-model="filterText">
-            </el-inputF>
+            </el-input>
             <el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick" :filter-node-method="filterNode" ref="tree" v-if="showTree"></el-tree>
         </el-aside>
         
