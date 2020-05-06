@@ -33,12 +33,6 @@ public class PlatformApplication implements ApplicationRunner {
     @Resource
     private MenuService menuService;
 
-    @Resource
-    private ElasticsearchService elasticsearchService;
-
-    @Resource
-    private Environment environment;
-
     public static void main(String[] args) {
         SpringApplication.run(PlatformApplication.class, args);
     }
@@ -61,23 +55,6 @@ public class PlatformApplication implements ApplicationRunner {
             log.info("默认模版文件读取成功");
         } else {
             log.error("未读取到默认模版文件");
-        }
-
-        String index = "c014-3300-*";
-        String[] includes = {"msg", "@timestamp"};
-        String[] excludes = {};
-        String[] esurl = {"10.157.208.188:9200"};
-        try (RestHighLevelClient client = ElasticSearchUtil.getInstance().getClient(environment, esurl)) {
-            // 查询
-            SearchHits hits = elasticsearchService.getIndexDocumentLimit(
-                    index, 0, 1, includes, excludes, "@timestamp",
-                    false, null, client);
-            for (SearchHit hit : hits) {
-                String str = hit.getSourceAsString();
-
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

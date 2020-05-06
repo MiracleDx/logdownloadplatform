@@ -1,14 +1,25 @@
 package com.log.download.platform.service;
 
 import cn.hutool.core.io.FileUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.log.download.platform.dto.NoticeDTO;
+import com.log.download.platform.util.ElasticSearchUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * NoticeService
@@ -26,17 +37,43 @@ public class NoticeService {
 	
 	@Value("${notice.location}")
 	private String noticeLocation;
+	
+	private final String index = "logdownloader-notice";
+	
+	private String indexId = "";
+	
+	private String[] esUrl = {"10.157.208.188:9200"};
+
+	@Resource
+	private ElasticsearchService elasticsearchService;
+
+	@Resource
+	private Environment environment;
+	
+	@Resource
+	private ObjectMapper objectMapper;
 
 	/**
 	 * 编辑公告栏
 	 * @param noticeDTO
 	 */
 	public void editNotice(NoticeDTO noticeDTO) {
+		List<String> msg = noticeDTO.getMessage();
 		synchronized (NOTICE) {
 			NOTICE.clear();
-			NOTICE.addAll(noticeDTO.getMessage());
-			FileUtil.writeString(noticeDTO.getMessage().get(0), noticeLocation, "utf-8");
+			NOTICE.addAll(msg);
+			//FileUtil.writeString(noticeDTO.getMessage().get(0), noticeLocation, "utf-8");
 		}
+
+		ForkJoinPool.commonPool().execute(() -> {
+			try (RestHighLevelClient client = ElasticSearchUtil.getInstance().getClient(environment, esUrl)) {
+				Map<String, Object> jsonMap = new HashMap<>(1);
+				jsonMap.put("msg", msg.get(0));
+				elasticsearchService.updateTage(index, indexId, jsonMap, client);
+			} catch (IOException e) {
+				log.error("es 写入异常：{}", e.getMessage());
+			}
+		});
 	}
 
 	/**
@@ -47,16 +84,26 @@ public class NoticeService {
 		if (!new File(noticeLocation).exists()) {
 			return new ArrayList<>();
 		}
-		synchronized (NOTICE) {
-			if (NOTICE.size() == 0) {
-				synchronized (NOTICE) {
-					if (NOTICE.size() == 0) {
-						List<String> strings = FileUtil.readLines(noticeLocation, "utf-8");
-						NOTICE.add(String.join("", strings));
-					}
+
+		String[] includes = {"msg", "@timestamp"};
+		String[] excludes = {};
+		try (RestHighLevelClient client = ElasticSearchUtil.getInstance().getClient(environment, esUrl)) {
+			// 查询
+			SearchHits hits = elasticsearchService.getIndexDocumentLimit(
+					index, 0, 1, includes, excludes, "@timestamp",
+					false, null, client);
+			for (SearchHit hit : hits) {
+				indexId = hit.getId();
+				String str = hit.getSourceAsString();
+				String msg = objectMapper.convertValue(str, HashMap.class).get("msg").toString();
+				if (NOTICE.size() == 0) {
+					NOTICE.add(msg);	
 				}
 			}
+		} catch (IOException e) {
+			log.error("查询 es 异常：{}", e.getMessage());
 		}
+		
 		return NOTICE;
 	}
 }

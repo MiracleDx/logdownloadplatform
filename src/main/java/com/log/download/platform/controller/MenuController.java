@@ -3,6 +3,7 @@ package com.log.download.platform.controller;
 import com.log.download.platform.exception.DataNotFoundException;
 import com.log.download.platform.response.ResponseResult;
 import com.log.download.platform.service.MenuService;
+import com.log.download.platform.support.Metrics;
 import com.log.download.platform.vo.MenuVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,7 @@ import java.util.List;
 @Slf4j
 @ResponseResult
 @RestController
+@Metrics(logParameters = false, logReturn = false)
 public class MenuController {
 
 	@Resource

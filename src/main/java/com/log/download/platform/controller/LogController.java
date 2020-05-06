@@ -7,6 +7,7 @@ import com.log.download.platform.exception.DataNotFoundException;
 import com.log.download.platform.exception.NotImplementedException;
 import com.log.download.platform.response.ServerResponse;
 import com.log.download.platform.service.LogService;
+import com.log.download.platform.support.Metrics;
 import com.log.download.platform.vo.LogDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
@@ -28,6 +29,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
+@Metrics(logReturn = false)
 public class LogController {
 
     @Resource

@@ -220,9 +220,16 @@ public class MenuService {
 		}).collect(Collectors.partitioningBy(data -> data.getNameSpace().contains("msgw")));
 		
 		// 获取aop代理对象
-		MenuService o = (MenuService) AopContext.currentProxy();
-
+		MenuService aopTemp;
+		try {
+			aopTemp = (MenuService) AopContext.currentProxy();
+		} catch (IllegalStateException e) {
+			aopTemp = this;
+		}
+		
 		// 转换菜单树
+		final MenuService o;
+		o = aopTemp;
 		CompletableFuture.supplyAsync(() -> {
 			// 转换BO
 			List<DeploymentGroupBO> list = collect.get(false).stream().map(e -> {
