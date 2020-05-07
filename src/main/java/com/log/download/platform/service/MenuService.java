@@ -8,6 +8,7 @@ import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import com.log.download.platform.bo.DeploymentGroupBO;
 import com.log.download.platform.entity.DeploymentGroup;
+import com.log.download.platform.support.Metrics;
 import com.log.download.platform.support.UploadDeploymentGroupListener;
 import com.log.download.platform.vo.MenuVO;
 import lombok.extern.slf4j.Slf4j;
@@ -222,7 +223,8 @@ public class MenuService {
 		// 获取aop代理对象
 		MenuService aopTemp;
 		try {
-			aopTemp = (MenuService) AopContext.currentProxy();
+			Object o = AopContext.currentProxy();
+			aopTemp =  o instanceof MenuService ? (MenuService) o : this;
 		} catch (IllegalStateException e) {
 			aopTemp = this;
 		}
