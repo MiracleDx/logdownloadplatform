@@ -1,12 +1,15 @@
 package com.log.download.platform;
 
+import com.log.download.platform.dto.NoticeDTO;
 import com.log.download.platform.service.ElasticsearchService;
 import com.log.download.platform.service.MenuService;
+import com.log.download.platform.service.NoticeService;
 import com.log.download.platform.util.ElasticSearchUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -17,6 +20,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @EnableAspectJAutoProxy(exposeProxy = true)

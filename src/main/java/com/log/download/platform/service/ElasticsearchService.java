@@ -71,4 +71,8 @@ public interface ElasticsearchService {
      * @param client
      */
     void updateTage (String indexName, String indexID, Map<String, Object> jsonMap, RestHighLevelClient client);
+
+    boolean isExists(String indexName, String indexID, RestHighLevelClient client);
+
+    void creatIndex (String indexName, String indexID, Map<String, Object> jsonMap, RestHighLevelClient client);
 }

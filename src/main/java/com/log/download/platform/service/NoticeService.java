@@ -1,6 +1,7 @@
 package com.log.download.platform.service;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.log.download.platform.dto.NoticeDTO;
 import com.log.download.platform.util.ElasticSearchUtil;
@@ -15,10 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 
 /**
@@ -40,7 +38,7 @@ public class NoticeService {
 	
 	private final String index = "logdownloader-notice";
 	
-	private String indexId = "";
+	private String indexId = "1";
 	
 	private String[] esUrl = {"10.157.208.188:9200"};
 
@@ -69,6 +67,7 @@ public class NoticeService {
 			try (RestHighLevelClient client = ElasticSearchUtil.getInstance().getClient(environment, esUrl)) {
 				Map<String, Object> jsonMap = new HashMap<>(1);
 				jsonMap.put("msg", msg.get(0));
+				jsonMap.put("@timestamp", new Date());
 				elasticsearchService.updateTage(index, indexId, jsonMap, client);
 			} catch (IOException e) {
 				log.error("es 写入异常：{}", e.getMessage());
@@ -88,6 +87,12 @@ public class NoticeService {
 		String[] includes = {"msg", "@timestamp"};
 		String[] excludes = {};
 		try (RestHighLevelClient client = ElasticSearchUtil.getInstance().getClient(environment, esUrl)) {
+			if (!elasticsearchService.isExists(index, indexId, client)){
+				Map<String, Object> map = new HashMap<>();
+				map.put("msg", "欢迎使用日志下载平台");
+				map.put("@timestamp", new Date());
+				elasticsearchService.creatIndex(index, indexId, map, client);
+			}
 			// 查询
 			SearchHits hits = elasticsearchService.getIndexDocumentLimit(
 					index, 0, 1, includes, excludes, "@timestamp",
@@ -95,7 +100,8 @@ public class NoticeService {
 			for (SearchHit hit : hits) {
 				indexId = hit.getId();
 				String str = hit.getSourceAsString();
-				String msg = objectMapper.convertValue(str, HashMap.class).get("msg").toString();
+				cn.hutool.json.JSONObject jsonObject = new JSONObject(str);
+				String msg = jsonObject.get("msg").toString();
 				if (NOTICE.size() == 0) {
 					NOTICE.add(msg);	
 				}

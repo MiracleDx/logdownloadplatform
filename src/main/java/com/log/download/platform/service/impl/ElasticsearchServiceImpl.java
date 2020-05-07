@@ -2,6 +2,9 @@ package com.log.download.platform.service.impl;
 
 import com.log.download.platform.service.ElasticsearchService;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -12,6 +15,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 
@@ -137,6 +141,36 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
         UpdateRequest updateRequest = new UpdateRequest(indexName, indexID).doc(jsonMap);
         try {
             UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 判断是否存在索引
+     * @param indexName
+     * @param client
+     * @return
+     */
+    @Override
+    public boolean isExists(String indexName, String indexID, RestHighLevelClient client) {
+        GetRequest getRequest = new GetRequest(indexName, indexID);
+        getRequest.fetchSourceContext(new FetchSourceContext(false));
+        getRequest.storedFields("_none_");
+        boolean exists = false;
+        try {
+            exists = client.exists(getRequest, RequestOptions.DEFAULT);
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+        return exists;
+    }
+
+    @Override
+    public void creatIndex(String indexName, String indexID, Map<String, Object> jsonMap, RestHighLevelClient client) {
+        IndexRequest indexRequest = new IndexRequest(indexName).id(indexID).source(jsonMap);
+        try {
+            IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             e.printStackTrace();
         }
