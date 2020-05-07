@@ -38,6 +38,9 @@ public class PlatformApplication implements ApplicationRunner {
     @Resource
     private MenuService menuService;
 
+    @Resource
+    private NoticeService noticeService;
+
     public static void main(String[] args) {
         SpringApplication.run(PlatformApplication.class, args);
     }
@@ -58,6 +61,7 @@ public class PlatformApplication implements ApplicationRunner {
             //}
             menuService.readCSV();
             log.info("默认模版文件读取成功");
+            noticeService.isExistsIndex();
         } else {
             log.error("未读取到默认模版文件");
         }

@@ -1,8 +1,6 @@
 package com.log.download.platform.service;
 
-import cn.hutool.core.io.FileUtil;
 import cn.hutool.json.JSONObject;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.log.download.platform.dto.NoticeDTO;
 import com.log.download.platform.util.ElasticSearchUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -40,16 +38,13 @@ public class NoticeService {
 	
 	private String indexId = "1";
 	
-	private String[] esUrl = {"10.157.208.188:9200"};
+	private String[] esUrl = {"10.155.208.144:9200"};
 
 	@Resource
 	private ElasticsearchService elasticsearchService;
 
 	@Resource
 	private Environment environment;
-	
-	@Resource
-	private ObjectMapper objectMapper;
 
 	/**
 	 * 编辑公告栏
@@ -84,15 +79,13 @@ public class NoticeService {
 			return new ArrayList<>();
 		}
 
+		if (!NOTICE.isEmpty()) {
+			return NOTICE;
+		}
+
 		String[] includes = {"msg", "@timestamp"};
 		String[] excludes = {};
 		try (RestHighLevelClient client = ElasticSearchUtil.getInstance().getClient(environment, esUrl)) {
-			if (!elasticsearchService.isExists(index, indexId, client)){
-				Map<String, Object> map = new HashMap<>();
-				map.put("msg", "欢迎使用日志下载平台");
-				map.put("@timestamp", new Date());
-				elasticsearchService.creatIndex(index, indexId, map, client);
-			}
 			// 查询
 			SearchHits hits = elasticsearchService.getIndexDocumentLimit(
 					index, 0, 1, includes, excludes, "@timestamp",
@@ -108,8 +101,25 @@ public class NoticeService {
 			}
 		} catch (IOException e) {
 			log.error("查询 es 异常：{}", e.getMessage());
+			NOTICE.add("欢迎使用日志下载平台");
 		}
 		
 		return NOTICE;
+	}
+
+	/**
+	 * 验证公告栏索引是否存在，不存在就创建。
+	 */
+	public void isExistsIndex () {
+		try (RestHighLevelClient client = ElasticSearchUtil.getInstance().getClient(environment, esUrl)) {
+			if (!elasticsearchService.isExists(index, indexId, client)) {
+				Map<String, Object> map = new HashMap<>();
+				map.put("msg", "欢迎使用日志下载平台");
+				map.put("@timestamp", new Date());
+				elasticsearchService.creatIndex(index, indexId, map, client);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
