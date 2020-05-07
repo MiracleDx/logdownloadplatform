@@ -118,7 +118,7 @@ public class LogService {
             }
 
             // 赋值排序后的引用
-            logPathBO.setList(sortLogs(logPathBO.getList()));
+            logPathBO.setList(sortLogs(logPathBO.getList().parallelStream().distinct().collect(Collectors.toList())));
             String notFinishedIp = "";
             if (!"".equals(logPathBO.getNotFinish()) && logPathBO.getNotFinish().length() > 0){
                 notFinishedIp = logPathBO.getNotFinish().substring(0, logPathBO.getNotFinish().length() - 1);

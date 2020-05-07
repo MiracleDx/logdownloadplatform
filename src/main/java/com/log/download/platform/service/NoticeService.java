@@ -75,10 +75,6 @@ public class NoticeService {
 	 * @return
 	 */
 	public List<String> getNotice() {
-		if (!new File(noticeLocation).exists()) {
-			return new ArrayList<>();
-		}
-
 		if (!NOTICE.isEmpty()) {
 			return NOTICE;
 		}
@@ -101,7 +97,9 @@ public class NoticeService {
 			}
 		} catch (IOException e) {
 			log.error("查询 es 异常：{}", e.getMessage());
-			NOTICE.add("欢迎使用日志下载平台");
+			if (NOTICE.isEmpty()) {
+                NOTICE.add("欢迎使用日志下载平台");
+            }
 		}
 		
 		return NOTICE;
@@ -110,7 +108,7 @@ public class NoticeService {
 	/**
 	 * 验证公告栏索引是否存在，不存在就创建。
 	 */
-	public void isExistsIndex () {
+	public void isExistsIndex() {
 		try (RestHighLevelClient client = ElasticSearchUtil.getInstance().getClient(environment, esUrl)) {
 			if (!elasticsearchService.isExists(index, indexId, client)) {
 				Map<String, Object> map = new HashMap<>();
