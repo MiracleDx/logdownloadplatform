@@ -1,6 +1,7 @@
 package com.log.download.platform.controller;
 
 import com.log.download.platform.context.RequestContext;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,6 +16,7 @@ import java.io.IOException;
  * Created in: 2020-05-07 15:51
  * Modified by:
  */
+@Log4j2
 @RestController
 public class IndexController {
 	
@@ -29,7 +31,7 @@ public class IndexController {
 				RequestContext.getResponse().sendRedirect("http://10.155.208.70:80");
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("exception occurred: {}", () -> e);
 		}
 	}
 }
