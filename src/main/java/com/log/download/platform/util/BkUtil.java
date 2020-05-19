@@ -7,6 +7,7 @@ import com.log.download.platform.common.BkEnum;
 import com.log.download.platform.dto.HostDTO;
 import com.log.download.platform.exception.NotImplementedException;
 import com.log.download.platform.exception.RemoteAccessException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created in: 2020-04-10 10:29
  * Modified by:
  */
+@Slf4j
 public class BkUtil {
 
     private Logger logger = LoggerFactory.getLogger(BkUtil.class);
@@ -221,7 +223,7 @@ public class BkUtil {
             try {
                 TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
             long t2 = System.currentTimeMillis();
             if (t2 - t1 > 60 * 1000) {
@@ -416,7 +418,7 @@ public class BkUtil {
             logger.info("hostname: {}, hostAddress: {}", localName, IpUtil.getServiceIp());
             return localIp;
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return SHARED_SERVER;
     }

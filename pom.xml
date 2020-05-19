@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.log.download</groupId>
     <artifactId>platform</artifactId>
-    <version>logdownloader-2.0</version>
+    <version>logdownloader-2.1.1</version>
     <name>platform</name>
     <description>Demo project for Spring Boot</description>
 
@@ -95,6 +95,12 @@
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
             <version>7.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.thekraken</groupId>
+            <artifactId>grok</artifactId>
+            <version>0.1.5</version>
         </dependency>
 
     </dependencies>

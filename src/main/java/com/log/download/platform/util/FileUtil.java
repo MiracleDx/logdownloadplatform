@@ -1,6 +1,7 @@
 package com.log.download.platform.util;
 
 import com.log.download.platform.exception.DataNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +18,7 @@ import java.util.List;
  * @user: YaoDF
  * @date: 2020-04-13 09:37
  **/
+@Slf4j
 public class FileUtil {
 
     //120分钟为两小时
@@ -68,7 +70,7 @@ public class FileUtil {
             response.setContentType("application/octet-stream");
             outputStream.write(buffer);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error(ex.getMessage());
         }
     }
 
@@ -118,7 +120,7 @@ public class FileUtil {
 
             return list.get(0).substring(0, list.get(0).lastIndexOf(":")).replace("Modify: ", "");
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return null;
     }

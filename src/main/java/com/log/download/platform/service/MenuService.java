@@ -144,7 +144,7 @@ public class MenuService {
 		try {
 			in.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 
 		Map<Boolean, List<DeploymentGroup>> collect = uploadDeploymentGroupListener.getList()

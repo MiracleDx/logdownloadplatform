@@ -2,6 +2,8 @@ package com.log.download.platform.vo;
 
 import lombok.Data;
 
+import java.util.Objects;
+
 /**
  * LogDetailVO
  * 
@@ -37,5 +39,25 @@ public class LogDetailVO {
 	private String param;
 	
 	private String hostname;
+
+	@Override
+	public boolean equals(Object o){
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		LogDetailVO logDetailVO = (LogDetailVO)o;
+
+		return path.equals(logDetailVO.path) && createTime.equals(logDetailVO.createTime) &&
+				size.equals(logDetailVO.size) && label.equals(logDetailVO.label) &&
+				hostname.equals(logDetailVO.hostname);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(path, createTime, size, label, hostname);
+	}
 	
 }

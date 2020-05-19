@@ -4,6 +4,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.List;
  * Created in: 2019-01-14 18:27
  * Modified by:
  */
+@Slf4j
 public class JsonUtil {
 
 	private static ObjectMapper mapper = new ObjectMapper();
@@ -37,7 +39,7 @@ public class JsonUtil {
 		try {
 			s = mapper.writeValueAsString(o);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 		
 		return s;
@@ -78,7 +80,7 @@ public class JsonUtil {
 		try {
 			t = mapper.readValue(json, c);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 		return t;
 	}
@@ -93,7 +95,7 @@ public class JsonUtil {
 		try {
 			t = (T) mapper.readValue(json, tr.getClass());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 		
 		return t;

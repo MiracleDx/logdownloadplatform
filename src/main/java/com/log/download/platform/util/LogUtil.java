@@ -2,6 +2,8 @@ package com.log.download.platform.util;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.concurrent.ArrayBlockingQueue;
+
 /**
  * LogUtil
  * 判断日志类型及路径
@@ -189,5 +191,23 @@ public class LogUtil {
      */
     public String praseGatewayContainerLogDetail(String[] logArr) {
         return logArr[1];
+    }
+
+    /**
+     * 检查path中包含的hostname是否和hostname一致
+     * @param path
+     * @param hostName
+     * @return
+     */
+    public boolean checkHostName(String path, String hostName) {
+        String[] pathEntry = path.split("-");
+        //不规范的日志直接跳过，不做检查
+        if (pathEntry.length != 8) {
+            return true;
+        }
+        if (path.contains(hostName)) {
+            return true;
+        }
+        return false;
     }
 }

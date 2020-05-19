@@ -126,7 +126,7 @@ public class LogService {
             logPathBO.setNotFinish(notFinishedIp);
             return logPathBO;
         }
-        return null;
+        return LogPathBO.builder().list(new ArrayList<>()).notFinish("").build();
     }
 
     /**
@@ -171,6 +171,9 @@ public class LogService {
                 } else if (logEnum == LogUtil.LogEnum.server_container && logArr.length == 4) {
                     //容器微服务日志
                     logPath = logUtil.praseServerContainerLogDetail(logArr);
+                    if (!logUtil.checkHostName(logPath,logArr[0])) {
+                        continue;
+                    }
                 } else if(logEnum == LogUtil.LogEnum.server_general) {
                     //微服务日志
                     logPath = logUtil.praseServerLogDetail(logArr);

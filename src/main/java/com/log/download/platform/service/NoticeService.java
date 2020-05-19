@@ -117,7 +117,7 @@ public class NoticeService {
 				elasticsearchService.creatIndex(index, indexId, map, client);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 	}
 }

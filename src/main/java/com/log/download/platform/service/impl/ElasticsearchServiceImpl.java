@@ -142,7 +142,7 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
         try {
             UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("es更新索引内容失败：{}", e.getMessage());
         }
     }
 
@@ -161,7 +161,7 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
         try {
             exists = client.exists(getRequest, RequestOptions.DEFAULT);
         }catch (IOException e) {
-            e.printStackTrace();
+            log.error("es确认索引是否存在失败：{}", e.getMessage());
         }
         return exists;
     }
@@ -172,7 +172,7 @@ public class ElasticsearchServiceImpl implements ElasticsearchService {
         try {
             IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("es查询失败：{}", e.getMessage());
         }
     }
 }
