@@ -80,9 +80,10 @@ public abstract class AbstractGrokDebugger {
 		GrokResult result = new GrokResult();
 		List<ErrorMsg> errorMsgs = new ArrayList<>();
 
+		GrokProperties grokProperties = new GrokProperties();
 		// 获取所有字段
 		Arrays.stream(clazz.getDeclaredFields())
-				// 取到有指定注解的字段
+				// 取到有注解的字段
 				.filter(field -> field.isAnnotationPresent(GrokAttributes.class))
 				// 根据order排序
 				.sorted(Comparator.comparingInt(field -> field.getAnnotation(GrokAttributes.class).order()))
@@ -100,13 +101,15 @@ public abstract class AbstractGrokDebugger {
 					}
 
 					// todo 获取正则 获取不到的使用默认正则
-					String regular = "";
+					String regular = grokProperties.getProperty(regularKey);
+					if (regular == null) {
+						regular = grokProperties.getProperty("DEFAULT");
+					}
+					
 					// 对应log片段 order 是从1开始排序
 					String log = contents[order - 1];
 					// 匹配正则
-					Pattern pattern = Pattern.compile(regular);
-					Matcher matcher = pattern.matcher(log);
-					if (!matcher.matches()) {
+					if (!log.matches(regular)) {
 						ErrorMsg errorMsg = new ErrorMsg();
 						errorMsg.setLogSnippet(log);
 						errorMsg.setMsg(grokAttributes.errMsg());

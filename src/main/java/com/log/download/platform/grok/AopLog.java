@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 @Data
 public class AopLog extends AbstractGrokField {
 
-	@GrokAttributes(order = 1, regularKey = "time")
+	@GrokAttributes(order = 1, regularKey = "TIMESTAMP_ISO8601")
 	private String timestamp;
 
 	@GrokAttributes(order = 2, regularKey = "thread")
