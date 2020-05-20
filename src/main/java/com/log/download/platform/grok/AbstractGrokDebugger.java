@@ -100,8 +100,15 @@ public abstract class AbstractGrokDebugger {
 						regularKey = field.getName();
 					}
 
-					// todo 获取正则 获取不到的使用默认正则
+					// 获取正则
 					String regular = grokProperties.getProperty(regularKey);
+
+					// 获取以字段名称为key的正则
+					if (regular == null) {
+						regular = grokProperties.getProperty(field.getName());
+					}
+					
+					// 获取不到使用默认正则
 					if (regular == null) {
 						regular = grokProperties.getProperty("DEFAULT");
 					}
