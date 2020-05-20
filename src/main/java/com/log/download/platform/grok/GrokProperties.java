@@ -1,9 +1,7 @@
 package com.log.download.platform.grok;
 
 import cn.hutool.core.io.FileUtil;
-import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +19,7 @@ import java.util.stream.Collectors;
  */
 public class GrokProperties {
 	
-	private Map<String, String> map = new ConcurrentHashMap<>();
+	private final Map<String, String> map = new ConcurrentHashMap<>();
 	
 	private void readProperties() {
 		List<String> list = FileUtil.readLines("C:/grok-patterns", "utf-8");
