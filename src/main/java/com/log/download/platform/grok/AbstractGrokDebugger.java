@@ -75,7 +75,7 @@ public abstract class AbstractGrokDebugger {
 		}
 
 		String[] split = content.split("\\] \\[", 0);
-		String[] contents = Arrays.stream(split).map(str -> str.replace("\\[", "")).toArray(String[]::new);
+		String[] contents = Arrays.stream(split).map(str -> str.replaceAll("\\[", "")).toArray(String[]::new);
 
 		GrokResult result = new GrokResult();
 		List<ErrorMsg> errorMsgs = new ArrayList<>();
@@ -101,8 +101,8 @@ public abstract class AbstractGrokDebugger {
 
 					// todo 获取正则 获取不到的使用默认正则
 					String regular = "";
-					// 对应log片段
-					String log = contents[order];
+					// 对应log片段 order 是从1开始排序
+					String log = contents[order - 1];
 					// 匹配正则
 					Pattern pattern = Pattern.compile(regular);
 					Matcher matcher = pattern.matcher(log);
