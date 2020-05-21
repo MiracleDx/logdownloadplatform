@@ -1,6 +1,5 @@
 package com.log.download.platform.util;
 
-import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -82,22 +81,6 @@ public class JsonUtil {
 		} catch (Exception e) {
 			log.error(e.getMessage());
 		}
-		return t;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> T json2Object(String json, TypeReference<T> tr) {
-		if (!StringUtils.hasLength(json)) {
-			return null;
-		}
-		
-		T t = null;
-		try {
-			t = (T) mapper.readValue(json, tr.getClass());
-		} catch (Exception e) {
-			log.error(e.getMessage());
-		}
-		
 		return t;
 	}
 }
