@@ -1,7 +1,10 @@
 package com.log.download.platform.grok;
 
 import cn.hutool.core.io.FileUtil;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +24,7 @@ public class GrokProperties {
 	
 	private final Map<String, String> map = new ConcurrentHashMap<>();
 	
-	private void readProperties() {
+	private void readProperties(){
 		List<String> list = FileUtil.readLines("C:/grok-patterns", "utf-8");
 		for (String str : list) {
 			// 过滤掉注释字段

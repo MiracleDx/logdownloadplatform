@@ -12,7 +12,7 @@ import lombok.Data;
  */
 @Data
 public class AopLog extends AbstractGrokField {
-
+	//TODO 序号从0开始
 	@GrokAttributes(order = 1, regularKey = "TIMESTAMP_ISO8601")
 	private String timestamp;
 
