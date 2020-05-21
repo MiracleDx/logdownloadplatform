@@ -2,7 +2,6 @@ package com.log.download.platform.grok;
 
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**

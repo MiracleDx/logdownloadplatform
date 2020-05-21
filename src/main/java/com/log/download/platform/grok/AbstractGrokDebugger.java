@@ -95,7 +95,7 @@ public abstract class AbstractGrokDebugger {
 					// 获取字段顺序
 					int order = grokAttributes.order();
 					// 获取正则Key
-					String regularKey = grokAttributes.regularKey();
+					String regularKey = grokAttributes.regularKey().toUpperCase();
 					// 注解中没有声明正则Key就取字段名称
 					if (StringUtils.isBlank(regularKey)) {
 						regularKey = field.getName();
