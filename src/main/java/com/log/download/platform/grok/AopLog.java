@@ -1,7 +1,6 @@
 package com.log.download.platform.grok;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * AopLog
@@ -17,7 +16,7 @@ public class AopLog extends AbstractGrokField {
 	@GrokAttributes(order = 1, regularKey = "TIMESTAMP_ISO8601")
 	private String timestamp;
 
-	@GrokAttributes(order = 2, regularKey = "thread")
+	@GrokAttributes(order = 2, regularKey = "thread", errMsg = "线程名称不正确")
 	private String threadName;
 
 	@GrokAttributes(order = 3, regularKey = "level")

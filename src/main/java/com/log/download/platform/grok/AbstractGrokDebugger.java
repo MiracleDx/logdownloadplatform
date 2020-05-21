@@ -1,14 +1,13 @@
 package com.log.download.platform.grok;
 
+import cn.hutool.json.JSONUtil;
 import com.log.download.platform.util.ElasticSearchUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * GrokDebugger
@@ -27,25 +26,24 @@ public abstract class AbstractGrokDebugger {
 	 * 解析日志
 	 * @param dto
 	 */
-	public void grokJudge(GrokDetailDTO dto) {
+	public GrokResult grokJudge(GrokDetailDTO dto) {
 		// 初始化es客户端
 		ElasticSearchUtil elasticSearchUtil = ElasticSearchUtil.getInstance();
 		elasticSearchUtil.init(environment, new String[]{"10.155.208.144:9200"});
 		
 		// 组装参数
-		LocalDateTime now = LocalDateTime.now();
 		Map<String, Object> params = new HashMap<>();
 		String index = "";
 		params.put("team", dto.getTeam());
 		params.put("type", dto.getType());
 		params.put("content", dto.getContent());
-		params.put("grokTime", now);
+		params.put("grokTime", Instant.now().toEpochMilli());
 
 		Class<?> clazz = null;
 		try {
-			clazz = Class.forName(dto.getType());
+			clazz = Class.forName(String.format("com.log.download.platform.grok.%s", dto.getType()));
 		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException("unknown log type");
+			throw new IllegalArgumentException(String.format("unknown log type: %s", dto.getType()));
 		}
 
 		GrokResult grokResult = grok(dto.getContent(), clazz);
@@ -54,8 +52,11 @@ public abstract class AbstractGrokDebugger {
 		} else {
 			index = "grok_failed";
 		}
-		params.put("grokResult", grokResult);
+
+		
+		params.put("grokResult", JSONUtil.parse(grokResult));
 		elasticSearchUtil.creatIndex(index, params);
+		return grokResult;
 	}
 
 	/**
