@@ -83,11 +83,11 @@ public abstract class AbstractGrokDebugger {
 		List<ErrorMsg> errorMsgs = new ArrayList<>();
 
 		GrokProperties grokProperties = new GrokProperties();
-		// 获取所有字段
+		// getDeclaredFields获取所有字段
 		Arrays.stream(clazz.getDeclaredFields())
-				// 取到有注解的字段
+				// 判断字段是否有GrokAttributes注解，从而取到有注解的字段
 				.filter(field -> field.isAnnotationPresent(GrokAttributes.class))
-				// 根据order排序
+				// 根据注解中的order的大小排序
 				.sorted(Comparator.comparingInt(field -> field.getAnnotation(GrokAttributes.class).order()))
 				// 设置访问私有字段
 				.peek(field -> field.setAccessible(true))
