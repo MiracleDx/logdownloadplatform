@@ -83,11 +83,11 @@ public abstract class AbstractGrokDebugger {
 		List<ErrorMsg> errorMsgs = new ArrayList<>();
 
 		GrokProperties grokProperties = new GrokProperties();
-		// getDeclaredFields获取所有字段
+		// 获取所有字段
 		Arrays.stream(clazz.getDeclaredFields())
-				// 判断字段是否有GrokAttributes注解，从而取到有注解的字段
+				// 取到有注解的字段
 				.filter(field -> field.isAnnotationPresent(GrokAttributes.class))
-				// 根据注解中的order的大小排序
+				// 根据order排序
 				.sorted(Comparator.comparingInt(field -> field.getAnnotation(GrokAttributes.class).order()))
 				// 设置访问私有字段
 				.peek(field -> field.setAccessible(true))
@@ -100,7 +100,7 @@ public abstract class AbstractGrokDebugger {
 					GrokAttributes grokAttributes = fieldOptional.orElse(field).getAnnotation(GrokAttributes.class);
 
 					// 获取正则Key
-					String regularKey = grokAttributes.regularKey().toUpperCase();
+					String regularKey = grokAttributes.regularKey();
 					
 					// 没有声明Key就取字段名称
 					if (StringUtils.isBlank(regularKey)) {
@@ -108,7 +108,7 @@ public abstract class AbstractGrokDebugger {
 					}
 
 					// 获取正则
-					String regular = grokProperties.getProperty(regularKey);
+					String regular = grokProperties.getProperty(regularKey.toUpperCase());
 					
 					// 获取不到使用默认正则
 					if (regular == null) {
