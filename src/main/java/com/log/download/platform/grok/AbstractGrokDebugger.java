@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.*;
 
@@ -91,31 +92,31 @@ public abstract class AbstractGrokDebugger {
 				// 设置访问私有字段
 				.peek(field -> field.setAccessible(true))
 				.forEach(field -> {
-					GrokAttributes grokAttributes = field.getAnnotation(GrokAttributes.class);
 					// 获取字段顺序
-					int order = grokAttributes.order();
+					int order = field.getAnnotation(GrokAttributes.class).order();
+					// 先在父类中查找是否定义过key, 没有的话使用字段本身获取
+					Optional<Field> fieldOptional = Arrays.stream(clazz.getSuperclass().getDeclaredFields())
+							.filter(f -> f.getName().equals(field.getName())).findFirst();
+					GrokAttributes grokAttributes = fieldOptional.orElse(field).getAnnotation(GrokAttributes.class);
+
 					// 获取正则Key
 					String regularKey = grokAttributes.regularKey().toUpperCase();
-					// 注解中没有声明正则Key就取字段名称
+					
+					// 没有声明Key就取字段名称
 					if (StringUtils.isBlank(regularKey)) {
 						regularKey = field.getName();
 					}
 
 					// 获取正则
 					String regular = grokProperties.getProperty(regularKey);
-
-					// 获取以字段名称为key的正则
-					if (regular == null) {
-						regular = grokProperties.getProperty(field.getName());
-					}
 					
 					// 获取不到使用默认正则
 					if (regular == null) {
 						regular = grokProperties.getProperty("DEFAULT");
 					}
 					
-					// 对应log片段 order 是从1开始排序
-					String log = contents[order - 1];
+					// 对应log片段
+					String log = contents[order];
 					// 匹配正则
 					if (!log.matches(regular)) {
 						ErrorMsg errorMsg = new ErrorMsg();
