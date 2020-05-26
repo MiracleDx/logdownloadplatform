@@ -2,8 +2,6 @@ package com.log.download.platform.util;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.concurrent.ArrayBlockingQueue;
-
 /**
  * LogUtil
  * 判断日志类型及路径

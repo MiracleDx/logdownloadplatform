@@ -41,6 +41,7 @@ public abstract class AbstractGrokDebugger {
 		params.put("grokTime", Instant.now().toEpochMilli());
 
 		Class<?> clazz = null;
+		//确定传入对象是grok文件下的
 		try {
 			clazz = Class.forName(String.format("com.log.download.platform.grok.%s", dto.getType()));
 		} catch (ClassNotFoundException e) {
@@ -68,10 +69,15 @@ public abstract class AbstractGrokDebugger {
 
 	/**
 	 * grok解析
+	 * 1.处理传入日志
+	 * 2.获取实体类中成员并按照注解上的order排序，保证和日志字段顺序一致
+	 * 3.根据成员注解的regularKey获取对应的正则规则
+	 * 4.验证日志字段和正则匹配
 	 * @param content
 	 * @return
 	 */
 	public GrokResult grok(String content, Class<?> clazz) {
+		//1.判断传入日志是否为空，并切割
 		if (StringUtils.isBlank(content)) {
 			throw new IllegalArgumentException("log content must not null");
 		}
@@ -83,7 +89,7 @@ public abstract class AbstractGrokDebugger {
 		List<ErrorMsg> errorMsgs = new ArrayList<>();
 
 		GrokProperties grokProperties = new GrokProperties();
-		// 获取所有字段
+		// 2.获取实体类中所有字段
 		Arrays.stream(clazz.getDeclaredFields())
 				// 取到有注解的字段
 				.filter(field -> field.isAnnotationPresent(GrokAttributes.class))

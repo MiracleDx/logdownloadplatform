@@ -20,7 +20,7 @@ import java.io.IOException;
 @RestController
 public class IndexController {
 	
-	@RequestMapping("/")
+//	@RequestMapping("/")
 	public void hello() {
 		try {
 			HttpServletRequest request = RequestContext.getRequest();

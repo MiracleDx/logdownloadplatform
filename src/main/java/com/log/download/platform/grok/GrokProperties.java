@@ -117,7 +117,7 @@ public class GrokProperties {
 		});
 	}
 
-	public static void main(String[] args) {
-		new GrokProperties().readProperties();
-	}
+//	public static void main(String[] args) {
+//		new GrokProperties().readProperties();
+//	}
 }

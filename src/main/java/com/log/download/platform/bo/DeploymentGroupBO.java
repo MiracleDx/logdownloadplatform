@@ -2,6 +2,9 @@ package com.log.download.platform.bo;
 
 import lombok.Data;
 
+import javax.annotation.MatchesPattern;
+
+
 /**
  * DeploymentGroupBO
  * 部署组信息业务对象
