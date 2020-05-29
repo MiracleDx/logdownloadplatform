@@ -1,6 +1,7 @@
 package com.log.download.platform.controller;
 
 
+import com.log.download.platform.aop.OperatingLog;
 import com.log.download.platform.dto.DownLoadDTO;
 import com.log.download.platform.service.DownloadService;
 import com.log.download.platform.service.IBaseService;
@@ -36,11 +37,13 @@ public class DownloadController {
      *
      * @param downLoadDTO
      */
+    @OperatingLog("下载镜像日志")
     @RequestMapping("/downloadImage")
     public void downloadImage(@RequestBody DownLoadDTO downLoadDTO) {
         downloadService.download(downLoadDTO);
     }
 
+    @OperatingLog("下载日志")
 	@RequestMapping("/download")
 	public void download(@RequestBody DownLoadDTO downLoadDTO) {
         // 蓝鲸分发

@@ -1,5 +1,6 @@
 package com.log.download.platform.controller;
 
+import com.log.download.platform.aop.OperatingLog;
 import com.log.download.platform.bo.LogPathBO;
 import com.log.download.platform.dto.FindMirrorDTO;
 import com.log.download.platform.dto.QueryLogDetailDTO;
@@ -40,6 +41,7 @@ public class LogController {
      *
      * @return
      */
+    @OperatingLog("获取日志目录")
     @PostMapping("/queryLogDetails")
     public ServerResponse<List<LogDetailVO>> queryLogDetails(@RequestBody QueryLogDetailDTO queryLogDetailDTO) {
         LogPathBO logPathBO = logService.queryLogDetails(queryLogDetailDTO);

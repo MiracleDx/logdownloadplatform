@@ -1,5 +1,6 @@
 package com.log.download.platform.controller;
 
+import com.log.download.platform.aop.OperatingLog;
 import com.log.download.platform.exception.DataNotFoundException;
 import com.log.download.platform.response.ResponseResult;
 import com.log.download.platform.service.MenuService;
@@ -28,7 +29,8 @@ public class MenuController {
 
 	@Resource
 	private MenuService menuService;
-	
+
+	@OperatingLog("获取目录")
 	@GetMapping("/getMenu")
 	public List<MenuVO> getMenu() {
 		if (menuService.menu == null || menuService.menu.size() == 0) {

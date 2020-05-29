@@ -56,18 +56,18 @@ public class LogService {
         FileUtil fileUtil = FileUtil.getInstance();
         int script_id = 0;
         //根据脚本入参的参数，判断是否网关，选择脚本id
-        if(queryLogDetailDTO.getBkParam().contains("msgw")) {
-            if (queryLogDetailDTO.getIsHistory()) {
-                script_id = gatewayExecuteHistoryScriptId;
+            if(queryLogDetailDTO.getBkParam().contains("msgw")) {
+                if (queryLogDetailDTO.getIsHistory()) {
+                    script_id = gatewayExecuteHistoryScriptId;
+                } else {
+                    script_id = gatewayExecuteScriptId;
+                }
             } else {
-                script_id = gatewayExecuteScriptId;
-            }
-        } else {
-            if (queryLogDetailDTO.getIsHistory()) {
-                script_id = fastExecuteHistoryScriptId;
-            }  else {
-                script_id = fastExecuteScriptId;
-            }
+                if (queryLogDetailDTO.getIsHistory()) {
+                    script_id = fastExecuteHistoryScriptId;
+                }  else {
+                    script_id = fastExecuteScriptId;
+                }
         }
         log.info("执行脚本id：{}", script_id);
         int bkBizId = bkUtil.getBkBizId(queryLogDetailDTO.getLabel());

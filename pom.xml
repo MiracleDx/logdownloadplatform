@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.log.download</groupId>
     <artifactId>platform</artifactId>
-    <version>logdownloader-2.1.1</version>
+    <version>logdownloader-2.1.2</version>
     <name>platform</name>
     <description>Demo project for Spring Boot</description>
 
