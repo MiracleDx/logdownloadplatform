@@ -1,5 +1,6 @@
 package com.log.download.platform.util;
 
+import cn.hutool.core.util.ZipUtil;
 import com.log.download.platform.exception.DataNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -175,6 +176,28 @@ public class FileUtil {
             }
         }
         return false;
+    }
+
+    public static void main(String[] args) throws FileNotFoundException {
+        FileUtil fileUtil = FileUtil.getInstance();
+        String zipPath = "D:\\log\\ccc.zip";
+        String[] paths = new String[3];
+        paths[0] = "D:\\log\\aaa.txt";
+        paths[1] = "D:\\log\\bbb.txt";
+        paths[2] = "D:\\log\\ccc.txt";
+        InputStream[] ins = new FileInputStream[3];
+        ins[0] = new FileInputStream(paths[0]);
+        ins[1] = new FileInputStream(paths[1]);
+        ins[2] = new FileInputStream(paths[2]);
+        fileUtil.zipFile(paths, zipPath, ins);
+    }
+
+    public void zipFile(String[] path, String zipPath, InputStream[] streams) {
+        ZipUtil.zip(new File(zipPath), path, streams);
+    }
+
+    public void unZipFile(String path, String zipPath) {
+
     }
 
 

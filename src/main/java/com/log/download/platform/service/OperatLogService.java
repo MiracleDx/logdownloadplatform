@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +32,7 @@ public class OperatLogService {
     @Resource
     private Environment environment;
 
-    public OperatLogDTO getOperatingLog(long startDate, long endDate){
+    public OperatLogDTO getOperatingLog(){
         LocalDateTime time = LocalDateTime.now();
         List<OperatLogVO> operatLogVOS = new ArrayList<>();
         OperatLogVO operatLogVO;
@@ -41,10 +40,10 @@ public class OperatLogService {
         ElasticSearchUtil es = ElasticSearchUtil.getInstance();
         es.init(environment, new String[]{"10.155.208.144:9200"});
         try {
-            QueryBuilder queryBuilder = QueryBuilders.rangeQuery("operattime")
-                    .from(LocalDateTime.ofEpochSecond(startDate, 0, ZoneOffset.ofHours(8)))
-                    .to(LocalDateTime.ofEpochSecond(endDate, 0, ZoneOffset.ofHours(8)))
-                    .includeLower(true).includeUpper(true);
+            QueryBuilder queryBuilder = QueryBuilders.rangeQuery("operattime");
+//                    .from(LocalDateTime.ofEpochSecond(startDate, 0, ZoneOffset.ofHours(8)))
+//                    .to(LocalDateTime.ofEpochSecond(endDate, 0, ZoneOffset.ofHours(8)))
+//                    .includeLower(true).includeUpper(true);
             BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
             boolQueryBuilder.must(queryBuilder);
             SearchHits searchHits = es.getIndexDocument("operatinglog",
@@ -52,7 +51,25 @@ public class OperatLogService {
                     false, boolQueryBuilder);
             for (SearchHit searchHit : searchHits) {
                 operatLogVO = new OperatLogVO();
-                operatLogVO.setOperatstate((String) searchHit.getSourceAsMap().get("operatstate"));
+                String state = searchHit.getSourceAsMap().get("operatstate").toString();
+                String operate;
+                switch (state) {
+                    case "getMenu" :
+                        operate = "获取菜单";
+                        break;
+                    case "downloadImage" :
+                        operate = "下载镜像日志";
+                        break;
+                    case "download" :
+                        operate = "下载日志";
+                        break;
+                    case "queryLogDetails" :
+                        operate = "获取日志目录";
+                        break;
+                        default:
+                            operate = "";
+                }
+                operatLogVO.setOperatstate(operate);
                 operatLogVO.setOperattime((String) searchHit.getSourceAsMap().get("operattime"));
                 operatLogVO.setUserip((String) searchHit.getSourceAsMap().get("userip"));
                 operatLogVOS.add(operatLogVO);

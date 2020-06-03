@@ -41,7 +41,7 @@ public class LogController {
      *
      * @return
      */
-    @OperatingLog("获取日志目录")
+    @OperatingLog("queryLogDetails")
     @PostMapping("/queryLogDetails")
     public ServerResponse<List<LogDetailVO>> queryLogDetails(@RequestBody QueryLogDetailDTO queryLogDetailDTO) {
         LogPathBO logPathBO = logService.queryLogDetails(queryLogDetailDTO);

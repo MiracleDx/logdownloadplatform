@@ -1,12 +1,12 @@
 package com.log.download.platform.controller;
 
-import com.log.download.platform.dto.OperatLogDTO;
 import com.log.download.platform.service.OperatLogService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 /**
  * @program: platform
@@ -21,14 +21,10 @@ public class OperatLogController {
     @Resource
     private OperatLogService operatLogService;
 
-    @GetMapping("/test")
-    public OperatLogDTO getOperatingLog(long startDate, long endDate) {
-        int startLen = (new Long(startDate)).toString().length();
-        int endLen = (new Long(endDate)).toString().length();
-        if (startLen == 13 && endLen == startLen) {
-            return operatLogService.getOperatingLog(startDate, endDate);
-        }
-        throw new NullPointerException("时间格式错误");
+    @GetMapping("/operate")
+    public Map<String, Integer> getOperatingLog(long startDate, long endDate) {
+
+        return operatLogService.getOperatingLog().getOperats();
     }
 }
 

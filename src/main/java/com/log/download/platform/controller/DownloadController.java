@@ -37,13 +37,13 @@ public class DownloadController {
      *
      * @param downLoadDTO
      */
-    @OperatingLog("下载镜像日志")
+    @OperatingLog("downloadImage")
     @RequestMapping("/downloadImage")
     public void downloadImage(@RequestBody DownLoadDTO downLoadDTO) {
         downloadService.download(downLoadDTO);
     }
 
-    @OperatingLog("下载日志")
+    @OperatingLog("download")
 	@RequestMapping("/download")
 	public void download(@RequestBody DownLoadDTO downLoadDTO) {
         // 蓝鲸分发

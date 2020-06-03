@@ -30,7 +30,7 @@ public class MenuController {
 	@Resource
 	private MenuService menuService;
 
-	@OperatingLog("获取目录")
+	@OperatingLog("getMenu")
 	@GetMapping("/getMenu")
 	public List<MenuVO> getMenu() {
 		if (menuService.menu == null || menuService.menu.size() == 0) {
